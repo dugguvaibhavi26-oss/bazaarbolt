@@ -40,7 +40,7 @@ export default function RiderLayout({ children }: { children: React.ReactNode })
              <div className="w-10 h-10 bg-zinc-900 rounded-xl flex items-center justify-center">
                 <span className="material-symbols-outlined text-primary font-black">delivery_dining</span>
              </div>
-             <h1 className="text-xl font-headline font-black text-zinc-900 tracking-tight italic">Rider Portal</h1>
+             <h1 className="text-xl font-headline font-black text-zinc-900 tracking-tight">Rider Portal</h1>
           </div>
           
           <button 
@@ -60,21 +60,23 @@ export default function RiderLayout({ children }: { children: React.ReactNode })
           </div>
        </main>
 
-       {/* Simple Bottom Bar for Rider */}
-       <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] z-50 bg-zinc-900/95 backdrop-blur-3xl shadow-2xl rounded-full px-6 py-3 flex justify-around items-center">
-          <Link href="/rider" className={`flex flex-col items-center gap-1 ${pathname === '/rider' ? 'text-primary' : 'text-white/40'}`}>
-             <span className="material-symbols-outlined text-2xl font-bold">dashboard</span>
-             <span className="text-[8px] font-black uppercase tracking-widest">Jobs</span>
-          </Link>
-          <button onClick={() => toast.success("Opening earning history...")} className="flex flex-col items-center gap-1 text-white/40">
-             <span className="material-symbols-outlined text-2xl">payments</span>
-             <span className="text-[8px] font-black uppercase tracking-widest">Earnings</span>
-          </button>
-          <Link href="/rider/account" className={`flex flex-col items-center gap-1 ${pathname === '/rider/account' ? 'text-primary' : 'text-white/40'}`}>
-             <span className="material-symbols-outlined text-2xl font-bold">account_circle</span>
-             <span className="text-[8px] font-black uppercase tracking-widest">Account</span>
-          </Link>
-       </nav>
+       {/* Simple Bottom Bar for Rider - Hidden on detail pages */}
+       {!pathname.includes('/orders/') && (
+         <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] z-50 bg-zinc-900/95 backdrop-blur-3xl shadow-2xl rounded-full px-6 py-3 flex justify-around items-center">
+            <Link href="/rider" className={`flex flex-col items-center gap-1 ${pathname === '/rider' ? 'text-primary' : 'text-white/40'}`}>
+               <span className="material-symbols-outlined text-2xl font-bold">dashboard</span>
+               <span className="text-[8px] font-black uppercase tracking-widest">Jobs</span>
+            </Link>
+            <Link href="/rider/earnings" className={`flex flex-col items-center gap-1 ${pathname === '/rider/earnings' ? 'text-primary' : 'text-white/40'}`}>
+               <span className="material-symbols-outlined text-2xl">payments</span>
+               <span className="text-[8px] font-black uppercase tracking-widest">Earnings</span>
+            </Link>
+            <Link href="/rider/account" className={`flex flex-col items-center gap-1 ${pathname === '/rider/account' ? 'text-primary' : 'text-white/40'}`}>
+               <span className="material-symbols-outlined text-2xl font-bold">account_circle</span>
+               <span className="text-[8px] font-black uppercase tracking-widest">Account</span>
+            </Link>
+         </nav>
+       )}
     </div>
   );
 }

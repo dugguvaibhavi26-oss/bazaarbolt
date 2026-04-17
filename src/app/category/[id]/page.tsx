@@ -95,7 +95,7 @@ export default function CategoryPage() {
         </button>
         <div>
            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] leading-none mb-1">CATEGORY</p>
-           <h1 className="text-xl font-headline font-black text-zinc-900 tracking-tighter uppercase italic leading-none">{id ? decodeURIComponent(id as string) : ""}</h1>
+           <h1 className="text-xl font-headline font-black text-zinc-900 tracking-tighter uppercase leading-none">{id ? decodeURIComponent(id as string) : ""}</h1>
         </div>
       </header>
 

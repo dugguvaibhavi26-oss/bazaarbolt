@@ -23,8 +23,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: "Orders", href: "/admin/orders", icon: "shopping_bag" },
     { label: "Inventory", href: "/admin/products", icon: "inventory_2" },
     { label: "Personnel", href: "/admin/riders", icon: "delivery_dining" },
-    { label: "Categories", href: "/admin/categories", icon: "category" },
-    { label: "Coupons", href: "/admin/coupons", icon: "local_activity" },
+    {label: "Categories", href: "/admin/categories", icon: "category" },
+    {label: "Delivery Slots", href: "/admin/delivery", icon: "schedule_send" },
+    {label: "Coupons", href: "/admin/coupons", icon: "local_activity" },
     { label: "Payments", href: "/admin/payments", icon: "payments" },
     { label: "Store Settings", href: "/admin/settings", icon: "settings" },
   ];
@@ -69,7 +70,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center p-1 shadow-lg shadow-primary/20">
                  <span className="material-symbols-outlined text-zinc-900 font-black">bolt</span>
               </div>
-              <h1 className="text-xl font-black italic text-white font-headline tracking-tighter">BazaarBolt</h1>
+              <h1 className="text-xl font-black text-white font-headline tracking-tighter">BazaarBolt</h1>
            </div>
            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Admin Central</p>
         </div>

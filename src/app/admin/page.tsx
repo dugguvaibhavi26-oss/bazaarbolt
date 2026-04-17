@@ -61,7 +61,7 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-10 pb-32">
        <div>
-          <h1 className="text-3xl font-black text-zinc-900 tracking-tight font-headline italic uppercase">Intelligence Hub</h1>
+          <h1 className="text-3xl font-black text-zinc-900 tracking-tight font-headline uppercase">Intelligence Hub</h1>
           <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Real-time performance metrics & system health</p>
        </div>
 
@@ -119,7 +119,7 @@ export default function AdminDashboard() {
                    </div>
                 ))}
                 {recentOrders.length === 0 && (
-                   <div className="py-20 text-center opacity-30 italic font-medium">Listening for incoming orders...</div>
+                   <div className="py-20 text-center opacity-30 font-medium">Listening for incoming orders...</div>
                 )}
              </div>
           </div>

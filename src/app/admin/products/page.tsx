@@ -132,9 +132,7 @@ export default function AdminProducts() {
                       <h2 className="text-3xl font-headline font-black text-zinc-900 tracking-tight">New Inventory Item</h2>
                       <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mt-1">Manual SKU Entry</p>
                    </div>
-                   <button onClick={() => setIsAdding(false)} className="w-10 h-10 bg-zinc-100 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all">
-                      <span className="material-symbols-outlined">close</span>
-                   </button>
+
                 </div>
 
                 <form onSubmit={handleAdd} className="space-y-6">

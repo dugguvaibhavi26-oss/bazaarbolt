@@ -71,7 +71,7 @@ export default function LoginPage() {
         <Link href="/" className="inline-flex items-center justify-center p-4 bg-primary-container/20 border-2 border-primary-container rounded-full mb-6 relative group active:scale-95 transition-transform shadow-lg">
           <span className="material-symbols-outlined text-primary text-4xl group-hover:scale-110 transition-transform" style={{fontVariationSettings: "'FILL' 1"}}>bolt</span>
         </Link>
-        <h2 className="text-3xl font-headline font-black text-zinc-900 tracking-tight italic">
+        <h2 className="text-3xl font-headline font-black text-zinc-900 tracking-tight">
           BazaarBolt
         </h2>
         <p className="mt-2 text-sm font-bold text-zinc-500 tracking-wider uppercase">
@@ -124,7 +124,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center items-center gap-2 py-4 px-4 border border-transparent rounded-xl shadow-[0_8px_16px_-4px_rgba(34,197,94,0.4)] text-sm font-black text-white bg-primary hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 active:scale-95 transition-all uppercase tracking-widest"
+                className="w-full flex justify-center items-center gap-2 py-4 px-4 border border-transparent rounded-xl shadow-[0_8px_16px_-4px_rgba(34,197,94,0.4)] text-sm font-black text-zinc-900 bg-primary hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 active:scale-95 transition-all uppercase tracking-widest"
               >
                 {loading ? (
                     <span className="material-symbols-outlined animate-spin font-bold">progress_activity</span>

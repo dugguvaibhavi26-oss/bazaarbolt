@@ -44,7 +44,7 @@ export default function RiderEarnings() {
   return (
     <div className="space-y-8 pb-20">
        <div className="px-2">
-          <h2 className="text-3xl font-headline font-black text-zinc-900 tracking-tight italic">Earnings</h2>
+          <h2 className="text-3xl font-headline font-black text-zinc-900 tracking-tight">Earnings</h2>
           <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">WALLET SUMMARY</p>
        </div>
 
@@ -58,7 +58,7 @@ export default function RiderEarnings() {
                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Completed Jobs</p>
                    <p className="text-xl font-headline font-black uppercase tracking-widest">{completedOrders.length}</p>
                 </div>
-                <button className="bg-white text-zinc-900 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all">Withdraw</button>
+                <div className="bg-white/10 text-white px-4 py-2 rounded-xl font-black text-[9px] uppercase tracking-widest border border-white/20">Cash Only</div>
              </div>
           </div>
        </section>

@@ -84,7 +84,7 @@ export default function CartPage() {
 
       <div className="pt-28 pb-44 px-4 max-w-3xl mx-auto space-y-4">
         <div className="flex items-end justify-between px-1">
-           <h2 className="font-headline font-black text-2xl tracking-tighter text-zinc-900 italic uppercase">Your Cart</h2>
+           <h2 className="font-headline font-black text-2xl tracking-tighter text-zinc-900 uppercase">Your Cart</h2>
            <span className="font-headline font-black text-primary bg-primary/10 px-2 py-0.5 rounded-md text-[10px] tracking-widest uppercase">{cartCount} ITEMS</span>
         </div>
 
@@ -101,12 +101,7 @@ export default function CartPage() {
           <div className="space-y-3">
             {cart.map((item) => (
               <div key={item.id} className="bg-white rounded-2xl p-2.5 flex items-center gap-3 shadow-sm border border-zinc-100 relative group transition-all">
-                <button 
-                  onClick={() => removeFromCart(item.id)} 
-                  className="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center bg-zinc-50 text-zinc-400 rounded-full hover:bg-red-50 hover:text-red-500 transition-all active:scale-90"
-                >
-                  <span className="material-symbols-outlined text-xs font-black">close</span>
-                </button>
+
                 <div className="w-14 h-14 bg-zinc-50 rounded-xl overflow-hidden shrink-0 border border-zinc-50">
                   <img src={item.image} alt={item.name} className="w-full h-full object-contain p-1.5" />
                 </div>

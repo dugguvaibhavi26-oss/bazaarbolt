@@ -70,7 +70,7 @@ export default function AdminPaymentsPage() {
   return (
     <div className="p-6 max-w-4xl mx-auto pb-40">
       <div className="mb-10">
-        <h1 className="text-3xl font-black text-zinc-900 italic uppercase tracking-tight">Payment Control</h1>
+        <h1 className="text-3xl font-black text-zinc-900 uppercase tracking-tight">Payment Control</h1>
         <p className="text-zinc-500 font-bold text-sm">Configure fees, taxes, and thresholds</p>
       </div>
 

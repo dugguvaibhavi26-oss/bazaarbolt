@@ -67,7 +67,7 @@ export default function RiderAccountPage() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       <div className="px-2">
-        <h2 className="text-3xl font-headline font-black text-zinc-900 tracking-tight italic">Rider Profile</h2>
+        <h2 className="text-3xl font-headline font-black text-zinc-900 tracking-tight">Rider Profile</h2>
         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">MANAGE YOUR CREDENTIALS</p>
       </div>
 

@@ -40,7 +40,7 @@ export default function AdminLoginPage() {
              <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-primary/20 rotate-12">
                 <span className="material-symbols-outlined text-zinc-900 font-black text-3xl">bolt</span>
              </div>
-             <h1 className="text-3xl font-headline font-black text-white italic tracking-tight uppercase">Security Vault</h1>
+             <h1 className="text-3xl font-headline font-black text-white tracking-tight uppercase">Security Vault</h1>
              <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mt-2">BazaarBolt Admin Infrastructure</p>
           </div>
 

@@ -18,6 +18,8 @@ export default function CheckoutPage() {
   const [placingOrder, setPlacingOrder] = useState(false);
   const [recommendations, setRecommendations] = useState<Product[]>([]);
   const [instruction, setInstruction] = useState<string | null>(null);
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
 
   // Bill Calculations
   const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
@@ -40,14 +42,11 @@ export default function CheckoutPage() {
 
   const total = (subtotal - discountAmount) + tax + deliveryCharge + smallCartCharge + handlingFee + customChargesTotal;
 
-  // Fetch Recommendations based on cart category
+  // Fetch Recommendations
   useEffect(() => {
     if (cart.length === 0) return;
     const cat = cart[0].category;
-    const q = query(
-      collection(db, "products"), 
-      where("category", "==", cat)
-    );
+    const q = query(collection(db, "products"), where("category", "==", cat));
     const unsub = onSnapshot(q, (snap) => {
       const items = snap.docs
         .map(d => ({ id: d.id, ...d.data() } as Product))
@@ -57,6 +56,16 @@ export default function CheckoutPage() {
     });
     return () => unsub();
   }, [cart]);
+
+  // Fetch Delivery Slots
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "settings", "delivery"), (snap) => {
+      if (snap.exists()) {
+        setAvailableSlots(snap.data().slots || []);
+      }
+    });
+    return () => unsub();
+  }, []);
 
   const handleCheckout = async () => {
     if (!user) {
@@ -70,13 +79,17 @@ export default function CheckoutPage() {
         router.push("/");
         return;
     }
+    if (!selectedSlot) {
+        toast.error("Please select a delivery slot");
+        return;
+    }
     if (!settings?.storeOpen) {
       toast.error("Store is currently closed.");
       return;
     }
 
     setPlacingOrder(true);
-    const toastId = toast.loading("Processing transaction...");
+    const toastId = toast.loading("Processing order...");
 
     try {
       const orderRef = doc(collection(db, "orders"));
@@ -116,7 +129,8 @@ export default function CheckoutPage() {
           paymentMethod: "COD",
           instruction,
           deliveryCode,
-          deliveryAddress: selectedAddress, // This is now the Full Object
+          deliverySlot: selectedSlot,
+          deliveryAddress: selectedAddress,
           createdAt: new Date().toISOString(),
           phoneNumber: user.phoneNumber || "+91 00000 00000",
           breakdown: {
@@ -131,7 +145,7 @@ export default function CheckoutPage() {
         transaction.set(orderRef, orderData);
       });
 
-      toast.success("Lightning Fast Order Bolted! ⚡️", { id: toastId });
+      toast.success("Order Placed Successfully! ⚡️", { id: toastId });
       clearCart();
       router.push(`/orders`); 
     } catch (error: any) {
@@ -160,14 +174,6 @@ export default function CheckoutPage() {
     );
   };
 
-  if (cart.length === 0) return (
-     <div className="min-h-screen flex flex-col items-center justify-center p-10 text-center bg-zinc-50">
-        <span className="material-symbols-outlined text-zinc-200 text-8xl mb-6">shopping_bag</span>
-        <h2 className="text-2xl font-black text-zinc-900 mb-2 italic uppercase">Cart is empty</h2>
-        <button onClick={() => router.push("/")} className="bg-primary text-zinc-900 px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest mt-4">Go Shop</button>
-     </div>
-  );
-
   const displayAddress = selectedAddress 
     ? `${selectedAddress.line1}, ${selectedAddress.city}` 
     : "No Address Set";
@@ -179,126 +185,173 @@ export default function CheckoutPage() {
         <button onClick={() => router.back()} className="p-2 mr-2">
           <span className="material-symbols-outlined font-bold text-zinc-900">arrow_back</span>
         </button>
-        <h1 className="text-lg font-black font-headline text-zinc-900 tracking-tighter uppercase italic">CHECKOUT</h1>
+        <h1 className="text-lg font-black font-headline text-zinc-900 tracking-tighter uppercase">CHECKOUT</h1>
       </header>
 
-      <div className="pt-20 space-y-3 px-4">
-        {/* Recommendation Section */}
-        {recommendations.length > 0 && (
-          <section className="bg-white rounded-3xl p-5 shadow-sm border border-zinc-100">
-             <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-900 mb-4">You might also like</h3>
-             <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
-                {recommendations.map(p => <RecCard key={p.id} product={p} />)}
-             </div>
-          </section>
-        )}
+      {cart.length === 0 ? (
+        <div className="pt-[140px] flex flex-col items-center justify-center p-10 text-center">
+           <span className="material-symbols-outlined text-zinc-200 text-8xl mb-6">shopping_bag</span>
+           <h2 className="text-2xl font-black text-zinc-900 mb-2 uppercase">Cart is empty</h2>
+           <button onClick={() => router.push("/")} className="bg-primary text-zinc-900 px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest mt-4">Go Shop</button>
+        </div>
+      ) : (
+        <>
+          <div className="pt-20 space-y-3 px-4">
+            {/* Recommendation Section */}
+            {recommendations.length > 0 && (
+              <section className="bg-white rounded-3xl p-5 shadow-sm border border-zinc-100">
+                 <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-900 mb-4">You might also like</h3>
+                 <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
+                    {recommendations.map(p => <RecCard key={p.id} product={p} />)}
+                 </div>
+              </section>
+            )}
 
-        {/* Bill Details */}
-        <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100">
-           <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-6 font-headline">Bill details</h3>
-           <div className="space-y-4">
-              <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
-                 <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-sm">sticky_note_2</span>
-                    <span className="uppercase tracking-widest">Items total</span>
+            {/* Delivery Slot Selection */}
+            <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100">
+               <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-900 mb-4 font-headline">Select Delivery Slot</h3>
+               {availableSlots.length > 0 ? (
+                 <div className="grid grid-cols-1 gap-2">
+                    {availableSlots.map(slot => (
+                      <button 
+                        key={slot}
+                        onClick={() => setSelectedSlot(slot)}
+                        className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${selectedSlot === slot ? 'bg-primary/5 border-primary shadow-sm' : 'bg-zinc-50 border-zinc-100 text-zinc-500'}`}
+                      >
+                        <span className="text-xs font-black uppercase tracking-tight">{slot}</span>
+                        {selectedSlot === slot && <span className="material-symbols-outlined text-primary text-sm">check_circle</span>}
+                      </button>
+                    ))}
                  </div>
-                 <span className="text-zinc-900 font-black">₹{subtotal.toFixed(0)}</span>
-              </div>
-              <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
-                 <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-sm">delivery_dining</span>
-                    <span className="uppercase tracking-widest">Delivery charge</span>
-                 </div>
-                 <span className="text-zinc-900 font-black">{deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`}</span>
-              </div>
-              <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
-                 <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-sm">shopping_basket</span>
-                    <span className="uppercase tracking-widest">Handling charge</span>
-                 </div>
-                 <span className="text-zinc-900 font-black">₹{handlingFee}</span>
-              </div>
-              {smallCartCharge > 0 && (
-                <div className="flex flex-col gap-1">
+               ) : (
+                 <p className="text-[10px] font-bold text-zinc-400 uppercase">No slots available right now.</p>
+               )}
+            </section>
+
+            {/* Bill Details */}
+            <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100">
+               <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-6 font-headline">Bill details</h3>
+               <div className="space-y-4">
                   <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
-                    <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-sm">shopping_cart_checkout</span>
-                        <span className="uppercase tracking-widest">Small cart charge</span>
-                    </div>
-                    <span className="text-zinc-900 font-black">₹{smallCartCharge}</span>
+                     <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-sm">sticky_note_2</span>
+                        <span className="uppercase tracking-widest">Items total</span>
+                     </div>
+                     <span className="text-zinc-900 font-black">₹{subtotal.toFixed(0)}</span>
                   </div>
-                </div>
-              )}
-              {settings?.customCharges?.map((c, i) => (
-                <div key={i} className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
-                   <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-sm">add_circle</span>
-                      <span className="uppercase tracking-widest">{c.label}</span>
-                   </div>
-                   <span className="text-zinc-900 font-black">₹{c.amount}</span>
-                </div>
-              ))}
-              <div className="pt-4 border-t border-zinc-50 flex justify-between items-center text-sm font-black text-zinc-900">
-                 <span className="uppercase tracking-widest">Grand total</span>
-                 <span className="text-xl tracking-tighter">₹{total.toFixed(0)}</span>
-              </div>
-           </div>
-        </section>
+                  <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
+                     <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-sm">delivery_dining</span>
+                        <span className="uppercase tracking-widest">Delivery charge</span>
+                     </div>
+                     <span className="text-zinc-900 font-black">{deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
+                     <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-sm">shopping_basket</span>
+                        <span className="uppercase tracking-widest">Handling charge</span>
+                     </div>
+                     <span className="text-zinc-900 font-black">₹{handlingFee}</span>
+                  </div>
+                  {smallCartCharge > 0 && (
+                    <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
+                      <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-sm">shopping_cart_checkout</span>
+                          <span className="uppercase tracking-widest">Small cart charge</span>
+                      </div>
+                      <span className="text-zinc-900 font-black">₹{smallCartCharge}</span>
+                    </div>
+                  )}
+                  {settings?.customCharges?.map((c, i) => (
+                    <div key={i} className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
+                       <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-sm">add_circle</span>
+                          <span className="uppercase tracking-widest">{c.label}</span>
+                       </div>
+                       <span className="text-zinc-900 font-black">₹{c.amount}</span>
+                    </div>
+                  ))}
+                  <div className="pt-4 border-t border-zinc-50 flex justify-between items-center text-sm font-black text-zinc-900">
+                     <span className="uppercase tracking-widest">Grand total</span>
+                     <span className="text-xl tracking-tighter">₹{total.toFixed(0)}</span>
+                  </div>
+               </div>
+            </section>
 
-        {/* Delivery Instructions */}
-        <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100">
-           <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-900 mb-6 font-headline">Delivery Instructions</h3>
-           <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
-              {[
-                {id: 'record', icon: 'mic', label: 'Record instruction'},
-                {id: 'door', icon: 'door_open', label: 'Leave at door'},
-                {id: 'guard', icon: 'guardian', label: 'Leave with guard'},
-              ].map(opt => (
-                <button 
-                  key={opt.id}
-                  onClick={() => setInstruction(opt.id === instruction ? null : opt.id)}
-                  className={`flex flex-col items-center justify-center min-w-[100px] h-[100px] rounded-2xl border transition-all ${instruction === opt.id ? 'bg-primary/5 border-primary shadow-inner' : 'bg-zinc-50 border-zinc-100 text-zinc-400'}`}
-                >
-                   <span className="material-symbols-outlined mb-2 text-2xl" style={{fontVariationSettings: instruction === opt.id ? "'FILL' 1" : ""}}>{opt.icon}</span>
-                   <span className="text-[8px] font-black uppercase tracking-widest text-center px-2">{opt.label}</span>
-                </button>
-              ))}
-           </div>
-        </section>
+            {/* Payment Mode Selection */}
+            <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100">
+               <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-900 mb-6 font-headline">Payment Mode</h3>
+               <div className="bg-green-50 border-2 border-green-100 rounded-2xl p-5 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                     <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-green-600 shadow-sm">
+                        <span className="material-symbols-outlined">payments</span>
+                     </div>
+                     <div>
+                        <p className="text-xs font-black uppercase text-zinc-900">Cash on Delivery</p>
+                        <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Pay at your doorstep</p>
+                     </div>
+                  </div>
+                  <span className="material-symbols-outlined text-green-600">check_circle</span>
+               </div>
+            </section>
 
-        {/* Policy section */}
-        <div className="bg-zinc-100 rounded-2xl p-4 opacity-60">
-           <p className="text-[9px] font-black text-zinc-900 uppercase tracking-widest mb-1">Cancellation Policy</p>
-           <p className="text-[8px] font-bold text-zinc-500 leading-relaxed">Once order placed, cancellation maybe subject to fee. In case of unexpected delays, a complete refund will be provided.</p>
-        </div>
-      </div>
+            {/* Delivery Instructions */}
+            <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100">
+               <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-900 mb-6 font-headline">Delivery Instructions</h3>
+               <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
+                  {[
+                    {id: 'record', icon: 'mic', label: 'Record instruction'},
+                    {id: 'door', icon: 'door_open', label: 'Leave at door'},
+                    {id: 'guard', icon: 'guardian', label: 'Leave with guard'},
+                  ].map(opt => (
+                    <button 
+                      key={opt.id}
+                      onClick={() => setInstruction(opt.id === instruction ? null : opt.id)}
+                      className={`flex flex-col items-center justify-center min-w-[100px] h-[100px] rounded-2xl border transition-all ${instruction === opt.id ? 'bg-primary/5 border-primary shadow-inner' : 'bg-zinc-50 border-zinc-100 text-zinc-400'}`}
+                    >
+                       <span className="material-symbols-outlined mb-2 text-2xl" style={{fontVariationSettings: instruction === opt.id ? "'FILL' 1" : ""}}>{opt.icon}</span>
+                       <span className="text-[8px] font-black uppercase tracking-widest text-center px-2">{opt.label}</span>
+                    </button>
+                  ))}
+               </div>
+            </section>
 
-      {/* Floating Place Order Bar */}
-      <div className="fixed bottom-0 left-0 w-full bg-white border-t border-zinc-100 p-4 z-[60] shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-        <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
-           <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-lg text-zinc-900" style={{fontVariationSettings: "'FILL' 1"}}>home</span>
-                <p className="text-[10px] font-black text-zinc-900 uppercase">Delivering to Home</p>
-              </div>
-              <p className="text-[8px] font-bold text-zinc-400 truncate max-w-[140px] ml-6">{displayAddress}</p>
-           </div>
-           <button 
-             onClick={handleCheckout}
-             disabled={placingOrder}
-             className="flex-1 bg-green-600 text-white h-14 rounded-xl flex items-center justify-between px-6 active:scale-[0.98] transition-all disabled:opacity-50"
-           >
-              <div className="flex flex-col items-start leading-none">
-                 <span className="text-[14px] font-black">₹{total.toFixed(0)}</span>
-                 <span className="text-[8px] font-bold uppercase tracking-widest opacity-80">TOTAL</span>
-              </div>
-              <div className="flex items-center gap-2">
-                 <span className="text-[14px] font-black uppercase tracking-widest">{placingOrder ? 'Processing...' : 'Place Order'}</span>
-                 <span className="material-symbols-outlined text-sm">arrow_right</span>
-              </div>
-           </button>
-        </div>
-      </div>
+            {/* Policy section */}
+            <div className="bg-zinc-100 rounded-2xl p-4 opacity-60">
+               <p className="text-[9px] font-black text-zinc-900 uppercase tracking-widest mb-1">Cancellation Policy</p>
+               <p className="text-[8px] font-bold text-zinc-500 leading-relaxed">Once order placed, cancellation maybe subject to fee. In case of unexpected delays, a complete refund will be provided.</p>
+            </div>
+          </div>
+
+          {/* Floating Place Order Bar */}
+          <div className="fixed bottom-0 left-0 w-full bg-white border-t border-zinc-100 p-4 z-[60] shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+            <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
+               <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-lg text-zinc-900" style={{fontVariationSettings: "'FILL' 1"}}>home</span>
+                    <p className="text-[10px] font-black text-zinc-900 uppercase">{selectedSlot ? `Deliver ${selectedSlot.split(' ')[0]}` : 'Set Slot'}</p>
+                  </div>
+                  <p className="text-[8px] font-bold text-zinc-400 truncate max-w-[140px] ml-6">{displayAddress}</p>
+               </div>
+               <button 
+                 onClick={handleCheckout}
+                 disabled={placingOrder}
+                 className="flex-1 bg-green-600 text-white h-14 rounded-xl flex items-center justify-between px-6 active:scale-[0.98] transition-all disabled:opacity-50"
+               >
+                  <div className="flex flex-col items-start leading-none">
+                     <span className="text-[14px] font-black">₹{total.toFixed(0)}</span>
+                     <span className="text-[8px] font-bold uppercase tracking-widest opacity-80">TOTAL</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                     <span className="text-[14px] font-black uppercase tracking-widest">{placingOrder ? 'Processing...' : 'Place Order'}</span>
+                     <span className="material-symbols-outlined text-sm">arrow_right</span>
+                  </div>
+               </button>
+            </div>
+          </div>
+        </>
+      )}
     </main>
   );
 }
+
