@@ -1,0 +1,154 @@
+"use client";
+
+import { useAuth } from "@/components/AuthProvider";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
+import toast from "react-hot-toast";
+import { useStore } from "@/store/useStore";
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { role, user, signOut, loading: authLoading } = useAuth();
+  const { initSettings } = useStore();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    const unsub = initSettings();
+    return () => unsub();
+  }, [initSettings]);
+
+  const nav = [
+    { label: "Dashboard", href: "/admin", icon: "dashboard" },
+    { label: "Orders", href: "/admin/orders", icon: "shopping_bag" },
+    { label: "Inventory", href: "/admin/products", icon: "inventory_2" },
+    { label: "Personnel", href: "/admin/riders", icon: "delivery_dining" },
+    { label: "Categories", href: "/admin/categories", icon: "category" },
+    { label: "Coupons", href: "/admin/coupons", icon: "local_activity" },
+    { label: "Payments", href: "/admin/payments", icon: "payments" },
+    { label: "Store Settings", href: "/admin/settings", icon: "settings" },
+  ];
+
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user || role !== 'admin') {
+        if (pathname !== '/admin/login') {
+          router.push("/admin/login");
+        }
+      } else if (pathname === '/admin/login') {
+          router.push("/admin");
+      }
+    }
+  }, [user, role, authLoading, pathname, router]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+         <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
+      </div>
+    );
+  }
+
+  // If at login page and role is admin, the useEffect will redirect.
+  // We can render children at login page without sidebar.
+  if (pathname === '/admin/login') {
+     return <>{children}</>;
+  }
+
+  // If not admin and not at login page, redirecting anyway but return null to avoid flicker
+  if (role !== 'admin') {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-[#F8F9FA] flex">
+      {/* Sidebar */}
+      <aside className="w-72 bg-zinc-900 flex flex-col h-screen sticky top-0 shadow-2xl z-50">
+        <div className="p-8">
+           <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center p-1 shadow-lg shadow-primary/20">
+                 <span className="material-symbols-outlined text-zinc-900 font-black">bolt</span>
+              </div>
+              <h1 className="text-xl font-black italic text-white font-headline tracking-tighter">BazaarBolt</h1>
+           </div>
+           <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Admin Central</p>
+        </div>
+
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto hide-scrollbar">
+          {nav.map(item => {
+            const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
+            return (
+              <Link key={item.href} href={item.href} className={`flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 group
+                ${isActive 
+                  ? 'bg-primary text-zinc-900 shadow-lg shadow-primary/20' 
+                  : 'text-zinc-500 hover:bg-white/5 hover:text-white'}
+              `}>
+                <span className={`material-symbols-outlined text-[20px] transition-transform group-hover:scale-110 ${isActive ? 'font-bold' : ''}`} style={{fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0"}}>
+                   {item.icon}
+                </span>
+                <span className={`text-xs font-black uppercase tracking-widest ${isActive ? 'opacity-100' : 'opacity-80'}`}>
+                   {item.label}
+                </span>
+                {isActive && (
+                   <div className="ml-auto w-1.5 h-1.5 bg-zinc-900 rounded-full"></div>
+                )}
+              </Link>
+            )
+          })}
+        </nav>
+
+        <div className="p-6 mt-auto">
+          <div className="bg-white/5 rounded-3xl p-5 mb-6 border border-white/5">
+             <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-zinc-800 rounded-full flex items-center justify-center border border-white/10">
+                   <span className="material-symbols-outlined text-zinc-400 text-xl">person</span>
+                </div>
+                <div className="flex flex-col">
+                   <span className="text-xs font-black text-white truncate max-w-[120px]">{user?.email?.split('@')[0] || "Admin"}</span>
+                   <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Master Access</span>
+                </div>
+             </div>
+          </div>
+          <button 
+            onClick={() => {
+               signOut();
+               toast.success("Signed out from Admin");
+               router.push("/admin/login");
+            }} 
+            className="flex items-center justify-center gap-3 px-5 py-4 text-red-400 hover:bg-red-500/10 rounded-2xl w-full transition-all font-black uppercase tracking-widest text-[10px] border border-red-500/20 group"
+          >
+            <span className="material-symbols-outlined text-[18px] group-hover:rotate-180 transition-transform duration-500">logout</span>
+            Sign Out
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+         {/* Top Header */}
+         <header className="h-20 bg-white/80 backdrop-blur-md border-b border-zinc-200 px-8 flex items-center justify-between sticky top-0 z-40">
+            <h2 className="text-lg font-headline font-black text-zinc-900 tracking-tight uppercase">
+               {nav.find(n => pathname === n.href || (n.href !== '/admin' && pathname.startsWith(n.href)))?.label || "Admin Console"}
+            </h2>
+            <div className="flex items-center gap-6">
+               <div className="flex items-center gap-2 bg-zinc-100 px-4 py-2 rounded-xl">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Server: Live</span>
+               </div>
+               <button className="w-10 h-10 bg-white border border-zinc-200 rounded-xl flex items-center justify-center hover:bg-zinc-50 transition-colors relative">
+                  <span className="material-symbols-outlined text-zinc-400">notifications</span>
+                  <div className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>
+               </button>
+            </div>
+         </header>
+
+         {/* Scrollable Content */}
+         <main className="flex-1 overflow-y-auto p-8 relative">
+            <div className="max-w-[1200px] mx-auto">
+               {children}
+            </div>
+         </main>
+      </div>
+    </div>
+  );
+}
