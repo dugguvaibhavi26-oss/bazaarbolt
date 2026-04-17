@@ -1,7 +1,6 @@
 "use client";
 
 import React, { Component, ErrorInfo, ReactNode } from "react";
-import { AlertTriangle, RotateCcw } from "lucide-react";
 import Link from "next/link";
 
 interface Props {
@@ -32,21 +31,21 @@ export class ErrorBoundary extends Component<Props, State> {
       if (this.props.fallback) return this.props.fallback;
       
       return (
-        <div className="min-h-screen bg-surface flex items-center justify-center p-6">
-          <div className="bg-white p-10 rounded-[40px] shadow-2xl border border-error-container max-w-lg w-full text-center space-y-6">
-            <div className="mx-auto w-20 h-20 bg-error-container text-error rounded-full flex items-center justify-center shadow-inner">
-              <AlertTriangle size={40} strokeWidth={2.5} />
+        <div className="min-h-screen bg-white flex items-center justify-center p-6">
+          <div className="bg-white p-10 rounded-[40px] shadow-2xl border border-red-100 max-w-lg w-full text-center space-y-6">
+            <div className="mx-auto w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center shadow-inner">
+              <span className="material-symbols-outlined text-5xl">warning</span>
             </div>
             
             <div className="space-y-2">
-              <h1 className="text-3xl font-black text-on-surface tracking-tighter">Application Error</h1>
-              <p className="text-on-surface-variant font-bold text-sm">
+              <h1 className="text-3xl font-black text-zinc-900 tracking-tighter">Application Error</h1>
+              <p className="text-zinc-500 font-bold text-sm">
                 BazaarBolt encountered an unexpected issue in the user interface.
               </p>
             </div>
 
-            <div className="bg-surface-container-low p-5 rounded-3xl border border-outline-variant overflow-hidden">
-               <code className="text-[10px] font-black uppercase tracking-widest text-error block text-left break-words">
+            <div className="bg-zinc-50 p-5 rounded-3xl border border-zinc-100 overflow-hidden">
+               <code className="text-[10px] font-black uppercase tracking-widest text-red-500 block text-left break-words">
                  {this.state.error?.name}: {this.state.error?.message || "Critical UI Failure"}
                </code>
             </div>
@@ -54,9 +53,9 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="pt-4 flex flex-col gap-3">
               <button 
                 onClick={() => window.location.reload()}
-                className="w-full flex items-center justify-center gap-2 bg-primary text-on-primary px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:opacity-90 transition-all shadow-lg active:scale-95"
+                className="w-full flex items-center justify-center gap-2 bg-zinc-900 text-white px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:opacity-90 transition-all shadow-lg active:scale-95"
               >
-                <RotateCcw size={18} /> Reload Application
+                <span className="material-symbols-outlined text-sm">refresh</span> Reload Application
               </button>
               <Link 
                 href="/" 

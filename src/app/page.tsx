@@ -277,7 +277,18 @@ export default function Home() {
                     <span className={`material-symbols-outlined ${section.iconColor}`} style={{ fontVariationSettings: "'FILL' 1" }}>{section.icon}</span>
                     {section.title}
                   </h3>
-                  <Link href={`/category/${section.title === "Bestsellers" ? "Vegetables" : section.title.split(' ')[section.title.split(' ').length - 1]}`} className="text-[10px] font-black uppercase text-primary tracking-widest underline underline-offset-4">See All</Link>
+                  <Link 
+                     href={`/category/${
+                        section.title === "Bestsellers" ? "Vegetables" : 
+                        section.title === "Fresh Veggies" ? "Vegetables" : 
+                        section.title === "Snack Station" ? "Munchies" : 
+                        section.title === "Pure Dairy" ? "Dairy" : 
+                        "Beverages"
+                     }`} 
+                     className="text-[10px] font-black uppercase text-primary tracking-widest underline underline-offset-4"
+                  >
+                     See All
+                  </Link>
                 </div>
                 <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-2">{section.products.map(p => <ProductCard key={p.id} product={p} />)}</div>
               </section>

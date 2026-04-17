@@ -14,6 +14,12 @@ export default function AdminSettings() {
     announcement: "",
     primaryColor: "#22c55e",
     taxPercent: 5,
+    handlingCharge: 5,
+    deliveryFee: 30,
+    freeDeliveryThreshold: 500,
+    smallCartFee: 15,
+    smallCartThreshold: 100,
+    customCharges: [],
     codEnabled: true,
     coupon: { code: "", discount: 0 }
   });

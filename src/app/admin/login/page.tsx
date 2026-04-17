@@ -4,18 +4,20 @@ import { useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { signIn, role } = useAuth();
+  const { role } = useAuth();
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const toastId = toast.loading("Verifying Admin Credentials...");
     try {
-      await signIn(email, password);
+      await signInWithEmailAndPassword(auth, email, password);
       // Auth provider will update role. We can check locally after a short delay or just depend on layout redirect.
       toast.success("Identity Verified. Welcome back.", { id: toastId });
       router.push("/admin");
@@ -23,6 +25,7 @@ export default function AdminLoginPage() {
       toast.error("Access Denied: " + error.message, { id: toastId });
     }
   };
+
 
   return (
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-6 relative overflow-hidden">

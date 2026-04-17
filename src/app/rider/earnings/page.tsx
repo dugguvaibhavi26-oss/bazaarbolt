@@ -16,13 +16,13 @@ export default function RiderEarnings() {
     if (!user) return;
     const q = query(
       collection(db, "orders"),
-      where("riderId", "==", user.uid),
-      where("status", "==", "DELIVERED")
+      where("riderId", "==", user.uid)
     );
 
     const unsub = onSnapshot(q, (snap) => {
       try {
-        setCompletedOrders(mapQuerySnapshot(snap, mapOrder));
+        const mapped = mapQuerySnapshot(snap, mapOrder).filter(o => o.status === "DELIVERED");
+        setCompletedOrders(mapped);
       } catch (e) {
         console.error("Mapping error in Earnings:", e);
       }

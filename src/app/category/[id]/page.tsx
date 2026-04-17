@@ -16,12 +16,14 @@ export default function CategoryPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const q = query(collection(db, "products"), where("active", "==", true), where("category", "==", id));
+    if (!id) return;
+    const decodedId = decodeURIComponent(id as string);
+    const q = query(collection(db, "products"), where("category", "==", decodedId));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const prods: Product[] = [];
       snapshot.forEach(doc => {
         const data = doc.data();
-        if (!data.isDeleted) {
+        if (!data.isDeleted && data.active) {
           prods.push({ id: doc.id, ...data } as Product);
         }
       });
@@ -93,7 +95,7 @@ export default function CategoryPage() {
         </button>
         <div>
            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] leading-none mb-1">CATEGORY</p>
-           <h1 className="text-xl font-headline font-black text-zinc-900 tracking-tighter uppercase italic leading-none">{id}</h1>
+           <h1 className="text-xl font-headline font-black text-zinc-900 tracking-tighter uppercase italic leading-none">{id ? decodeURIComponent(id as string) : ""}</h1>
         </div>
       </header>
 

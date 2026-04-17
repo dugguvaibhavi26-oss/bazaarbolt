@@ -56,6 +56,7 @@ export const mapOrder = (doc: DocumentSnapshot<DocumentData>): Order => {
         image: typeof item.image === "string" ? item.image : "",
         category: typeof item.category === "string" ? item.category : "",
         quantity: item.quantity,
+        stock: typeof item.stock === "number" ? item.stock : 0,
       };
     }),
     subtotal: typeof data.subtotal === "number" ? data.subtotal : 0,

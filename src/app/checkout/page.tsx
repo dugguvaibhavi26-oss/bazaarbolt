@@ -46,14 +46,13 @@ export default function CheckoutPage() {
     const cat = cart[0].category;
     const q = query(
       collection(db, "products"), 
-      where("active", "==", true), 
-      where("category", "==", cat),
-      limit(6)
+      where("category", "==", cat)
     );
     const unsub = onSnapshot(q, (snap) => {
       const items = snap.docs
         .map(d => ({ id: d.id, ...d.data() } as Product))
-        .filter(p => !cart.some(ci => ci.id === p.id));
+        .filter(p => !p.isDeleted && p.active && !cart.some(ci => ci.id === p.id))
+        .slice(0, 6);
       setRecommendations(items);
     });
     return () => unsub();
