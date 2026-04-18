@@ -34,5 +34,25 @@ if (!admin.apps.length) {
   }
 }
 
-export const adminDb = admin.firestore();
-export const adminAuth = admin.auth();
+export const getAdminDb = () => {
+  if (admin.apps.length === 0) {
+    throw new Error("Firebase Admin not initialized. Check your environment variables.");
+  }
+  return admin.firestore();
+};
+
+export const getAdminAuth = () => {
+  if (admin.apps.length === 0) {
+    throw new Error("Firebase Admin not initialized. Check your environment variables.");
+  }
+  return admin.auth();
+};
+
+// Maintain compatibility for now but use dummy objects if not initialized to prevent crash during top-level analysis
+export const adminDb = (typeof window === "undefined" && admin.apps.length > 0) 
+  ? admin.firestore() 
+  : null as unknown as admin.firestore.Firestore;
+
+export const adminAuth = (typeof window === "undefined" && admin.apps.length > 0) 
+  ? admin.auth() 
+  : null as unknown as admin.auth.Auth;

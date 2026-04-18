@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { sendToTopic } from "@/lib/notifications";
 import { adminAuth } from "@/lib/firebaseAdmin";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
   try {
     const authHeader = req.headers.get("authorization");

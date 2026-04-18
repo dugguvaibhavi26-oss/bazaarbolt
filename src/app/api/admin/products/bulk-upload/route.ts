@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { adminDb, adminAuth } from "@/lib/firebaseAdmin";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request: Request) {
   try {
     // 1. Verify Authorization Header
