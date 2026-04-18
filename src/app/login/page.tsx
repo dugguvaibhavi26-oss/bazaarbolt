@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
@@ -14,7 +14,7 @@ import toast from "react-hot-toast";
 import Link from "next/link";
 import { useAuth } from "@/components/AuthProvider";
 
-export default function LoginPage() {
+function LoginContent() {
   const [isLogin, setIsLogin] = useState(true);
   const [showProfileCompletion, setShowProfileCompletion] = useState(false);
   const [email, setEmail] = useState("");
@@ -337,5 +337,17 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }
