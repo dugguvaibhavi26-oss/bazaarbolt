@@ -81,29 +81,40 @@ function LoginContent() {
     }
   };
 
-  const handleGoogleAuth = async () => {
+   const handleGoogleAuth = async () => {
     setLoading(true);
     const provider = new GoogleAuthProvider();
     const toastId = toast.loading("Connecting Google...");
 
     try {
-      const result = await signInWithPopup(auth, provider);
+      let result;
+      try {
+        result = await signInWithPopup(auth, provider);
+      } catch (popupError: any) {
+        // If popup is blocked or fails, try redirect
+        if (popupError.code === 'auth/popup-blocked' || popupError.code === 'auth/cancelled-popup-request') {
+          toast.loading("Popup blocked. Redirecting...", { id: toastId });
+          const { signInWithRedirect } = await import("firebase/auth");
+          await signInWithRedirect(auth, provider);
+          return; // Redirect will handle the rest
+        }
+        throw popupError;
+      }
+
       const user = result.user;
       
       // Check if user exists in Firestore
       const userDoc = await getDoc(doc(db, "users", user.uid));
       
       if (!userDoc.exists() || !userDoc.data()?.phoneNumber || !userDoc.data()?.name) {
-        // Need to ask for details
         setShowProfileCompletion(true);
         setName(user.displayName || "");
         toast.success("Welcome! Please complete your profile.", { id: toastId });
       } else {
         toast.success("Signed in with Google", { id: toastId });
-        // Redirection will happen in useEffect
       }
     } catch (error: any) {
-      console.error(error);
+      console.error("Google Auth Error:", error);
       toast.error(error.message || "Google sign-in failed", { id: toastId });
     } finally {
       setLoading(false);

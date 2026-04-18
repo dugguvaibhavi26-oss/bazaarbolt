@@ -7,6 +7,7 @@ import { runTransaction, doc, collection, query, where, limit, onSnapshot } from
 import { db } from "@/lib/firebase";
 import { useEffect, useState, useRef } from "react";
 import toast from "react-hot-toast";
+import { triggerNotification } from "@/lib/notificationClient";
 import { Product } from "@/types";
 import Link from "next/link";
 
@@ -155,6 +156,21 @@ export default function CheckoutPage() {
       });
 
       toast.success("Order Placed Successfully! ⚡️", { id: toastId });
+      
+      // Notify customer
+      triggerNotification({
+        userId: user.uid,
+        title: "Order Confirmed ✅",
+        body: `Your order has been placed. Current status: PLACED`,
+      });
+
+      // Notify all riders
+      triggerNotification({
+        topic: "riders",
+        title: "New Delivery 🚴",
+        body: "You have a new order to deliver",
+      });
+
       clearCart();
       router.push(`/orders`); 
     } catch (error: any) {

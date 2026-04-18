@@ -8,6 +8,7 @@ import { Order, OrderStatus } from "@/types";
 import { mapOrder } from "@/lib/mappers";
 import { useRouter, useParams } from "next/navigation";
 import toast from "react-hot-toast";
+import { triggerNotification } from "@/lib/notificationClient";
 
 export default function RiderOrderDetail() {
   const { id } = useParams();
@@ -58,6 +59,16 @@ export default function RiderOrderDetail() {
       if (assignRider && user) updatePayload.riderId = user.uid;
       await updateDoc(doc(db, "orders", order.id!), updatePayload);
       toast.success(`Order ${status}`);
+
+      // Notify customer about status change
+      triggerNotification({
+        userId: order.userId,
+        title: status === "PICKED" ? "Order Shipped 🚚" : (status === "ON_THE_WAY" ? "Out for Delivery 🚀" : `Order ${status}`),
+        body: status === "PICKED" ? "Your order has been picked up and is being prepared for delivery." : 
+              status === "ON_THE_WAY" ? "Our rider is on the way to your location." : 
+              `Your order status has been updated to ${status}`,
+      });
+
     } catch (error: any) {
       toast.error(error.message || "Update failed");
     } finally {
@@ -75,6 +86,14 @@ export default function RiderOrderDetail() {
     try {
       await updateDoc(doc(db, "orders", order.id), { status: "DELIVERED" });
       toast.success("Job Completed! ⚡️", { id: toastId });
+      
+      // Notify customer
+      triggerNotification({
+        userId: order.userId,
+        title: "Delivered 🎉",
+        body: "Your order has been delivered successfully. Enjoy your products!",
+      });
+
       router.push("/rider");
     } catch (error: any) {
       toast.error(error.message || "Error completing job", { id: toastId });

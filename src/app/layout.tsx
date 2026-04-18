@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   description: "Get groceries delivered in minutes",
 };
 
+import { PushNotificationManager } from "@/components/PushNotificationManager";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,6 +28,7 @@ export default function RootLayout({
       <body className={`${inter.className} ${plusJakartaSans.className} min-h-screen bg-surface font-body text-on-surface antialiased`}>
         <ErrorBoundary>
           <AuthProvider>
+            <PushNotificationManager />
             {children}
           </AuthProvider>
           <Toaster position="top-center" />
