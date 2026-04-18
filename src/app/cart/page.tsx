@@ -59,8 +59,8 @@ export default function CartPage() {
       {/* Announcement Banner */}
       <div className="fixed top-0 left-0 w-full h-8 bg-black text-white flex items-center overflow-hidden z-[60]">
         <div className="flex whitespace-nowrap animate-marquee">
-          <span className="text-[10px] font-black uppercase tracking-widest px-4">{settings?.announcement || "⚡️ Free delivery above ₹99 • Rapid delivery in 10 mins ⚡️"}</span>
-          <span className="text-[10px] font-black uppercase tracking-widest px-4">{settings?.announcement || "⚡️ Free delivery above ₹99 • Rapid delivery in 10 mins ⚡️"}</span>
+          <span className="text-[10px] font-black uppercase tracking-widest px-4">{settings?.announcement || "⚡️ Free delivery above ₹99 • Reliable Slot Delivery ⚡️"}</span>
+          <span className="text-[10px] font-black uppercase tracking-widest px-4">{settings?.announcement || "⚡️ Free delivery above ₹99 • Reliable Slot Delivery ⚡️"}</span>
         </div>
       </div>
 
@@ -179,7 +179,7 @@ export default function CartPage() {
                   )}
 
                   <div className="flex justify-between items-center text-[10px] font-bold text-zinc-500">
-                    <span className="uppercase tracking-widest">Rapid Delivery Fee</span>
+                    <span className="uppercase tracking-widest">Delivery Fee</span>
                     <div className="flex items-center gap-2">
                        {deliveryFee === 0 && settings?.deliveryFee && <span className="text-zinc-300 line-through text-[8px]">₹{settings.deliveryFee}</span>}
                        <span className="text-primary font-black uppercase text-[8px] tracking-widest">{deliveryFee === 0 ? 'ZERO FEE' : `₹${deliveryFee}`}</span>

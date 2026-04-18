@@ -14,6 +14,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   role: "customer" | "admin" | "rider";
+  userData: any | null;
   signInAsGuest: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   role: "customer",
+  userData: null,
   signInAsGuest: async () => {},
   signOut: async () => {},
 });
@@ -32,36 +34,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<"customer" | "admin" | "rider">("customer");
+  const [userData, setUserData] = useState<any | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    let unsubscribeUserDoc: (() => void) | undefined;
+    
+    const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       
       if (currentUser) {
-        // Use onSnapshot for real-time role updates if needed, 
-        // or just getDoc for initial load
+        // Use onSnapshot for real-time profile updates
         const userRef = doc(db, "users", currentUser.uid);
-        const userDoc = await getDoc(userRef);
         
-        if (userDoc.exists()) {
-          setRole(userDoc.data().role || "customer");
-        } else {
-          // Initialize user document if missing
-          const defaultData = {
-            email: currentUser.email,
-            role: "customer",
-            createdAt: new Date().toISOString(),
-          };
-          await setDoc(userRef, defaultData);
-          setRole("customer");
-        }
+        unsubscribeUserDoc = onSnapshot(userRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setUserData(data);
+            setRole(data.role || "customer");
+          } else {
+            // Document might not exist yet (during signup)
+            setUserData(null);
+            setRole("customer");
+          }
+          setLoading(false);
+        });
       } else {
+        setUserData(null);
         setRole("customer");
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeUserDoc) unsubscribeUserDoc();
+    };
   }, []);
 
   const signInAsGuest = async () => {

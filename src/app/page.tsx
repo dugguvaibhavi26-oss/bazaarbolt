@@ -150,8 +150,8 @@ export default function Home() {
     <div className="bg-white min-h-screen relative overflow-x-hidden">
       <div className="fixed top-0 left-0 w-full h-8 bg-black text-white flex items-center overflow-hidden z-[60]">
         <div className="flex whitespace-nowrap animate-marquee">
-          <span className="text-[10px] font-black uppercase tracking-widest px-4">{settings?.announcement || "⚡️ Free delivery above ₹99 • Rapid delivery in 10 mins ⚡️"}</span>
-          <span className="text-[10px] font-black uppercase tracking-widest px-4">{settings?.announcement || "⚡️ Free delivery above ₹99 • Rapid delivery in 10 mins ⚡️"}</span>
+          <span className="text-[10px] font-black uppercase tracking-widest px-4">{settings?.announcement || "⚡️ Free delivery above ₹99 • Reliable Slot Delivery ⚡️"}</span>
+          <span className="text-[10px] font-black uppercase tracking-widest px-4">{settings?.announcement || "⚡️ Free delivery above ₹99 • Reliable Slot Delivery ⚡️"}</span>
         </div>
       </div>
 

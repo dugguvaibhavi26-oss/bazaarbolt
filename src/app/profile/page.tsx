@@ -9,7 +9,7 @@ import { useEffect } from "react";
 import toast from "react-hot-toast";
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth();
+  const { user, loading, userData } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -80,13 +80,14 @@ export default function ProfilePage() {
                     <span className="material-symbols-outlined text-4xl text-primary" style={{fontVariationSettings: "'FILL' 1"}}>account_circle</span>
                  </div>
                  <div>
-                    <h2 className="font-headline font-black text-2xl tracking-tighter leading-tight drop-shadow-md">
-                       {user.displayName || "Customer"}
+                    <h2 className="font-headline font-black text-2xl tracking-tighter leading-tight drop-shadow-md uppercase">
+                       {userData?.name || user.displayName || "Customer"}
                     </h2>
-                    <p className="text-sm font-medium text-zinc-400 mt-1">{user.email}</p>
-                    <div className="mt-3 flex items-center gap-1.5 bg-white/10 w-fit px-2.5 py-1 rounded-lg backdrop-blur-md border border-white/10">
+                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mt-1">{userData?.phoneNumber || "No Phone Connected"}</p>
+                    <p className="text-[10px] font-bold text-zinc-500 truncate max-w-[200px] mt-0.5">{user.email}</p>
+                    <div className="mt-4 flex items-center gap-1.5 bg-white/10 w-fit px-2.5 py-1 rounded-lg backdrop-blur-md border border-white/10">
                        <span className="material-symbols-outlined text-[12px] text-yellow-400" style={{fontVariationSettings: "'FILL' 1"}}>stars</span>
-                       <span className="text-[10px] font-black uppercase tracking-widest text-white">BazaarBolt Member</span>
+                       <span className="text-[9px] font-black uppercase tracking-widest text-white">BazaarBolt Member</span>
                     </div>
                  </div>
               </div>

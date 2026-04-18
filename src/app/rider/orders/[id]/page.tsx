@@ -14,21 +14,33 @@ export default function RiderOrderDetail() {
   const { user } = useAuth();
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
+  const [customerProfile, setCustomerProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [deliveryCode, setDeliveryCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [processing, setProcessing] = useState(false);
 
+
   useEffect(() => {
     if (!id) return;
-    const unsub = onSnapshot(doc(db, "orders", id as string), (snap) => {
+    const unsub = onSnapshot(doc(db, "orders", id as string), async (snap) => {
       if (snap.exists()) {
         try {
-          setOrder(mapOrder(snap));
+          const mappedOrder = mapOrder(snap);
+          setOrder(mappedOrder);
+          
+          if (mappedOrder.userId) {
+            const { getDoc, doc } = await import("firebase/firestore");
+            const userSnap = await getDoc(doc(db, "users", mappedOrder.userId));
+            if (userSnap.exists()) {
+              setCustomerProfile(userSnap.data());
+            }
+          }
         } catch (e) {
           console.error(e);
           toast.error("Failed to parse order data");
         }
+
       } else {
         toast.error("Order not found");
         router.push("/rider");
@@ -113,16 +125,29 @@ export default function RiderOrderDetail() {
       {/* Customer & Address */}
       <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100 space-y-4">
         <div className="flex items-center justify-between border-b border-zinc-50 pb-4">
-          <div>
+          <div className="flex-1">
             <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Customer</p>
-            <p className="font-headline font-black text-zinc-900 uppercase">{order.customerName || 'Customer'}</p>
+            <p className="font-headline font-black text-zinc-900 uppercase tracking-tight leading-tight">
+              {customerProfile?.name || order.customerName || 'Customer'}
+            </p>
+            {(customerProfile?.phoneNumber || order.phoneNumber) && (
+               <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mt-1">
+                  {customerProfile?.phoneNumber || order.phoneNumber}
+               </p>
+            )}
           </div>
-          {order.phoneNumber && (
-            <a href={`tel:${order.phoneNumber}`} className="w-12 h-12 bg-primary text-zinc-900 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 active:scale-90 transition-all">
-              <span className="material-symbols-outlined">call</span>
-            </a>
-          )}
+          <div className="flex gap-2">
+            {(customerProfile?.phoneNumber || order.phoneNumber) && (
+              <a 
+                href={`tel:${customerProfile?.phoneNumber || order.phoneNumber}`} 
+                className="w-12 h-12 bg-primary text-zinc-900 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 active:scale-90 transition-all"
+              >
+                <span className="material-symbols-outlined">call</span>
+              </a>
+            )}
+          </div>
         </div>
+
         
         <div className="flex gap-3">
           <div className="w-10 h-10 bg-zinc-50 rounded-xl flex items-center justify-center shrink-0">

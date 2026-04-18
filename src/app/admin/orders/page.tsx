@@ -41,7 +41,7 @@ export default function AdminOrders() {
     <div className="space-y-8 pb-32">
        <div className="flex items-center justify-between">
           <div>
-             <h3 className="text-2xl font-black text-zinc-900 tracking-tight">Rapid Orders</h3>
+             <h3 className="text-2xl font-black text-zinc-900 tracking-tight">Active Orders</h3>
              <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Real-time order lifecycle management</p>
           </div>
           <div className="flex bg-white p-1 rounded-2xl border border-zinc-200 shadow-sm">

@@ -12,7 +12,8 @@ import Link from "next/link";
 
 export default function CheckoutPage() {
   const { cart, addToCart, updateQuantity, clearCart, settings, activeCoupon, selectedAddress, setSelectedAddress } = useStore();
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
+
   const router = useRouter();
   
   const [placingOrder, setPlacingOrder] = useState(false);
@@ -88,6 +89,12 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!userData?.name || !userData?.phoneNumber) {
+      toast.error("Please update your name and phone number in profile");
+      router.push("/profile");
+      return;
+    }
+
     setPlacingOrder(true);
     const toastId = toast.loading("Processing order...");
 
@@ -119,7 +126,8 @@ export default function CheckoutPage() {
         const deliveryCode = Math.floor(1000 + Math.random() * 9000).toString();
         const orderData = {
           userId: user.uid,
-          customerName: user.displayName || "Customer",
+          customerName: userData?.name || user.displayName || "Customer",
+
           items: cart,
           subtotal,
           discountAmount,
@@ -132,7 +140,8 @@ export default function CheckoutPage() {
           deliverySlot: selectedSlot,
           deliveryAddress: selectedAddress,
           createdAt: new Date().toISOString(),
-          phoneNumber: user.phoneNumber || "+91 00000 00000",
+          phoneNumber: userData?.phoneNumber || user.phoneNumber || "+91 00000 00000",
+
           breakdown: {
             deliveryCharge,
             smallCartCharge,

@@ -155,9 +155,19 @@ export default function AdminProducts() {
                          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1 mb-2 block">Opening Stock</label>
                          <input type="number" required value={newProduct.stock || ""} onChange={e => setNewProduct({...newProduct, stock: parseInt(e.target.value)})} className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all" />
                       </div>
-                      <div>
+                      <div className="col-span-2">
                          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1 mb-2 block">Image URL</label>
                          <input type="text" required value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})} className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all" />
+                      </div>
+                      <div className="col-span-2">
+                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1 mb-2 block">Product Description</label>
+                         <textarea 
+                           value={newProduct.description} 
+                           onChange={e => setNewProduct({...newProduct, description: e.target.value})} 
+                           rows={3}
+                           className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all resize-none"
+                           placeholder="Enter product highlights, usage, etc."
+                         />
                       </div>
                    </div>
                    

@@ -74,10 +74,18 @@ export default function RiderApp() {
                >
                   <div className="flex justify-between items-center">
                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 mb-1">
                            <span className={`w-2.5 h-2.5 rounded-full animate-pulse shadow-lg ${order.status === 'PLACED' ? 'bg-primary' : 'bg-blue-500'}`}></span>
                            <span className="text-xl font-headline font-black text-zinc-900 uppercase tracking-tighter">#{order.id?.slice(-8).toUpperCase()}</span>
                         </div>
+                        
+                        <div className="mb-2">
+                           <p className="text-[11px] font-black text-zinc-900 uppercase leading-none">{order.customerName || 'Customer'}</p>
+                           {order.phoneNumber && (
+                              <p className="text-[9px] font-bold text-zinc-400 tracking-wider mt-0.5">📞 {order.phoneNumber}</p>
+                           )}
+                        </div>
+
                         <div className="flex items-center gap-2 opacity-60">
                            <span className="material-symbols-outlined text-sm text-zinc-400">schedule</span>
                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">

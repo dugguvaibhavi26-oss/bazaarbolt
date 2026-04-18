@@ -79,7 +79,7 @@ export default function SubscriptionsPage() {
           <div className="relative z-10 max-w-sm mx-auto">
              <span className="inline-block bg-primary text-zinc-900 font-extrabold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full mb-6">Upgrade Your Experience</span>
              <h2 className="text-4xl font-headline font-black tracking-tight leading-tight mb-4">Never pay for delivery again.</h2>
-             <p className="text-sm text-zinc-400 font-medium">Join our membership programs to unlock exclusive discounts and unlimited free rapid deliveries.</p>
+             <p className="text-sm text-zinc-400 font-medium">Join our membership programs to unlock exclusive discounts and unlimited free slot deliveries.</p>
           </div>
        </section>
 
