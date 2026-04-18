@@ -15,7 +15,12 @@ if (!admin.apps.length) {
       // Fallback for individual variables if the JSON block is missing
       const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "bazaarbolt-8a1ab";
       const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-      const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+      let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+
+      if (privateKey) {
+        // Handle escaped newlines and remove surrounding quotes if they exist
+        privateKey = privateKey.replace(/\\n/g, "\n").replace(/^"(.*)"$/, "$1");
+      }
 
       if (clientEmail && privateKey) {
         admin.initializeApp({
@@ -26,7 +31,11 @@ if (!admin.apps.length) {
           }),
         });
       } else {
-        console.error("Firebase Admin Error: Missing FIREBASE_SERVICE_ACCOUNT or individual credentials in environment variables.");
+        console.error("Firebase Admin Error: Missing credentials.", {
+            hasEmail: !!clientEmail,
+            hasKey: !!privateKey,
+            projectId
+        });
       }
     }
   } catch (error) {
@@ -48,11 +57,26 @@ export const getAdminAuth = () => {
   return admin.auth();
 };
 
-// Maintain compatibility for now but use dummy objects if not initialized to prevent crash during top-level analysis
-export const adminDb = (typeof window === "undefined" && admin.apps.length > 0) 
-  ? admin.firestore() 
-  : null as unknown as admin.firestore.Firestore;
+// Better pattern for Next.js to avoid build-time crashes but work at runtime
+export const adminDb = new Proxy({} as admin.firestore.Firestore, {
+  get: (target, prop) => {
+    if (typeof window !== "undefined") return undefined;
+    if (admin.apps.length === 0) {
+        // If we are in build time analysis, don't throw yet
+        if (process.env.NEXT_PHASE === 'phase-production-build') return undefined;
+        throw new Error("Firebase Admin SDK not initialized. Check your environment variables.");
+    }
+    return (admin.firestore() as any)[prop];
+  }
+});
 
-export const adminAuth = (typeof window === "undefined" && admin.apps.length > 0) 
-  ? admin.auth() 
-  : null as unknown as admin.auth.Auth;
+export const adminAuth = new Proxy({} as admin.auth.Auth, {
+  get: (target, prop) => {
+    if (typeof window !== "undefined") return undefined;
+    if (admin.apps.length === 0) {
+        if (process.env.NEXT_PHASE === 'phase-production-build') return undefined;
+        throw new Error("Firebase Admin SDK not initialized. Check your environment variables.");
+    }
+    return (admin.auth() as any)[prop];
+  }
+});
