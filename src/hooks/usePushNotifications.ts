@@ -47,8 +47,11 @@ export const usePushNotifications = () => {
       // Show us the notification payload if the app is open on our device
       PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
         console.log('Push received: ' + JSON.stringify(notification));
-        toast.success(notification.title || 'New Notification', {
-            description: notification.body,
+        const message = notification.body 
+          ? `${notification.title}: ${notification.body}`
+          : (notification.title || 'New Notification');
+        
+        toast.success(message, {
             duration: 5000,
         });
       });
