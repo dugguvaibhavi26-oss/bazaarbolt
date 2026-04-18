@@ -5,41 +5,42 @@ if (!admin.apps.length) {
     const serviceAccountVar = process.env.FIREBASE_SERVICE_ACCOUNT;
     
     if (serviceAccountVar) {
-      // Parse the JSON string from the environment variable
       const serviceAccount = JSON.parse(serviceAccountVar);
-      
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
       });
     } else {
-      // Fallback for individual variables if the JSON block is missing
       const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "bazaarbolt-8a1ab";
       const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
       let privateKey = process.env.FIREBASE_PRIVATE_KEY;
 
-      if (privateKey) {
-        // Handle escaped newlines and remove surrounding quotes if they exist
-        privateKey = privateKey.replace(/\\n/g, "\n").replace(/^"(.*)"$/, "$1");
+      // Server-side logging for debugging (safe, doesn't leak secrets)
+      if (!clientEmail || !privateKey) {
+        console.warn("⚠️ Firebase Admin Environment Variables Missing:", {
+          projectId,
+          hasEmail: !!clientEmail,
+          hasKey: !!privateKey,
+        });
       }
 
       if (clientEmail && privateKey) {
+        // Robust formatting for the private key
+        const formattedKey = privateKey
+          .replace(/^"(.*)"$/, '$1') // Remove surrounding quotes
+          .replace(/\\n/g, '\n');    // Convert escaped newlines
+
         admin.initializeApp({
           credential: admin.credential.cert({
             projectId,
             clientEmail,
-            privateKey,
+            privateKey: formattedKey,
           }),
         });
-      } else {
-        console.error("Firebase Admin Error: Missing credentials.", {
-            hasEmail: !!clientEmail,
-            hasKey: !!privateKey,
-            projectId
-        });
+        console.log("✅ Firebase Admin Initialized Successfully");
       }
     }
   } catch (error) {
-    console.error("Firebase admin initialization error", error);
+    console.error("❌ Firebase admin initialization error:", error);
   }
 }
 
