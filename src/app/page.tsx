@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useStore } from "@/store/useStore";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -19,6 +19,7 @@ export default function Home() {
   const { user, role, loading: authLoading } = useAuth();
   const router = useRouter();
 
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [addressForm, setAddressForm] = useState<Address>({
     line1: "",
@@ -27,6 +28,9 @@ export default function Home() {
     pincode: "",
     landmark: ""
   });
+
+  const banners = settings?.heroBanners?.length ? settings.heroBanners : [settings?.bannerImage].filter(Boolean) as string[];
+  if (banners.length === 0) banners.push("https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1074");
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -63,6 +67,15 @@ export default function Home() {
     return () => { unsubSettings(); unsubProducts(); unsubCats(); };
   }, [initSettings]);
 
+  // Carousel Logic
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentBannerIndex(prev => (prev + 1) % banners.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [banners.length]);
+
   if (!authLoading && user && role !== 'customer') {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -85,7 +98,7 @@ export default function Home() {
 
   const displayAddress = selectedAddress
     ? `${selectedAddress.line1}, ${selectedAddress.city}`
-    : "Set Delivery Address";
+    : "Set delivery address";
 
   const ProductCard = ({ product }: { product: Product }) => {
     const cartItem = cart.find(c => c.id === product.id);
@@ -102,7 +115,7 @@ export default function Home() {
                 onClick={(e) => { e.stopPropagation(); addToCart({ ...product, quantity: 1 }); }}
                 className="bg-white border-[1.5px] border-green-600 text-green-600 px-3 py-1 rounded-lg text-[10px] font-black shadow-lg active:scale-90 transition-all"
               >
-                ADD
+                Add
               </button>
             ) : (
               <div className="flex items-center bg-green-600 text-white rounded-lg px-1 py-1 shadow-lg h-7" onClick={e => e.stopPropagation()}>
@@ -120,14 +133,14 @@ export default function Home() {
         <div className="flex flex-col px-0.5">
           <div className="flex gap-1 mb-1">
             <span className="bg-zinc-100 text-zinc-500 text-[7px] font-bold px-1.5 py-0.5 rounded tracking-wider">1 pc</span>
-            {product.stock < 10 && <span className="bg-orange-50 text-orange-600 text-[7px] font-bold px-1.5 py-0.5 rounded tracking-wider">Only {product.stock} left</span>}
+            {product.stock < 10 && product.stock > 0 && <span className="bg-orange-50 text-orange-600 text-[7px] font-bold px-1.5 py-0.5 rounded tracking-wider">Only {product.stock} left</span>}
           </div>
           <Link href={`/product/${product.id}`} className="text-[10px] font-bold text-zinc-900 leading-[1.2] mb-1.5 line-clamp-2 hover:text-green-700" title={product.name}>
             {product.name}
           </Link>
           <div className="flex items-center flex-wrap gap-x-1.5">
-            <span className="text-xs font-black text-zinc-900">₹{product.price.toFixed(0)}</span>
-            <span className="text-[9px] text-zinc-400 line-through font-medium">₹{(product.price * 1.25).toFixed(0)}</span>
+            <span className="text-xs font-black text-zinc-900 tracking-tight">₹{product.price.toFixed(0)}</span>
+            <span className="text-[9px] text-zinc-400 line-through font-medium tracking-tight">₹{(product.price * 1.25).toFixed(0)}</span>
           </div>
         </div>
       </div>
@@ -136,8 +149,10 @@ export default function Home() {
 
   if (settingsLoading) {
     return (
-      <div className="min-h-[100dvh] bg-white flex items-center justify-center">
-        <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
+      <div className="min-h-[100dvh] bg-white flex items-center justify-center space-x-2">
+        <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+        <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+        <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
       </div>
     );
   }
@@ -146,16 +161,16 @@ export default function Home() {
     <div className="bg-white min-h-screen relative overflow-x-hidden">
       <div className="fixed top-0 left-0 w-full h-8 bg-black text-white flex items-center overflow-hidden z-[60]">
         <div className="flex whitespace-nowrap animate-marquee">
-          <span className="text-[10px] font-black tracking-widest px-4">{settings?.announcement || "⚡️ Free delivery above ₹99 • Reliable Slot Delivery ⚡️"}</span>
-          <span className="text-[10px] font-black tracking-widest px-4">{settings?.announcement || "⚡️ Free delivery above ₹99 • Reliable Slot Delivery ⚡️"}</span>
+          <span className="text-[10px] font-bold tracking-widest px-4 uppercase">{settings?.announcement || "⚡️ Free delivery above ₹99 • Reliable slot delivery ⚡️"}</span>
+          <span className="text-[10px] font-bold tracking-widest px-4 uppercase">{settings?.announcement || "⚡️ Free delivery above ₹99 • Reliable slot delivery ⚡️"}</span>
         </div>
       </div>
 
-      <header className={`fixed top-8 w-full z-50 bg-white shadow-sm flex flex-col pt-3 border-b border-zinc-100 transition-all pb-4`}>
+      <header className={`fixed top-8 w-full z-50 bg-white/95 backdrop-blur-xl shadow-sm flex flex-col pt-3 border-b border-zinc-100 transition-all pb-4`}>
         <div className="flex items-center justify-between px-4 w-full mb-3">
           <div className="flex flex-col cursor-pointer group" onClick={() => setIsAddressModalOpen(true)}>
             <div className="flex items-center gap-1">
-              <span className="text-[10px] font-black text-primary tracking-wider font-headline">Delivery To</span>
+              <span className="text-[10px] font-black text-primary tracking-wider font-headline">Delivery to</span>
               <span className="material-symbols-outlined text-zinc-900 text-[14px] font-bold">expand_more</span>
             </div>
             <span className="text-xs font-extrabold font-headline tracking-tight text-zinc-900 truncate max-w-[220px]">{displayAddress}</span>
@@ -169,7 +184,7 @@ export default function Home() {
         <div className="px-4">
           <div onClick={() => router.push('/search')} className="bg-zinc-100 rounded-2xl flex items-center px-4 py-3 gap-3 border border-zinc-200 cursor-pointer shadow-inner">
             <span className="material-symbols-outlined text-zinc-400 text-lg">search</span>
-            <span className="text-xs font-black tracking-widest text-zinc-400">Search 'milk'</span>
+            <span className="text-xs font-bold tracking-widest text-zinc-400">Search 'milk'</span>
           </div>
         </div>
       </header>
@@ -179,9 +194,9 @@ export default function Home() {
           <section className="px-6 py-20 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-700">
             <h2 className="text-5xl font-headline font-black text-zinc-900 tracking-tighter leading-[0.8] mb-8">
               Currently <br />
-              <span className="text-primary">Unavailable</span>
+              <span className="text-primary">unavailable</span>
             </h2>
-            <p className="max-w-xs mx-auto text-[10px] font-black text-zinc-400 tracking-[0.2em] leading-relaxed mb-12">
+            <p className="max-w-xs mx-auto text-[10px] font-bold text-zinc-400 tracking-[0.2em] leading-relaxed mb-12">
               We're not serving this area at the moment.
             </p>
           </section>
@@ -194,15 +209,32 @@ export default function Home() {
                     <div className="w-14 h-14 rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center p-0 overflow-hidden group-hover:border-primary transition-all shadow-sm">
                       <img className="w-full h-full object-cover" src={cat.img} alt={cat.label} />
                     </div>
-                    <span className="text-[9px] font-black tracking-tighter text-center text-zinc-500 group-hover:text-zinc-900">{cat.label}</span>
+                    <span className="text-[9px] font-bold tracking-tighter text-center text-zinc-500 group-hover:text-zinc-900">{cat.label}</span>
                   </div>
                 ))}
               </div>
             </section>
 
             <section className="px-4 mb-8">
-              <div className="relative w-full aspect-[21/9] rounded-3xl overflow-hidden shadow-xl bg-zinc-100">
-                <img className="w-full h-full object-cover" src={settings?.bannerImage || "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1074"} alt="Banner" />
+              <div className="relative w-full aspect-[21/9] rounded-[32px] overflow-hidden shadow-xl bg-zinc-100 group">
+                {banners.map((url, idx) => (
+                  <div 
+                    key={idx}
+                    className={`absolute inset-0 transition-opacity duration-1000 ${idx === currentBannerIndex ? 'opacity-100' : 'opacity-0'}`}
+                  >
+                    <img className="w-full h-full object-cover" src={url} alt={`Banner ${idx + 1}`} />
+                  </div>
+                ))}
+                {banners.length > 1 && (
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                    {banners.map((_, idx) => (
+                      <div 
+                        key={idx}
+                        className={`h-1 rounded-full transition-all duration-300 ${idx === currentBannerIndex ? 'w-6 bg-white' : 'w-1 bg-white/40'}`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </section>
 
@@ -234,7 +266,7 @@ export default function Home() {
                     {section.title}
                   </h3>
                   <Link href={section.link} className="text-[10px] font-black text-primary tracking-widest underline underline-offset-4">
-                    See All
+                    See all
                   </Link>
                 </div>
                 <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-2">{section.products.map(p => <ProductCard key={p.id} product={p} />)}</div>
@@ -246,10 +278,10 @@ export default function Home() {
             </section>
 
             <footer className="mt-24 px-6 pb-32 text-center">
-              <h2 className="font-headline font-black text-3xl text-zinc-900 tracking-tighter mb-4 opacity-60">comfort in every cart</h2>
+              <h2 className="font-headline font-black text-2xl text-zinc-900 tracking-tighter mb-4 opacity-40 italic-remove">Comfort in every cart</h2>
               <div className="flex items-center justify-center gap-4 mb-4">
                 <div className="h-[1px] w-12 bg-zinc-200 opacity-40" />
-                <p className="font-black text-zinc-900 tracking-[0.4em] opacity-30">BAZAARBOLT</p>
+                <p className="font-black text-zinc-900 tracking-[0.4em] opacity-30 text-[10px]">BAZAARBOLT</p>
                 <div className="h-[1px] w-12 bg-zinc-200 opacity-40" />
               </div>
             </footer>
@@ -285,15 +317,15 @@ export default function Home() {
             <div className="absolute top-0 right-0 p-10 opacity-5 -z-10"><span className="material-symbols-outlined text-[140px]">location_on</span></div>
             <div className="flex justify-between items-start mb-10">
               <div>
-                <h2 className="text-4xl font-headline font-black text-zinc-900 tracking-tighter leading-none">Set Address</h2>
-                <p className="text-[10px] font-black text-zinc-400 tracking-widest mt-2">Where should we bolt your order?</p>
+                <h2 className="text-4xl font-headline font-black text-zinc-900 tracking-tighter leading-none">Set address</h2>
+                <p className="text-[10px] font-bold text-zinc-400 tracking-widest mt-2">Where should we bolt your order?</p>
               </div>
             </div>
             <div className="space-y-6">
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">Building / Street / House No.</label>
-                  <input type="text" placeholder="Flat No, House name, Street" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all" value={addressForm.line1} onChange={e => setAddressForm({ ...addressForm, line1: e.target.value })} />
+                  <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">Building / street / house no.</label>
+                  <input type="text" placeholder="Flat no, house name, street" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all" value={addressForm.line1} onChange={e => setAddressForm({ ...addressForm, line1: e.target.value })} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
@@ -306,13 +338,13 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">Landmark (Optional)</label>
+                  <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">Landmark (optional)</label>
                   <input type="text" placeholder="e.g. Near Apollo Hospital" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all" value={addressForm.landmark} onChange={e => setAddressForm({ ...addressForm, landmark: e.target.value })} />
                 </div>
               </div>
               <div className="flex gap-4 pt-6">
                 <button onClick={() => setIsAddressModalOpen(false)} className="flex-1 bg-zinc-100 text-zinc-500 py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-zinc-200">Cancel</button>
-                <button onClick={handleSaveAddress} className="flex-1 bg-zinc-900 text-white py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-black shadow-xl shadow-zinc-900/10">Use This Address</button>
+                <button onClick={handleSaveAddress} className="flex-1 bg-zinc-900 text-white py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-black shadow-xl shadow-zinc-900/10">Use this address</button>
               </div>
             </div>
           </div>

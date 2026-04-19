@@ -16,6 +16,7 @@ export default function CategoryPage() {
   const [category, setCategory] = useState<any>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -51,6 +52,10 @@ export default function CategoryPage() {
     };
   }, [id]);
 
+  const filteredProducts = products.filter(p => 
+    p.name.toLowerCase().includes(search.toLowerCase())
+  );
+
   const ProductCard = ({ product }: { product: Product }) => {
     const cartItem = cart.find(c => c.id === product.id);
     const outOfStock = product.stock <= 0;
@@ -66,7 +71,7 @@ export default function CategoryPage() {
                 onClick={(e) => { e.stopPropagation(); addToCart({ ...product, quantity: 1 }); }}
                 className="bg-white border-[1.5px] border-green-600 text-green-600 px-3 py-1 rounded-lg text-[10px] font-black shadow-lg active:scale-90 transition-all"
               >
-                ADD
+                Add
               </button>
             ) : (
               <div className="flex items-center bg-green-600 text-white rounded-lg px-1 py-1 shadow-lg h-7" onClick={e => e.stopPropagation()}>
@@ -83,14 +88,14 @@ export default function CategoryPage() {
         </div>
         <div className="flex flex-col px-0.5">
           <div className="flex gap-1 mb-1">
-            <span className="bg-zinc-100 text-zinc-500 text-[7px] font-bold px-1.5 py-0.5 rounded tracking-wider">1 pc</span>
+            <span className="bg-zinc-100 text-zinc-500 text-[7px] font-bold px-1.5 py-0.5 rounded tracking-wider italic-remove">1 pc</span>
           </div>
           <Link href={`/product/${product.id}`} className="text-[10px] font-bold text-zinc-900 leading-[1.2] mb-1.5 line-clamp-2 hover:text-green-700" title={product.name}>
             {product.name}
           </Link>
           <div className="flex items-center flex-wrap gap-x-1.5">
-            <span className="text-xs font-black text-zinc-900">₹{product.price.toFixed(0)}</span>
-            <span className="text-[9px] text-zinc-400 line-through font-medium">₹{(product.price * 1.25).toFixed(0)}</span>
+            <span className="text-xs font-black text-zinc-900 tracking-tight">₹{product.price.toFixed(0)}</span>
+            <span className="text-[9px] text-zinc-400 line-through font-medium tracking-tight">₹{(product.price * 1.25).toFixed(0)}</span>
           </div>
         </div>
       </div>
@@ -99,29 +104,41 @@ export default function CategoryPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="fixed top-0 w-full z-50 bg-white shadow-sm border-b border-zinc-100 px-4 py-4 flex items-center gap-4">
-        <button onClick={() => router.back()} className="p-2 hover:bg-zinc-100 rounded-full transition-colors">
-          <span className="material-symbols-outlined text-zinc-900">arrow_back</span>
-        </button>
-        <div>
-          <p className="text-[10px] font-black text-zinc-400 tracking-[0.2em] leading-none mb-1">CATEGORY</p>
-          <h1 className="text-xl font-headline font-black text-zinc-900 tracking-tighter leading-none">{category ? category.label : (id ? decodeURIComponent(id as string) : "")}</h1>
+      <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-xl shadow-sm border-b border-zinc-100 px-4 py-4 flex flex-col gap-4">
+        <div className="flex items-center gap-4">
+          <button onClick={() => router.back()} className="p-2 hover:bg-zinc-100 rounded-full transition-colors">
+            <span className="material-symbols-outlined text-zinc-900">arrow_back</span>
+          </button>
+          <div>
+            <p className="text-[10px] font-black text-zinc-400 tracking-widest leading-none mb-1">Category</p>
+            <h1 className="text-xl font-headline font-black text-zinc-900 tracking-tighter leading-none">{category ? category.label : (id ? decodeURIComponent(id as string) : "")}</h1>
+          </div>
+        </div>
+        <div className="relative">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
+          <input 
+            type="text" 
+            placeholder={`Search in ${category?.label || 'category'}...`}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-zinc-100 border-none rounded-xl py-2.5 pl-10 pr-4 text-xs font-bold focus:ring-2 ring-primary/20 outline-none transition-all"
+          />
         </div>
       </header>
 
-      <main className="pt-24 pb-20 px-4">
+      <main className="pt-40 pb-20 px-4">
         {loading ? (
           <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-2">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(n => <div key={n} className="aspect-[3/4] bg-zinc-50 rounded-xl animate-pulse" />)}
           </div>
-        ) : products.length === 0 ? (
+        ) : filteredProducts.length === 0 ? (
           <div className="py-20 flex flex-col items-center justify-center opacity-30">
             <span className="material-symbols-outlined text-6xl mb-4">inventory_2</span>
-            <p className="font-headline font-black tracking-widest text-xs">No products</p>
+            <p className="font-headline font-black tracking-widest text-xs">No products found</p>
           </div>
         ) : (
           <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-2">
-            {products.map(p => <ProductCard key={p.id} product={p} />)}
+            {filteredProducts.map(p => <ProductCard key={p.id} product={p} />)}
           </div>
         )}
         <AdUnit slotId="category-bottom" className="mt-12" />

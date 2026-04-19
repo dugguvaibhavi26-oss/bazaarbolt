@@ -6,6 +6,7 @@ export type Role = "customer" | "admin" | "rider";
 export interface AppSettings {
   storeOpen: boolean;
   bannerImage: string;
+  heroBanners?: string[];
   announcement: string;
   primaryColor: string;
   taxPercent: number;
