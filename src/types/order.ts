@@ -16,6 +16,7 @@ export interface Order {
   deliveryCode: string;
   deliveryAddress: any; // Can be string or Address object
   deliveryCharge: number;
+  deliverySlot?: string;
   createdAt: string;
   phoneNumber?: string;
 }

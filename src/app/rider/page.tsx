@@ -12,6 +12,8 @@ import Link from "next/link";
 export default function RiderApp() {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [selectedFilterSlot, setSelectedFilterSlot] = useState<string>("ALL");
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,6 +25,10 @@ export default function RiderApp() {
           data.status === "PLACED" || (data.riderId === user?.uid && data.status !== "DELIVERED")
         );
         
+        // Extract unique slots for filtering
+        const slots = Array.from(new Set(ords.map(o => o.deliverySlot).filter(Boolean))) as string[];
+        setAvailableSlots(slots);
+
         ords.sort((a, b) => {
           if (a.riderId === user?.uid && b.riderId !== user?.uid) return -1;
           if (a.riderId !== user?.uid && b.riderId === user?.uid) return 1;
@@ -38,6 +44,10 @@ export default function RiderApp() {
     return () => unsub();
   }, [user]);
 
+  const filteredOrders = selectedFilterSlot === "ALL" 
+    ? orders 
+    : orders.filter(o => o.deliverySlot === selectedFilterSlot);
+
   if (loading) return (
      <div className="space-y-4 pt-10">
         {[1,2,3,4].map(i => (
@@ -51,7 +61,7 @@ export default function RiderApp() {
        <div className="flex items-end justify-between px-2">
           <div>
              <h2 className="text-3xl font-headline font-black text-zinc-900 tracking-tight">Pulse Feed</h2>
-             <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">{orders.length} ACTIVE JOBS</p>
+             <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">{filteredOrders.length} ACTIVE JOBS</p>
           </div>
           <div className="flex items-center gap-2 bg-green-50 text-green-600 px-3 py-1.5 rounded-xl border border-green-100">
              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
@@ -59,21 +69,42 @@ export default function RiderApp() {
           </div>
        </div>
 
+       {/* Slot Filter Bar */}
+       {availableSlots.length > 0 && (
+         <div className="flex gap-2 overflow-x-auto hide-scrollbar py-2">
+            <button 
+              onClick={() => setSelectedFilterSlot("ALL")}
+              className={`px-6 py-2.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${selectedFilterSlot === "ALL" ? 'bg-zinc-900 text-white shadow-xl' : 'bg-white text-zinc-400 border border-zinc-100'}`}
+            >
+              All Slots
+            </button>
+            {availableSlots.map(slot => (
+              <button 
+                key={slot}
+                onClick={() => setSelectedFilterSlot(slot)}
+                className={`px-6 py-2.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${selectedFilterSlot === slot ? 'bg-primary text-zinc-900 shadow-xl shadow-primary/20' : 'bg-white text-zinc-400 border border-zinc-100'}`}
+              >
+                {slot}
+              </button>
+            ))}
+         </div>
+       )}
+
        <div className="space-y-3">
-          {orders.length === 0 ? (
+          {filteredOrders.length === 0 ? (
              <div className="py-20 bg-white rounded-[40px] border border-dashed border-zinc-200 flex flex-col items-center">
                 <span className="material-symbols-outlined text-6xl text-zinc-100 mb-4" style={{fontVariationSettings: "'FILL' 1"}}>speed</span>
-                <p className="text-zinc-400 font-black uppercase tracking-widest text-[10px]">No orders available right now</p>
+                <p className="text-zinc-400 font-black uppercase tracking-widest text-[10px]">No orders in this slot</p>
              </div>
           ) : (
-             orders.map((order) => (
+             filteredOrders.map((order) => (
                <Link 
                  href={`/rider/orders/${order.id}`} 
                  key={order.id} 
                  className={`block bg-white rounded-3xl p-6 shadow-sm border border-zinc-100 relative group transition-all hover:shadow-xl hover:border-primary active:scale-[0.98] ${order.riderId === user?.uid ? 'ring-2 ring-primary ring-offset-2' : ''}`}
                >
-                  <div className="flex justify-between items-center">
-                     <div className="flex flex-col gap-1">
+                  <div className="flex justify-between items-center text-[#1A1A1A]">
+                     <div className="flex flex-col gap-1 text-[#1A1A1A]">
                         <div className="flex items-center gap-2 mb-1">
                            <span className={`w-2.5 h-2.5 rounded-full animate-pulse shadow-lg ${order.status === 'PLACED' ? 'bg-primary' : 'bg-blue-500'}`}></span>
                            <span className="text-xl font-headline font-black text-zinc-900 uppercase tracking-tighter">#{order.id?.slice(-8).toUpperCase()}</span>
@@ -81,8 +112,11 @@ export default function RiderApp() {
                         
                         <div className="mb-2">
                            <p className="text-[11px] font-black text-zinc-900 uppercase leading-none">{order.customerName || 'Customer'}</p>
-                           {order.phoneNumber && (
-                              <p className="text-[9px] font-bold text-zinc-400 tracking-wider mt-0.5">📞 {order.phoneNumber}</p>
+                           {order.deliverySlot && (
+                               <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] mt-1.5 flex items-center gap-1.5">
+                                 <span className="material-symbols-outlined text-xs">calendar_today</span>
+                                 {order.deliverySlot}
+                               </p>
                            )}
                         </div>
 
@@ -106,8 +140,8 @@ export default function RiderApp() {
                   )}
                </Link>
              ))
-          )}
-       </div>
-    </div>
+           )}
+        </div>
+     </div>
   );
 }

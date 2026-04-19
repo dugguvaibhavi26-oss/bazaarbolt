@@ -279,6 +279,23 @@ export default function Home() {
               </section>
             ))}
 
+            <section className="px-4 mb-16">
+               <div className="bg-zinc-900 rounded-[40px] p-8 relative overflow-hidden flex flex-col items-center text-center">
+                  <div className="absolute top-0 right-0 w-40 h-40 bg-zinc-600/20 rounded-bl-full pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-tr-full pointer-events-none" />
+                  
+                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-4">Partner Spotlight</span>
+                  <h4 className="text-3xl font-headline font-black text-white tracking-tighter uppercase leading-none mb-4">
+                    freshNESS <br />
+                    DELIVERED <span className="text-primary">faster</span>
+                  </h4>
+                  <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest max-w-[200px] leading-relaxed mb-6">
+                    Join 10k+ households getting their daily essentials within minutes.
+                  </p>
+                  <button className="bg-white text-zinc-900 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all">Explore Deals</button>
+               </div>
+            </section>
+
             <footer className="mt-24 px-6 pb-32 text-center">
               <h2 className="font-headline font-black text-3xl text-zinc-900 tracking-tighter uppercase mb-4 opacity-60">
                 comfort in every cart

@@ -31,8 +31,7 @@ export async function triggerNotification(params: {
             if (userData.fcmToken) {
                 targetParams.token = userData.fcmToken;
             } else {
-                console.warn(`User ${params.userId} has no FCM token`);
-                return;
+                return; // Silently return if no token (normal in browser testing)
             }
         }
     }

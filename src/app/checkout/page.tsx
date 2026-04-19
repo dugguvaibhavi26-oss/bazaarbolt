@@ -264,13 +264,19 @@ export default function CheckoutPage() {
                      </div>
                      <span className="text-zinc-900 font-black">₹{subtotal.toFixed(0)}</span>
                   </div>
-                  <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
-                     <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-sm">delivery_dining</span>
-                        <span className="uppercase tracking-widest">Delivery charge</span>
-                     </div>
-                     <span className="text-zinc-900 font-black">{deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`}</span>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
+                      <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-sm">delivery_dining</span>
+                          <span className="uppercase tracking-widest">Delivery charge</span>
+                      </div>
+                      <span className="text-zinc-900 font-black">{deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`}</span>
+                    </div>
+                    {deliveryCharge > 0 && settings?.freeDeliveryThreshold && (
+                      <p className="text-[7px] font-black text-orange-500 uppercase tracking-widest ml-7">Free on orders above ₹{settings.freeDeliveryThreshold}</p>
+                    )}
                   </div>
+
                   <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
                      <div className="flex items-center gap-2">
                         <span className="material-symbols-outlined text-sm">shopping_basket</span>
@@ -278,13 +284,17 @@ export default function CheckoutPage() {
                      </div>
                      <span className="text-zinc-900 font-black">₹{handlingFee}</span>
                   </div>
+
                   {smallCartCharge > 0 && (
-                    <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
-                      <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-sm">shopping_cart_checkout</span>
-                          <span className="uppercase tracking-widest">Small cart charge</span>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
+                        <div className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-sm">shopping_cart_checkout</span>
+                            <span className="uppercase tracking-widest">Small cart charge</span>
+                        </div>
+                        <span className="text-zinc-900 font-black">₹${smallCartCharge}</span>
                       </div>
-                      <span className="text-zinc-900 font-black">₹{smallCartCharge}</span>
+                      <p className="text-[7px] font-black text-orange-500 uppercase tracking-widest ml-7">Applicable on orders below ₹{settings?.smallCartThreshold || 100}</p>
                     </div>
                   )}
                   {settings?.customCharges?.map((c, i) => (

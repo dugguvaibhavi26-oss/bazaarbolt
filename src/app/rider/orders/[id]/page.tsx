@@ -76,6 +76,71 @@ export default function RiderOrderDetail() {
     }
   };
 
+  const toggleItemAvailability = async (itemIndex: number) => {
+    if (!order || processing) return;
+    
+    const item = order.items[itemIndex];
+    const isNowUnavailable = !item.unavailable;
+
+    setProcessing(true);
+    const toastId = toast.loading(isNowUnavailable ? "Marking as unavailable..." : "Marking as available...");
+
+    try {
+      const updatedItems = [...order.items];
+      updatedItems[itemIndex] = { ...item, unavailable: isNowUnavailable };
+
+      // 1. Calculate the new subtotal based ONLY on active items
+      const activeItems = updatedItems.filter(i => !i.unavailable);
+      const newSubtotal = activeItems.reduce((acc, i) => acc + (i.price * i.quantity), 0);
+      
+      // 2. Determine the original tax percentage
+      // If subtotal is 0 now but wasn't before, we need the original ratio
+      // order.subtotal and order.tax are from the current DB state (via onSnapshot)
+      const taxPercent = order.subtotal > 0 ? (order.tax / order.subtotal) : 0.05; // Default to 5% if subtotal was 0
+      const newTax = newSubtotal * taxPercent;
+      
+      // 3. Keep Delivery/Handling/SmallCart charges fixed
+      // We calculate them once from the original order and keep them.
+      // Crucially, if the subtotal drops, we don't ADD new small cart charges.
+      const fixedCharges = order.total - order.subtotal - order.tax;
+      const newTotal = newSubtotal + newTax + (fixedCharges > 0 ? fixedCharges : 0);
+
+      const isAllUnavailable = activeItems.length === 0;
+
+      await updateDoc(doc(db, "orders", order.id!), {
+        items: updatedItems,
+        subtotal: parseFloat(newSubtotal.toFixed(2)),
+        tax: parseFloat(newTax.toFixed(2)),
+        total: parseFloat(newTotal.toFixed(2)),
+        status: isAllUnavailable ? "CANCELLED" : order.status
+      });
+
+      if (isAllUnavailable) {
+        triggerNotification({
+          userId: order.userId,
+          title: "Order Cancelled 🚫",
+          body: `Unfortunately, all items in your order are out of stock. The order has been cancelled and any payment will be refunded.`,
+        });
+        toast.error("All items unavailable. Order cancelled.", { id: toastId });
+        router.push("/rider");
+      } else if (isNowUnavailable) {
+        triggerNotification({
+          userId: order.userId,
+          title: "Order Updated 🛒",
+          body: `Sorry, ${item.name} is out of stock. Order total adjusted to ₹${newTotal.toFixed(2)}.`,
+        });
+        toast.success(`${item.name} marked as unavailable`, { id: toastId });
+      } else {
+        toast.success(`${item.name} marked as available`, { id: toastId });
+      }
+
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update item", { id: toastId });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const handleVerifySubmission = async () => {
     if (!order || !order.id) return;
     if (deliveryCode !== order.deliveryCode) {
@@ -123,21 +188,46 @@ export default function RiderOrderDetail() {
         <h2 className="text-xl font-headline font-black text-zinc-900 uppercase">Job Details</h2>
       </div>
 
-      {/* Main Status Header */}
-      <section className="bg-zinc-900 rounded-3xl p-6 text-white shadow-xl">
-        <div className="flex justify-between items-start mb-4">
+      <section className="bg-zinc-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-bl-[100px] pointer-events-none"></div>
+        
+        <div className="flex justify-between items-start mb-6 border-b border-white/10 pb-6">
           <div>
             <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Order Status</p>
             <h3 className="text-2xl font-headline font-black uppercase tracking-tight">{order.status.replace("_", " ")}</h3>
           </div>
           <div className="text-right">
             <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Grand Total</p>
-            <p className="text-2xl font-headline font-black">₹{order.total.toFixed(0)}</p>
+            <p className="text-2xl font-headline font-black text-primary">₹{order.total.toFixed(2)}</p>
           </div>
         </div>
+
+        <div className="space-y-2 mb-6">
+           <div className="flex justify-between items-center opacity-60">
+              <span className="text-[9px] font-black uppercase tracking-widest">Subtotal</span>
+              <span className="text-[11px] font-bold">₹{order.subtotal.toFixed(2)}</span>
+           </div>
+           <div className="flex justify-between items-center opacity-60">
+              <span className="text-[9px] font-black uppercase tracking-widest">Taxes</span>
+              <span className="text-[11px] font-bold">₹{order.tax.toFixed(2)}</span>
+           </div>
+           {(order.total - order.subtotal - order.tax) > 0 && (
+             <div className="flex justify-between items-center opacity-60">
+                <span className="text-[9px] font-black uppercase tracking-widest">Service & Delivery</span>
+                <span className="text-[11px] font-bold">₹{(order.total - order.subtotal - order.tax).toFixed(2)}</span>
+             </div>
+           )}
+        </div>
+
         <div className="flex gap-2">
            <span className="text-[9px] font-black bg-white/10 px-2 py-1 rounded-lg uppercase">{order.items.length} Items</span>
            <span className="text-[9px] font-black bg-primary/20 text-primary px-2 py-1 rounded-lg uppercase">{order.paymentMethod || 'COD'}</span>
+           {order.deliverySlot && (
+             <span className="text-[9px] font-black bg-orange-500/20 text-orange-400 px-2 py-1 rounded-lg uppercase flex items-center gap-1">
+                <span className="material-symbols-outlined text-[10px]">schedule</span>
+                {order.deliverySlot}
+             </span>
+           )}
         </div>
       </section>
 
@@ -179,22 +269,41 @@ export default function RiderOrderDetail() {
         </div>
       </section>
 
-      {/* Items List */}
       <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100">
         <h3 className="text-[10px] font-black text-zinc-900 uppercase tracking-widest mb-4">Shipment Checklist</h3>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {order.items.map((item, idx) => (
-            <div key={idx} className="flex items-center justify-between py-2 border-b border-zinc-50 last:border-0">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-zinc-50 rounded-lg p-1 border border-zinc-100">
-                  <img src={item.image} alt="" className="w-full h-full object-contain" />
+            <div key={idx} className={`space-y-3 pb-4 border-b border-zinc-50 last:border-0 last:pb-0 p-4 rounded-3xl transition-all ${item.unavailable ? 'bg-red-50/50 border border-red-100 opacity-80' : ''}`}>
+               <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-zinc-50 rounded-lg p-1 border border-zinc-100">
+                    <img src={item.image} alt="" className="w-full h-full object-contain" />
+                  </div>
+                  <div>
+                    <p className={`text-[11px] font-black text-zinc-900 leading-tight ${item.unavailable ? 'line-through text-red-600' : ''}`}>{item.name}</p>
+                    <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Quantity: {item.quantity}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[11px] font-black text-zinc-900 leading-tight">{item.name}</p>
-                  <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Quantity: {item.quantity}</p>
+                <div className="text-right">
+                  <p className={`text-xs font-black text-zinc-900 ${item.unavailable ? 'line-through text-red-400' : ''}`}>₹{(item.price * item.quantity).toFixed(0)}</p>
+                  {item.unavailable && <span className="text-[8px] font-black text-red-500 uppercase">Out of Stock</span>}
                 </div>
               </div>
-              <p className="text-xs font-black text-zinc-900">₹{(item.price * item.quantity).toFixed(0)}</p>
+
+              {/* Toggle Availability Button - only for rider during pick-up phase */}
+              {(order.status === "ACCEPTED" || order.status === "PICKED") && order.riderId === user?.uid && (
+                <button 
+                  onClick={() => toggleItemAvailability(idx)}
+                  disabled={processing}
+                  className={`w-full py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                    item.unavailable 
+                    ? "bg-white text-green-600 border border-green-200 shadow-sm" 
+                    : "bg-red-50 text-red-600 border border-red-100"
+                  }`}
+                >
+                  {item.unavailable ? "Product Found? (Add Back)" : "Mark Not Available"}
+                </button>
+              )}
             </div>
           ))}
         </div>

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "711829893451",
+    "project_id": "bazaarbolt-8a1ab",
+    "storage_bucket": "bazaarbolt-8a1ab.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:711829893451:android:79d0a5d2dea0753fae78ce",
+        "android_client_info": {
+          "package_name": "com.bazaarbolt.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "711829893451-2ibiu1tvvv7ip479tt8r67lkli0rsld9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWT5YXA89v2YmjO0HsQnsfgncEt6VlG00"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "711829893451-2ibiu1tvvv7ip479tt8r67lkli0rsld9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

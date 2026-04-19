@@ -57,6 +57,7 @@ export const mapOrder = (doc: DocumentSnapshot<DocumentData>): Order => {
         category: typeof item.category === "string" ? item.category : "",
         quantity: item.quantity,
         stock: typeof item.stock === "number" ? item.stock : 0,
+        unavailable: typeof item.unavailable === "boolean" ? item.unavailable : false,
       };
     }),
     subtotal: typeof data.subtotal === "number" ? data.subtotal : 0,
@@ -68,6 +69,7 @@ export const mapOrder = (doc: DocumentSnapshot<DocumentData>): Order => {
     deliveryCode: typeof data.deliveryCode === "string" ? data.deliveryCode : "",
     deliveryAddress: data.deliveryAddress || "N/A",
     deliveryCharge: typeof data.deliveryCharge === "number" ? data.deliveryCharge : 0,
+    deliverySlot: typeof data.deliverySlot === "string" ? data.deliverySlot : undefined,
     createdAt: typeof data.createdAt === "string" ? data.createdAt : new Date().toISOString(),
     phoneNumber: typeof data.phoneNumber === "string" ? data.phoneNumber : undefined,
   };

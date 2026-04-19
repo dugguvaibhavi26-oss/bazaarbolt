@@ -20,6 +20,22 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
       try {
         if (docSnap.exists()) {
           const orderData = mapOrder(docSnap);
+          
+          // Check for newly unavailable items to show a toast alert
+          if (order) {
+            const newlyUnavailable = orderData.items.find((item, idx) => 
+               item.unavailable && !order.items[idx]?.unavailable
+            );
+            if (newlyUnavailable) {
+              import("react-hot-toast").then(t => 
+                t.default.error(`Item Update: ${newlyUnavailable.name} is out of stock. Order total updated.`, {
+                  duration: 6000,
+                  icon: '⚠️'
+                })
+              );
+            }
+          }
+
           setOrder(orderData);
           
           if (orderData.riderId) {
@@ -34,7 +50,7 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
       }
     });
     return () => unsubOrder();
-  }, [resolvedParams.id]);
+  }, [resolvedParams.id, order]);
 
   if (!order) return (
     <div className="min-h-[100dvh] bg-surface flex items-center justify-center space-x-2">
@@ -152,15 +168,18 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
           </h3>
           <div className="space-y-5">
             {order.items.map(item => (
-              <div key={item.id} className="flex items-center gap-4 text-[#1A1A1A]">
+              <div key={item.id} className={`flex items-center gap-4 text-[#1A1A1A] ${item.unavailable ? 'opacity-50' : ''}`}>
                 <div className="w-12 h-12 shrink-0 bg-zinc-50 rounded-xl p-2 border border-zinc-100 transition-transform hover:scale-105">
                   <img src={item.image} alt={item.name} className="w-full h-full object-contain drop-shadow-sm" />
                 </div>
                 <div className="flex-grow">
-                  <p className="font-headline font-black text-sm text-zinc-900 leading-none mb-1">{item.name}</p>
+                  <p className={`font-headline font-black text-sm text-zinc-900 leading-none mb-1 ${item.unavailable ? 'line-through' : ''}`}>{item.name}</p>
                   <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Qty: {item.quantity}</p>
                 </div>
-                <span className="font-headline font-black text-sm text-zinc-900">₹{(item.price * item.quantity).toFixed(2)}</span>
+                <div className="text-right">
+                  <span className={`font-headline font-black text-sm text-zinc-900 block ${item.unavailable ? 'line-through' : ''}`}>₹{(item.price * item.quantity).toFixed(2)}</span>
+                  {item.unavailable && <span className="text-[8px] font-black text-red-500 uppercase">Unavailable</span>}
+                </div>
               </div>
             ))}
           </div>
@@ -183,6 +202,27 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
              </div>
           </div>
         </div>
+
+        {/* Unavailable Items Notice */}
+        {order.items.some(i => i.unavailable) && (
+          <div className="bg-red-50 rounded-[32px] p-8 border border-red-100 space-y-4">
+             <div className="flex items-center gap-3 text-red-600 mb-2">
+                <span className="material-symbols-outlined font-black">sentiment_dissatisfied</span>
+                <h3 className="font-headline font-black text-xs uppercase tracking-widest">Stock Update</h3>
+             </div>
+             <p className="text-xs font-bold text-red-900 leading-relaxed">
+               We're sorry we can't deliver these products to you because they are not available in the store right now. Your order total has been adjusted accordingly.
+             </p>
+             <div className="space-y-2 pt-2">
+                {order.items.filter(i => i.unavailable).map((item, idx) => (
+                  <div key={idx} className="flex justify-between items-center text-[10px] font-black text-red-400 uppercase">
+                    <span>{item.name}</span>
+                    <span>Out of Stock</span>
+                  </div>
+                ))}
+             </div>
+          </div>
+        )}
       </main>
 
       <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] z-50 bg-white/95 backdrop-blur-3xl shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] border border-white/40 rounded-full px-6 py-3 flex justify-between items-center transition-all">
