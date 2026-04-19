@@ -204,9 +204,6 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
           </div>
         </div>
 
-          </div>
-        )}
-
         {/* Unavailable Items Notice */}
         {order.items.some(i => i.unavailable) && (
           <div className="bg-red-50 rounded-[32px] p-8 border border-red-100 space-y-4 mb-8">
