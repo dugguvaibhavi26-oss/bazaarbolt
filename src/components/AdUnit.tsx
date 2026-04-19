@@ -24,6 +24,16 @@ export function AdUnit({ slotId = "", type = 'banner', className = "" }: AdUnitP
     }
   }, []);
 
+  if (process.env.NODE_ENV === 'development') {
+    return (
+      <div className={`w-full overflow-hidden my-6 flex flex-col items-center justify-center min-h-[100px] bg-zinc-50 rounded-2xl border-2 border-zinc-200 border-dashed ${className}`}>
+        <span className="material-symbols-outlined text-zinc-300 text-2xl mb-1">ads_click</span>
+        <span className="font-bold text-[10px] tracking-widest text-zinc-400 uppercase">Google Ad Banner Space</span>
+        <span className="font-medium text-[8px] tracking-widest text-zinc-400 mt-1">(Ads will appear in production)</span>
+      </div>
+    );
+  }
+
   return (
     <div className={`w-full overflow-hidden my-6 flex justify-center min-h-[100px] ${className}`}>
       <ins
