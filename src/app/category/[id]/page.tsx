@@ -7,6 +7,7 @@ import { db } from "@/lib/firebase";
 import { Product } from "@/types";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { AdUnit } from "@/components/AdUnit";
 
 export default function CategoryPage() {
   const { id } = useParams();
@@ -114,6 +115,7 @@ export default function CategoryPage() {
             {products.map(p => <ProductCard key={p.id} product={p} />)}
           </div>
         )}
+        <AdUnit slotId="category-bottom" className="mt-12" />
       </main>
     </div>
   );

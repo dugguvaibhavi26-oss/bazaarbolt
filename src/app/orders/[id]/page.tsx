@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { mapOrder } from "@/lib/mappers";
+import { AdUnit } from "@/components/AdUnit";
 
 export default function OrderTracking({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -203,9 +204,12 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
           </div>
         </div>
 
+          </div>
+        )}
+
         {/* Unavailable Items Notice */}
         {order.items.some(i => i.unavailable) && (
-          <div className="bg-red-50 rounded-[32px] p-8 border border-red-100 space-y-4">
+          <div className="bg-red-50 rounded-[32px] p-8 border border-red-100 space-y-4 mb-8">
              <div className="flex items-center gap-3 text-red-600 mb-2">
                 <span className="material-symbols-outlined font-black">sentiment_dissatisfied</span>
                 <h3 className="font-headline font-black text-xs uppercase tracking-widest">Stock Update</h3>
@@ -223,6 +227,8 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
              </div>
           </div>
         )}
+
+        <AdUnit slotId="order-tracking-bottom" className="mt-8" />
       </main>
 
       <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] z-50 bg-white/95 backdrop-blur-3xl shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] border border-white/40 rounded-full px-6 py-3 flex justify-between items-center transition-all">
