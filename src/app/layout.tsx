@@ -15,8 +15,6 @@ export const metadata: Metadata = {
 
 import { PushNotificationManager } from "@/components/PushNotificationManager";
 
-import Script from "next/script";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,14 +24,10 @@ export default function RootLayout({
     <html lang="en" className="light">
       <head>
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2579695907249215"
+     crossOrigin="anonymous"></script>
       </head>
       <body className={`${inter.className} ${plusJakartaSans.className} min-h-screen bg-surface font-body text-on-surface antialiased`}>
-        <Script 
-          async 
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2579695907249215"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
         <ErrorBoundary>
           <AuthProvider>
             <PushNotificationManager />
