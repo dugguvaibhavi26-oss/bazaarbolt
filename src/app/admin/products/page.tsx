@@ -9,17 +9,16 @@ import toast from "react-hot-toast";
 import { downloadTemplate, parseFile, validateProducts } from "@/lib/bulkUploadUtils";
 import { triggerNotification } from "@/lib/notificationClient";
 
-const CATEGORIES = ["Vegetables", "Dairy", "Munchies", "Beverages", "Care", "Household"];
-
 export default function AdminProducts() {
  const [products, setProducts] = useState<Product[]>([]);
  const [loading, setLoading] = useState(true);
+ const [categories, setCategories] = useState<any[]>([]);
  const [isAdding, setIsAdding] = useState(false);
  const [newProduct, setNewProduct] = useState({
  name: "",
  price: 0,
  image: "",
- category: "Vegetables",
+ category: "",
  description: "",
  stock: 100,
  active: true
@@ -32,7 +31,7 @@ export default function AdminProducts() {
  const [uploadStats, setUploadStats] = useState({ total: 0, valid: 0, failed: 0 });
 
  useEffect(() => {
- const unsub = onSnapshot(collection(db, "products"), (snap) => {
+ const unsubProds = onSnapshot(collection(db, "products"), (snap) => {
  try {
  const prods = mapQuerySnapshot(snap, mapProduct).filter(p => !p.isDeleted);
  setProducts(prods);
@@ -42,7 +41,16 @@ export default function AdminProducts() {
  }
  setLoading(false);
  });
- return () => unsub();
+
+ const unsubCats = onSnapshot(collection(db, "categories"), (snap) => {
+ const cats = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+ setCategories(cats);
+ if (cats.length > 0 && !newProduct.category) {
+ setNewProduct(prev => ({ ...prev, category: cats[0].id }));
+ }
+ });
+
+ return () => { unsubProds(); unsubCats(); };
  }, []);
 
  const handleAdd = async (e: React.FormEvent) => {
@@ -61,7 +69,7 @@ export default function AdminProducts() {
  body:`Freshly added: ${newProduct.name}. Shop now!`,
  });
 
- setNewProduct({ name: "", price: 0, image: "", category: "Vegetables", description: "", stock: 100, active: true });
+ setNewProduct({ name: "", price: 0, image: "", category: categories[0]?.id || "", description: "", stock: 100, active: true });
  setIsAdding(false);
  toast.success("Added to inventory", { id: toastId });
  } catch (err) {
@@ -239,7 +247,7 @@ export default function AdminProducts() {
  <div>
  <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Category</label>
  <select value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all">
- {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+ {categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
  </select>
  </div>
  <div>

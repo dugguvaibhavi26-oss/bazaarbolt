@@ -2,7 +2,7 @@
 
 import { useStore } from "@/store/useStore";
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { collection, onSnapshot, query, where, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Product } from "@/types";
 import { useParams, useRouter } from "next/navigation";
@@ -13,14 +13,22 @@ export default function CategoryPage() {
  const { id } = useParams();
  const router = useRouter();
  const { cart, addToCart, updateQuantity } = useStore();
+ const [category, setCategory] = useState<any>(null);
  const [products, setProducts] = useState<Product[]>([]);
  const [loading, setLoading] = useState(true);
 
  useEffect(() => {
  if (!id) return;
  const decodedId = decodeURIComponent(id as string);
+
+ // Fetch category info
+ const catRef = doc(db, "categories", decodedId);
+ const unsubCat = onSnapshot(catRef, (doc) => {
+ if (doc.exists()) setCategory({ id: doc.id, ...doc.data() });
+ });
+
  const q = query(collection(db, "products"), where("category", "==", decodedId));
- const unsubscribe = onSnapshot(q, (snapshot) => {
+ const unsubProducts = onSnapshot(q, (snapshot) => {
  const prods: Product[] = [];
  snapshot.forEach(doc => {
  const data = doc.data();
@@ -28,11 +36,12 @@ export default function CategoryPage() {
  prods.push({ id: doc.id, ...data } as Product);
  }
  });
+
  setProducts(prods);
  setLoading(false);
  });
 
- return () => unsubscribe();
+ return () => { unsubCat(); unsubProducts(); };
  }, [id]);
 
  const ProductCard = ({ product }: { product: Product }) => {
@@ -95,7 +104,7 @@ export default function CategoryPage() {
  </button>
  <div>
  <p className="text-[10px] font-black text-zinc-400 tracking-[0.2em] leading-none mb-1">CATEGORY</p>
- <h1 className="text-xl font-headline font-black text-zinc-900 tracking-tighter leading-none">{id ? decodeURIComponent(id as string) : ""}</h1>
+ <h1 className="text-xl font-headline font-black text-zinc-900 tracking-tighter leading-none">{category ? category.label : (id ? decodeURIComponent(id as string) : "")}</h1>
  </div>
  </header>
 

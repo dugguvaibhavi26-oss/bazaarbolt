@@ -231,34 +231,43 @@ export default function Home() {
  </div>
  </section>
 
- {[
- { title: "Bestsellers", icon: "local_fire_department", iconColor: "text-orange-500", products: products.slice(0, 4) },
- { title: "Pure Dairy", icon: "water_drop", iconColor: "text-blue-500", products: products.filter(p => p.category === "Dairy").slice(0, 4) },
- { title: "Fresh Veggies", icon: "eco", iconColor: "text-green-500", products: products.filter(p => p.category === "Vegetables").slice(0, 4) },
- { title: "Snack Station", icon: "fastfood", iconColor: "text-amber-500", products: products.filter(p => p.category === "Munchies").slice(0, 4) },
- { title: "Beverages", icon: "wine_bar", iconColor: "text-cyan-500", products: products.filter(p => p.category === "Beverages").slice(0, 4) }
- ].map((section, idx) => section.products.length > 0 && (
- <section key={idx} className="mb-10 px-4">
- <div className="flex items-center justify-between mb-4">
- <h3 className="font-headline font-black text-lg tracking-tight text-zinc-900 flex items-center gap-2 ">
- <span className={`material-symbols-outlined ${section.iconColor}`} style={{ fontVariationSettings: "'FILL'1"}}>{section.icon}</span>
- {section.title}
- </h3>
- <Link
- href={`/category/${section.title === "Bestsellers"? "Vegetables":
- section.title === "Fresh Veggies"? "Vegetables":
- section.title === "Snack Station"? "Munchies":
- section.title === "Pure Dairy"? "Dairy":
- "Beverages"
- }`}
- className="text-[10px] font-black text-primary tracking-widest underline underline-offset-4"
- >
- See All
- </Link>
- </div>
- <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-2">{section.products.map(p => <ProductCard key={p.id} product={p} />)}</div>
- </section>
- ))}
+  {[
+  { title: "Bestsellers", icon: "local_fire_department", iconColor: "text-orange-500", products: products.slice(0, 12), link: "/search" },
+  { 
+    title: "New Arrivals", 
+    icon: "new_releases", 
+    iconColor: "text-blue-600", 
+    products: [...products].sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    }).slice(0, 8), 
+    link: "/search" 
+  },
+  ...categories.map(cat => ({
+  title: cat.label,
+  icon: "category",
+  iconColor: "text-zinc-400",
+  products: products.filter(p => p.category === cat.id || p.category === cat.label).slice(0, 8),
+  link: `/category/${cat.id}`
+  }))
+  ].map((section, idx) => section.products.length > 0 && (
+  <section key={idx} className="mb-10 px-4">
+  <div className="flex items-center justify-between mb-4">
+  <h3 className="font-headline font-black text-lg tracking-tight text-zinc-900 flex items-center gap-2 ">
+  <span className={`material-symbols-outlined ${section.iconColor}`} style={{ fontVariationSettings: "'FILL'1"}}>{section.icon}</span>
+  {section.title}
+  </h3>
+  <Link
+  href={section.link}
+  className="text-[10px] font-black text-primary tracking-widest underline underline-offset-4"
+  >
+  See All
+  </Link>
+  </div>
+  <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-2">{section.products.map(p => <ProductCard key={p.id} product={p} />)}</div>
+  </section>
+  ))}
 
  <section className="px-4 mb-16">
  <AdUnit slotId="home-mid-banner"className="m-0"/>

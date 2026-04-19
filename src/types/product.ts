@@ -8,6 +8,7 @@ export interface Product {
   stock: number;
   active: boolean;
   isDeleted?: boolean;
+  createdAt?: string;
 }
 
 export interface CartItem extends Omit<Product, 'active' | 'isDeleted'> {
