@@ -116,7 +116,5 @@ export default function OrdersPage() {
         )}
       </div>
     </main>
-
-    </main>
   );
 }
