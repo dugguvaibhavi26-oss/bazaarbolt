@@ -31,8 +31,8 @@ export default function CartPage() {
         <img className="w-full h-full object-contain" src={item.image} alt={item.name} />
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="text-[12px] font-black text-zinc-900 leading-tight mb-1 truncate uppercase tracking-tight">{item.name}</h3>
-        <p className="text-[11px] font-bold text-zinc-400 mb-2 uppercase">₹{item.price.toFixed(0)}</p>
+        <h3 className="text-[12px] font-black text-zinc-900 leading-tight mb-1 truncate tracking-tight">{item.name}</h3>
+        <p className="text-[11px] font-bold text-zinc-400 mb-2">₹{item.price.toFixed(0)}</p>
         <div className="flex items-center justify-between">
            <div className="flex items-center bg-zinc-100 rounded-xl px-1 py-1 h-8 shadow-inner border border-zinc-200">
             <button onClick={() => updateQuantity(item.id, -1)} className="w-6 h-6 flex items-center justify-center hover:bg-zinc-200 rounded-lg transition-colors">
@@ -43,7 +43,7 @@ export default function CartPage() {
               <span className="material-symbols-outlined text-[10px] font-black">add</span>
             </button>
           </div>
-          <span className="text-sm font-black text-zinc-900 tracking-tighter uppercase">₹{(item.price * item.quantity).toFixed(0)}</span>
+          <span className="text-sm font-black text-zinc-900 tracking-tighter">₹{(item.price * item.quantity).toFixed(0)}</span>
         </div>
       </div>
     </div>
@@ -57,10 +57,10 @@ export default function CartPage() {
              <span className="material-symbols-outlined text-zinc-900 font-bold">arrow_back</span>
            </button>
            <div className="flex flex-col">
-             <h1 className="text-xl font-headline font-black text-zinc-900 tracking-tighter leading-none uppercase">Your Cart</h1>
-             <span className="text-[10px] font-black text-zinc-400 tracking-widest mt-1 uppercase">{cartCount} {cartCount === 1 ? 'item' : 'items'} in basket</span>
+             <h1 className="text-xl font-headline font-black text-zinc-900 tracking-tighter leading-none">Your cart</h1>
+             <span className="text-[10px] font-black text-zinc-400 tracking-widest mt-1">{cartCount} {cartCount === 1 ? 'item' : 'items'} in basket</span>
            </div>
-           <button onClick={clearCart} className="ml-auto text-[9px] font-black text-red-500 uppercase tracking-widest py-2 px-4 bg-red-50 rounded-full">Clear</button>
+           <button onClick={clearCart} className="ml-auto text-[9px] font-black text-red-500 tracking-widest py-2 px-4 bg-red-50 rounded-full">Clear</button>
         </div>
       </header>
 
@@ -70,9 +70,9 @@ export default function CartPage() {
             <div className="w-24 h-24 bg-zinc-100 rounded-[32px] flex items-center justify-center mb-8 rotate-12">
                <span className="material-symbols-outlined text-zinc-300 text-5xl">shopping_basket</span>
             </div>
-            <h2 className="text-3xl font-headline font-black text-zinc-900 tracking-tighter leading-none mb-4 uppercase">Your basket <br /><span className="text-zinc-300 uppercase">is empty</span></h2>
-            <p className="text-[11px] font-bold text-zinc-400 tracking-widest leading-relaxed mb-8 uppercase">Ready to start your next order?</p>
-            <button onClick={() => router.push("/")} className="bg-zinc-900 text-white px-10 py-4 rounded-[24px] font-black text-[10px] tracking-widest active:scale-95 transition-transform shadow-xl shadow-zinc-200 uppercase">Go Shop</button>
+            <h2 className="text-3xl font-headline font-black text-zinc-900 tracking-tighter leading-none mb-4">Your basket <br /><span className="text-zinc-300">is empty</span></h2>
+            <p className="text-[11px] font-bold text-zinc-400 tracking-widest leading-relaxed mb-8">Ready to start your next order?</p>
+            <button onClick={() => router.push("/")} className="bg-zinc-900 text-white px-10 py-4 rounded-[24px] font-black text-[10px] tracking-widest active:scale-95 transition-transform shadow-xl shadow-zinc-200">Go Shop</button>
           </div>
         ) : (
           <div className="space-y-6">
@@ -82,52 +82,52 @@ export default function CartPage() {
 
             {/* Bill Details */}
             <div className="bg-white rounded-[32px] p-8 shadow-sm border border-zinc-100">
-              <h3 className="text-[11px] font-black text-zinc-400 tracking-widest mb-8 uppercase">Billing details</h3>
+              <h3 className="text-[11px] font-black text-zinc-400 tracking-widest mb-8">Billing details</h3>
               <div className="space-y-5">
-                <div className="flex justify-between items-center text-[11px] font-bold text-zinc-500 uppercase">
+                <div className="flex justify-between items-center text-[11px] font-bold text-zinc-500">
                   <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-lg">receipt_long</span>
-                    <span className="tracking-widest uppercase">Items subtotal</span>
+                    <span className="tracking-widest">Items subtotal</span>
                   </div>
-                  <span className="text-zinc-900 font-black uppercase">₹{subtotal.toFixed(0)}</span>
+                  <span className="text-zinc-900 font-black">₹{subtotal.toFixed(0)}</span>
                 </div>
                 
-                <div className="flex justify-between items-center text-[11px] font-bold text-zinc-500 uppercase">
+                <div className="flex justify-between items-center text-[11px] font-bold text-zinc-500">
                   <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-lg">delivery_dining</span>
-                    <span className="tracking-widest uppercase">Delivery fee</span>
+                    <span className="tracking-widest">Delivery fee</span>
                   </div>
-                  <span className="text-zinc-900 font-black uppercase">{deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`}</span>
+                  <span className="text-zinc-900 font-black">{deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`}</span>
                 </div>
 
                 {tinyOrderFee > 0 && (
-                  <div className="flex justify-between items-center text-[11px] font-bold text-orange-500 uppercase">
+                  <div className="flex justify-between items-center text-[11px] font-bold text-orange-500">
                     <div className="flex items-center gap-3">
                       <span className="material-symbols-outlined text-lg">error_outline</span>
-                      <span className="tracking-widest uppercase">Small cart charge</span>
+                      <span className="tracking-widest">Small cart charge</span>
                     </div>
-                    <span className="font-black uppercase">₹{tinyOrderFee}</span>
+                    <span className="font-black">₹{tinyOrderFee}</span>
                   </div>
                 )}
 
-                <div className="flex justify-between items-center text-[11px] font-bold text-zinc-500 uppercase">
+                <div className="flex justify-between items-center text-[11px] font-bold text-zinc-500">
                   <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-lg">add_task</span>
-                    <span className="tracking-widest uppercase">Handling charge</span>
+                    <span className="tracking-widest">Handling charge</span>
                   </div>
-                  <span className="text-zinc-900 font-black uppercase">₹{handlingFee}</span>
+                  <span className="text-zinc-900 font-black">₹{handlingFee}</span>
                 </div>
 
-                <div className="pt-8 mt-4 border-t border-zinc-100 flex justify-between items-center text-[11px] font-bold text-zinc-500 uppercase">
-                  <span className="tracking-widest uppercase">GST & Servicing</span>
-                  <span className="text-zinc-900 font-black tracking-tight uppercase">₹{tax.toFixed(0)}</span>
+                <div className="pt-8 mt-4 border-t border-zinc-100 flex justify-between items-center text-[11px] font-bold text-zinc-500">
+                  <span className="tracking-widest">GST & Servicing</span>
+                  <span className="text-zinc-900 font-black tracking-tight">₹{tax.toFixed(0)}</span>
                 </div>
                 <div className="pt-1 flex justify-between items-center">
                   <div className="flex flex-col">
-                    <span className="font-black text-xl text-zinc-900 tracking-tighter leading-none inline-flex items-center gap-2 uppercase">₹{total.toFixed(0)}</span>
-                    <span className="text-[7px] font-black text-primary tracking-[0.2em] mt-1 uppercase">Total payable</span>
+                    <span className="font-black text-xl text-zinc-900 tracking-tighter leading-none inline-flex items-center gap-2">₹{total.toFixed(0)}</span>
+                    <span className="text-[7px] font-black text-primary tracking-[0.2em] mt-1">Total payable</span>
                   </div>
-                  <button onClick={handleProceed} className="bg-zinc-900 text-white font-black text-[10px] tracking-widest px-6 py-3 rounded-xl shadow-lg active:scale-95 transition-transform flex items-center gap-2 uppercase font-headline">
+                  <button onClick={handleProceed} className="bg-zinc-900 text-white font-black text-[10px] tracking-widest px-6 py-3 rounded-xl shadow-lg active:scale-95 transition-transform flex items-center gap-2 font-headline">
                     Next step
                     <span className="material-symbols-outlined text-[14px] font-bold">arrow_forward</span>
                   </button>
@@ -137,7 +137,6 @@ export default function CartPage() {
           </div>
         )}
       </div>
-
     </main>
   );
 }

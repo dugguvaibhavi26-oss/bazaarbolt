@@ -96,7 +96,7 @@ export const BottomNav = () => {
                     isActive ? "max-w-[100px] opacity-100 ml-1" : "max-w-0 opacity-0"
                   }`}
                 >
-                  <span className="font-headline font-black text-[10px] tracking-widest uppercase text-primary whitespace-nowrap">
+                  <span className="font-headline font-black text-xs text-primary whitespace-nowrap">
                     {item.label}
                     {item.label === "Cart" && cartCount > 0 && ` (${cartCount})`}
                   </span>

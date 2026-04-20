@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, addDoc, doc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, doc, updateDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { Product } from "@/types";
 import { mapProduct, mapQuerySnapshot } from "@/lib/mappers";
@@ -34,26 +34,27 @@ export default function AdminProducts() {
   const [uploadStats, setUploadStats] = useState({ total: 0, valid: 0, failed: 0 });
 
   useEffect(() => {
-    const unsubProds = onSnapshot(collection(db, "products"), (snap) => {
+    async function loadData() {
+      setLoading(true);
       try {
-        const prods = mapQuerySnapshot(snap, mapProduct).filter(p => !p.isDeleted);
+        const prodSnap = await getDocs(collection(db, "products"));
+        const prods = mapQuerySnapshot(prodSnap, mapProduct).filter(p => !p.isDeleted);
         setProducts(prods);
+
+        const catSnap = await getDocs(collection(db, "categories"));
+        const cats = catSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setCategories(cats);
+        if (cats.length > 0 && !newProduct.category) {
+          setNewProduct(prev => ({ ...prev, category: cats[0].id }));
+        }
       } catch (e) {
-        console.error("Mapping error in AdminProducts:", e);
-        toast.error("Error loading inventory data");
+        console.error("mapping error:", e);
+        toast.error("Error loading inventory");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    });
-
-    const unsubCats = onSnapshot(collection(db, "categories"), (snap) => {
-      const cats = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setCategories(cats);
-      if (cats.length > 0 && !newProduct.category) {
-        setNewProduct(prev => ({ ...prev, category: cats[0].id }));
-      }
-    });
-
-    return () => { unsubProds(); unsubCats(); };
+    }
+    loadData();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

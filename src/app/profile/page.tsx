@@ -38,19 +38,19 @@ export default function ProfilePage() {
 
   const menuSections = [
     {
-      title: "Your Information",
+      title: "Your information",
       items: [
-        { id: 'orders', label: "Your Orders", icon: "inventory_2", color: "text-blue-600 bg-blue-50", href: "/orders"},
-        { id: 'address', label: "Address Book", icon: "location_on", color: "text-orange-600 bg-orange-50", href: "/profile/addresses" },
-        { id: 'edit', label: "Edit Profile", icon: "edit_document", color: "text-purple-600 bg-purple-50", href: "/profile/edit"}
+        { id: 'orders', label: "Your orders", icon: "inventory_2", color: "text-blue-600 bg-blue-50", href: "/orders"},
+        { id: 'address', label: "Address book", icon: "location_on", color: "text-orange-600 bg-orange-50", href: "/profile/addresses" },
+        { id: 'edit', label: "Edit profile", icon: "edit_document", color: "text-purple-600 bg-purple-50", href: "/profile/edit"}
       ]
     },
     {
-      title: "Support & More",
+      title: "Support & more",
       items: [
-        { id: 'help', label: "Need Help (FAQs)", icon: "support_agent", color: "text-emerald-600 bg-emerald-50", href: "/help"},
-        { id: 'about', label: "About Us", icon: "info", color: "text-cyan-600 bg-cyan-50", onClick: () => toast.success("BAZAARBOLT V2.0") },
-        { id: 'privacy', label: "Privacy Policy", icon: "policy", color: "text-zinc-600 bg-zinc-100", onClick: () => toast.success("PRIVACY POLICY LINK COMING SOON...") }
+        { id: 'help', label: "Need help (FAQs)", icon: "support_agent", color: "text-emerald-600 bg-emerald-50", href: "/help"},
+        { id: 'about', label: "About us", icon: "info", color: "text-cyan-600 bg-cyan-50", onClick: () => toast.success("BazaarBolt v2.0") },
+        { id: 'privacy', label: "Privacy policy", icon: "policy", color: "text-zinc-600 bg-zinc-100", onClick: () => toast.success("Privacy policy link coming soon...") }
       ]
     }
   ];
@@ -62,7 +62,7 @@ export default function ProfilePage() {
           <button onClick={() => router.push("/")} className="p-2 hover:bg-zinc-100 rounded-full transition-colors">
             <span className="material-symbols-outlined text-zinc-900">arrow_back</span>
           </button>
-          <h1 className="text-xl font-headline font-black text-zinc-900 tracking-tight uppercase">My Profile</h1>
+          <h1 className="text-xl font-headline font-black text-zinc-900 tracking-tight">My profile</h1>
           <div className="w-10"></div>
         </div>
       </header>
@@ -75,14 +75,14 @@ export default function ProfilePage() {
               <span className="material-symbols-outlined text-4xl text-primary" style={{fontVariationSettings: "'FILL'1"}}>account_circle</span>
             </div>
             <div>
-              <h2 className="font-headline font-black text-2xl tracking-tighter leading-tight drop-shadow-md uppercase">
+              <h2 className="font-headline font-black text-2xl tracking-tighter leading-tight drop-shadow-md">
                 {userData?.name || user.displayName || "Customer"}
               </h2>
-              <p className="text-[10px] font-black text-zinc-400 tracking-[0.2em] mt-1 uppercase">{userData?.phoneNumber || "NO PHONE CONNECTED"}</p>
-              <p className="text-[10px] font-bold text-zinc-500 truncate max-w-[200px] mt-0.5 uppercase">{user.email}</p>
+              <p className="text-[10px] font-black text-zinc-400 tracking-[0.2em] mt-1">{userData?.phoneNumber || "No phone connected"}</p>
+              <p className="text-[10px] font-bold text-zinc-500 truncate max-w-[200px] mt-0.5">{user.email}</p>
               <div className="mt-4 flex items-center gap-1.5 bg-white/10 w-fit px-2.5 py-1 rounded-lg backdrop-blur-md border border-white/10">
                 <span className="material-symbols-outlined text-[12px] text-yellow-400" style={{fontVariationSettings: "'FILL'1"}}>stars</span>
-                <span className="text-[9px] font-black tracking-widest text-white uppercase">Member</span>
+                <span className="text-[9px] font-black tracking-widest text-white">Member</span>
               </div>
             </div>
           </div>
@@ -91,7 +91,7 @@ export default function ProfilePage() {
         <div className="space-y-8">
           {menuSections.map((section, idx) => (
             <div key={idx}>
-              <h3 className="font-headline font-bold text-sm text-zinc-500 tracking-widest mb-4 ml-2 uppercase leading-none">{section.title}</h3>
+              <h3 className="font-headline font-bold text-sm text-zinc-500 tracking-widest mb-4 ml-2 leading-none">{section.title}</h3>
               <div className="bg-white border border-zinc-100 rounded-3xl shadow-sm overflow-hidden">
                 {section.items.map((item, itemIdx) => {
                   const isLast = itemIdx === section.items.length - 1;
@@ -101,7 +101,7 @@ export default function ProfilePage() {
                         <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${item.color}`}>
                           <span className="material-symbols-outlined text-[20px]" style={{fontVariationSettings: "'FILL'1"}}>{item.icon}</span>
                         </div>
-                        <span className="font-extrabold text-sm text-zinc-900 uppercase tracking-tight leading-none">{item.label}</span>
+                        <span className="font-extrabold text-sm text-zinc-900 tracking-tight leading-none">{item.label}</span>
                       </div>
                       <span className="material-symbols-outlined text-zinc-300 group-hover:translate-x-1 transition-transform group-hover:text-zinc-500">arrow_forward_ios</span>
                     </div>
@@ -129,9 +129,9 @@ export default function ProfilePage() {
         </div>
 
         <div className="mt-8 pt-4">
-          <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 p-5 bg-red-50 text-red-600 rounded-3xl font-headline font-extrabold tracking-widest text-sm hover:bg-red-100 transition-colors border border-red-100 active:scale-95 shadow-sm uppercase">
+          <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 p-5 bg-red-50 text-red-600 rounded-3xl font-headline font-extrabold tracking-widest text-sm hover:bg-red-100 transition-colors border border-red-100 active:scale-95 shadow-sm">
             <span className="material-symbols-outlined text-lg">logout</span>
-            Sign Out
+            Sign out
           </button>
         </div>
       </div>

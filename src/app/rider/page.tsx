@@ -57,11 +57,11 @@ export default function RiderApp() {
  <div className="flex items-end justify-between px-2">
  <div>
  <h2 className="text-3xl font-headline font-black text-zinc-900 tracking-tight">Pulse Feed</h2>
- <p className="text-[10px] font-black text-zinc-400 tracking-widest mt-1">{filteredOrders.length} ACTIVE JOBS</p>
+ <p className="text-[10px] font-black text-zinc-400 mt-1">{filteredOrders.length} active jobs</p>
  </div>
  <div className="flex items-center gap-2 bg-green-50 text-green-600 px-3 py-1.5 rounded-xl border border-green-100">
  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
- <span className="text-[10px] font-black tracking-widest leading-none">Scanning</span>
+ <span className="text-[10px] font-black leading-none">Scanning</span>
  </div>
  </div>
 
@@ -69,14 +69,14 @@ export default function RiderApp() {
  {availableSlots.length > 0 && (
  <div className="flex gap-2 overflow-x-auto hide-scrollbar py-2">
  <button onClick={() => setSelectedFilterSlot("ALL")}
- className={`px-6 py-2.5 rounded-full text-[9px] font-black tracking-widest transition-all whitespace-nowrap ${selectedFilterSlot === "ALL"? 'bg-zinc-900 text-white shadow-xl': 'bg-white text-zinc-400 border border-zinc-100'}`}
+ className={`px-6 py-2.5 rounded-full text-[9px] font-black transition-all whitespace-nowrap ${selectedFilterSlot === "ALL"? 'bg-zinc-900 text-white shadow-xl': 'bg-white text-zinc-400 border border-zinc-100'}`}
  >
- All Slots
+ All slots
  </button>
  {availableSlots.map(slot => (
  <button key={slot}
  onClick={() => setSelectedFilterSlot(slot)}
- className={`px-6 py-2.5 rounded-full text-[9px] font-black tracking-widest transition-all whitespace-nowrap ${selectedFilterSlot === slot ? 'bg-primary text-zinc-900 shadow-xl shadow-primary/20': 'bg-white text-zinc-400 border border-zinc-100'}`}
+ className={`px-6 py-2.5 rounded-full text-[9px] font-black transition-all whitespace-nowrap ${selectedFilterSlot === slot ? 'bg-primary text-zinc-900 shadow-xl shadow-primary/20': 'bg-white text-zinc-400 border border-zinc-100'}`}
  >
  {slot}
  </button>
@@ -88,7 +88,7 @@ export default function RiderApp() {
  {filteredOrders.length === 0 ? (
  <div className="py-20 bg-white rounded-[40px] border border-dashed border-zinc-200 flex flex-col items-center">
  <span className="material-symbols-outlined text-6xl text-zinc-100 mb-4"style={{fontVariationSettings: "'FILL'1"}}>speed</span>
- <p className="text-zinc-400 font-black tracking-widest text-[10px]">No orders in this slot</p>
+ <p className="text-zinc-400 font-black text-[10px]">No orders in this slot</p>
  </div>
  ) : (
  filteredOrders.map((order) => (

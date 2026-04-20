@@ -13,28 +13,15 @@ import { BottomNav } from "@/components/BottomNav";
 
 export default function SearchPage() {
   const router = useRouter();
-  const { cart, addToCart, updateQuantity } = useStore();
-  const [products, setProducts] = useState<Product[]>([]);
+  const { cart, addToCart, updateQuantity, products, fetchCatalog } = useStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [recentSearches, setRecentSearches] = useState<string[]>(["Milk", "Bread", "Eggs", "Chips", "Cola"]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
-    
-    // Fetch products
-    const q = query(collection(db, "products"), where("active", "==", true));
-    const unsub = onSnapshot(q, (snapshot) => {
-      const prods: Product[] = [];
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        if (!data.isDeleted) prods.push({ id: doc.id, ...data } as Product);
-      });
-      setProducts(prods);
-    });
-
-    return () => unsub();
-  }, []);
+    fetchCatalog();
+  }, [fetchCatalog]);
 
   const searchStr = searchTerm.trim().toLowerCase();
   const filteredProducts = searchStr !== '' 
@@ -54,44 +41,44 @@ export default function SearchPage() {
     const outOfStock = product.stock <= 0;
 
     return (
-      <div className={`flex flex-col gap-1.5 transition-all group ${outOfStock ? 'opacity-60 grayscale' : ''} uppercase`}>
-        <div className="relative aspect-square bg-[#F3F4F6] rounded-2xl overflow-hidden border border-zinc-100 cursor-pointer uppercase" onClick={() => router.push(`/product/${product.id}`)}>
-          <img className="w-full h-full p-2 object-contain group-hover:scale-105 transition-transform duration-500 uppercase" src={product.image} alt={product.name} />
-          <div className="absolute bottom-1 right-1 uppercase">
+      <div className={`flex flex-col gap-1.5 transition-all group ${outOfStock ? 'opacity-60 grayscale' : ''}`}>
+        <div className="relative aspect-square bg-[#F3F4F6] rounded-2xl overflow-hidden border border-zinc-100 cursor-pointer" onClick={() => router.push(`/product/${product.id}`)}>
+          <img className="w-full h-full p-2 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} />
+          <div className="absolute bottom-1 right-1">
             {outOfStock ? (
-              <div className="bg-red-50 border border-red-100 text-red-600 px-2 py-1 rounded-lg text-[8px] font-black shadow-sm uppercase">
-                SOLD OUT
+              <div className="bg-red-50 border border-red-100 text-red-600 px-2 py-1 rounded-lg text-[8px] font-black shadow-sm">
+                Sold Out
               </div>
             ) : !cartItem ? (
               <button
                 onClick={(e) => { e.stopPropagation(); addToCart({ ...product, quantity: 1 }); }}
-                className="bg-white border-[1.5px] border-green-600 text-green-600 px-3 py-1 rounded-lg text-[10px] font-black shadow-lg active:scale-90 transition-all uppercase"
+                className="bg-white border-[1.5px] border-green-600 text-green-600 px-3 py-1 rounded-lg text-[10px] font-black shadow-lg active:scale-90 transition-all"
               >
                 Add
               </button>
             ) : (
-              <div className="flex items-center bg-green-600 text-white rounded-lg px-1 py-1 shadow-lg h-7 uppercase" onClick={e => e.stopPropagation()}>
-                <button onClick={() => updateQuantity(product.id, -1)} className="w-5 h-5 flex items-center justify-center hover:bg-black/10 rounded transition-colors uppercase">
-                  <span className="material-symbols-outlined text-[10px] font-bold uppercase">remove</span>
+              <div className="flex items-center bg-green-600 text-white rounded-lg px-1 py-1 shadow-lg h-7" onClick={e => e.stopPropagation()}>
+                <button onClick={() => updateQuantity(product.id, -1)} className="w-5 h-5 flex items-center justify-center hover:bg-black/10 rounded transition-colors">
+                  <span className="material-symbols-outlined text-[10px] font-bold">remove</span>
                 </button>
-                <span className="w-4 text-center font-black text-[10px] uppercase">{cartItem.quantity}</span>
-                <button onClick={() => updateQuantity(product.id, 1)} disabled={cartItem.quantity >= product.stock} className="w-5 h-5 flex items-center justify-center hover:bg-black/10 rounded transition-colors uppercase">
-                  <span className="material-symbols-outlined text-[10px] font-bold uppercase">add</span>
+                <span className="w-4 text-center font-black text-[10px]">{cartItem.quantity}</span>
+                <button onClick={() => updateQuantity(product.id, 1)} disabled={cartItem.quantity >= product.stock} className="w-5 h-5 flex items-center justify-center hover:bg-black/10 rounded transition-colors">
+                  <span className="material-symbols-outlined text-[10px] font-bold">add</span>
                 </button>
               </div>
             )}
           </div>
         </div>
-        <div className="flex flex-col px-0.5 uppercase">
-          <div className="flex gap-1 mb-1 uppercase">
-            <span className="bg-zinc-100 text-zinc-500 text-[7px] font-bold px-1.5 py-0.5 rounded tracking-wider uppercase">1 unit</span>
-            {product.stock < 10 && product.stock > 0 && <span className="bg-orange-50 text-orange-600 text-[7px] font-bold px-1.5 py-0.5 rounded tracking-wider uppercase">Only {product.stock} left</span>}
+        <div className="flex flex-col px-0.5">
+          <div className="flex gap-1 mb-1">
+            <span className="bg-zinc-100 text-zinc-500 text-[7px] font-bold px-1.5 py-0.5 rounded tracking-wider">1 Unit</span>
+            {product.stock < 10 && product.stock > 0 && <span className="bg-orange-50 text-orange-600 text-[7px] font-bold px-1.5 py-0.5 rounded tracking-wider">Only {product.stock} left</span>}
           </div>
-          <Link href={`/product/${product.id}`} className="text-[10px] font-bold text-zinc-900 leading-[1.2] mb-1.5 line-clamp-2 hover:text-green-700 uppercase tracking-tight" title={product.name}>
+          <Link href={`/product/${product.id}`} className="text-[10px] font-bold text-zinc-900 leading-[1.2] mb-1.5 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
             {product.name}
           </Link>
-          <div className="flex items-center flex-wrap gap-x-1.5 uppercase">
-            <span className="text-xs font-black text-zinc-900 uppercase">₹{product.price.toFixed(0)}</span>
+          <div className="flex items-center flex-wrap gap-x-1.5">
+            <span className="text-xs font-black text-zinc-900">₹{product.price.toFixed(0)}</span>
           </div>
         </div>
       </div>
@@ -99,12 +86,12 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="bg-white min-h-screen relative overflow-x-hidden pb-44 text-zinc-900 font-body selection:bg-primary/30 uppercase">
+    <div className="bg-white min-h-screen relative overflow-x-hidden pb-44 text-zinc-900 font-body selection:bg-primary/30">
       
-      <header className="sticky top-0 z-50 bg-white pt-4 pb-4 px-4 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border-b border-zinc-100 uppercase">
-         <div className="flex items-center gap-3 bg-zinc-100 rounded-2xl px-4 py-3 shadow-inner border border-zinc-200 focus-within:bg-white focus-within:border-primary transition-all uppercase">
-           <button onClick={() => router.back()} className="text-zinc-600 hover:text-zinc-900 transition-colors flex items-center uppercase">
-             <span className="material-symbols-outlined text-[20px] uppercase">arrow_back</span>
+      <header className="sticky top-0 z-50 bg-white pt-4 pb-4 px-4 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border-b border-zinc-100">
+         <div className="flex items-center gap-3 bg-zinc-100 rounded-2xl px-4 py-3 shadow-inner border border-zinc-200 focus-within:bg-white focus-within:border-primary transition-all">
+           <button onClick={() => router.back()} className="text-zinc-600 hover:text-zinc-900 transition-colors flex items-center">
+             <span className="material-symbols-outlined text-[20px]">arrow_back</span>
            </button>
            <input
              ref={inputRef}
@@ -112,37 +99,37 @@ export default function SearchPage() {
              placeholder="Search for milk, dal, chips and more..."
              value={searchTerm}
              onChange={(e) => setSearchTerm(e.target.value)}
-             className="bg-transparent border-none outline-none w-full text-xs font-black tracking-widest placeholder:text-zinc-400 text-zinc-900 uppercase placeholder:uppercase"
+             className="bg-transparent border-none outline-none w-full text-xs font-black tracking-widest placeholder:text-zinc-400 text-zinc-900 placeholder:normal-case"
            />
            {searchTerm && (
-             <button onClick={() => setSearchTerm('')} className="text-zinc-400 hover:text-zinc-900 flex items-center uppercase">
-               <span className="material-symbols-outlined text-[16px] uppercase">close</span>
+             <button onClick={() => setSearchTerm('')} className="text-zinc-400 hover:text-zinc-900 flex items-center">
+               <span className="material-symbols-outlined text-[16px]">close</span>
              </button>
            )}
            {!searchTerm && (
-             <button className="text-zinc-400 hover:text-zinc-900 flex items-center uppercase">
-                <span className="material-symbols-outlined text-[20px] uppercase">mic</span>
+             <button className="text-zinc-400 hover:text-zinc-900 flex items-center">
+                <span className="material-symbols-outlined text-[20px]">mic</span>
              </button>
            )}
          </div>
       </header>
 
-      <main className="px-4 mt-6 uppercase">
+      <main className="px-4 mt-6">
         {searchStr === '' ? (
-          <div className="animate-in fade-in duration-300 uppercase">
-            <div className="flex items-center justify-between mb-4 uppercase">
-              <h3 className="font-headline font-black text-[10px] text-zinc-400 tracking-widest uppercase">Recommendations</h3>
+          <div className="animate-in fade-in duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-headline font-black text-[10px] text-zinc-400 tracking-widest">Recommendations</h3>
             </div>
             {recentSearches.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-10 uppercase">
+              <div className="flex flex-wrap gap-2 mb-10">
                 {recentSearches.map((item, i) => (
                   <button 
                     key={i} 
                     onClick={() => setSearchTerm(item)} 
-                    className="pl-2 pr-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-bold text-zinc-700 hover:bg-zinc-100 transition-colors flex items-center gap-2 shadow-sm uppercase tracking-tighter"
+                    className="pl-2 pr-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-bold text-zinc-700 hover:bg-zinc-100 transition-colors flex items-center gap-2 shadow-sm tracking-tighter"
                   >
-                    <div className="w-6 h-6 rounded bg-zinc-200 flex items-center justify-center flex-shrink-0 uppercase">
-                       <span className="material-symbols-outlined text-[14px] text-zinc-500 uppercase">search</span>
+                    <div className="w-6 h-6 rounded bg-zinc-200 flex items-center justify-center flex-shrink-0">
+                       <span className="material-symbols-outlined text-[14px] text-zinc-500">search</span>
                     </div>
                     {item}
                   </button>
@@ -150,27 +137,27 @@ export default function SearchPage() {
               </div>
             )}
 
-            <h3 className="font-headline font-black text-[10px] text-zinc-400 tracking-widest uppercase mb-4">Top picks for you</h3>
-            <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-x-3 gap-y-6 uppercase">
+            <h3 className="font-headline font-black text-[10px] text-zinc-400 tracking-widest mb-4">Top picks for you</h3>
+            <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-x-3 gap-y-6">
               {recommendations.slice(0, 8).map(p => (
-                 <div key={p.id} className="bg-white rounded-2xl p-0 border border-transparent uppercase">
+                 <div key={p.id} className="bg-white rounded-2xl p-0 border border-transparent">
                     <ProductCard product={p} />
                  </div>
               ))}
             </div>
           </div>
         ) : (
-          <div className="animate-in fade-in duration-300 uppercase">
-            <h3 className="font-headline font-black text-[10px] text-zinc-400 mb-4 tracking-widest uppercase">{filteredProducts.length} Results for "{searchTerm}"</h3>
+          <div className="animate-in fade-in duration-300">
+            <h3 className="font-headline font-black text-[10px] text-zinc-400 mb-4 tracking-widest">{filteredProducts.length} results for "{searchTerm}"</h3>
             {filteredProducts.length === 0 ? (
-              <div className="py-20 flex flex-col items-center justify-center text-center opacity-40 uppercase">
-                <span className="material-symbols-outlined text-6xl mb-4 text-zinc-400 uppercase">search_off</span>
-                <p className="font-headline font-black text-sm text-zinc-500 uppercase">No items match your search</p>
+              <div className="py-20 flex flex-col items-center justify-center text-center opacity-40">
+                <span className="material-symbols-outlined text-6xl mb-4 text-zinc-400">search_off</span>
+                <p className="font-headline font-black text-sm text-zinc-500">No items match your search</p>
               </div>
             ) : (
-              <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-x-3 gap-y-6 uppercase">
+              <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-x-3 gap-y-6">
                 {filteredProducts.map(p => (
-                  <div key={p.id} className="bg-white rounded-2xl p-0 border border-transparent uppercase">
+                  <div key={p.id} className="bg-white rounded-2xl p-0 border border-transparent">
                      <ProductCard product={p} />
                   </div>
                 ))}
@@ -180,7 +167,7 @@ export default function SearchPage() {
         )}
       </main>
 
-      <div className="px-4 mt-12 mb-8 uppercase">
+      <div className="px-4 mt-12 mb-8">
         <AdUnit slotId="search-bottom-banner" className="m-0" />
       </div>
     </div>

@@ -3,7 +3,7 @@
 import { useStore } from "@/store/useStore";
 import { useAuth } from "@/components/AuthProvider";
 import { useRouter } from "next/navigation";
-import { runTransaction, doc, collection, query, where, onSnapshot } from "firebase/firestore";
+import { runTransaction, doc, collection, query, where, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -12,7 +12,7 @@ import { Product } from "@/types";
 import Link from "next/link";
 
 export default function CheckoutPage() {
-  const { cart, addToCart, clearCart, settings, activeCoupon, selectedAddress } = useStore();
+  const { cart, addToCart, clearCart, settings, activeCoupon, selectedAddress, products } = useStore();
   const { user, userData } = useAuth();
   const router = useRouter();
   const [placingOrder, setPlacingOrder] = useState(false);
@@ -41,24 +41,20 @@ export default function CheckoutPage() {
   const total = (subtotal - discountAmount) + tax + deliveryCharge + smallCartCharge + handlingFee + customChargesTotal;
 
   useEffect(() => {
-    if (cart.length === 0) return;
+    if (cart.length === 0 || products.length === 0) return;
     const cat = cart[0].category;
-    const q = query(collection(db, "products"), where("category", "==", cat));
-    const unsub = onSnapshot(q, (snap) => {
-      const items = snap.docs
-        .map(d => ({ id: d.id, ...d.data() } as Product))
-        .filter(p => !p.isDeleted && p.active && !cart.some(ci => ci.id === p.id))
-        .slice(0, 6);
-      setRecommendations(items);
-    });
-    return () => unsub();
-  }, [cart]);
+    const items = products
+      .filter(p => !p.isDeleted && p.active && (p.category === cat) && !cart.some(ci => ci.id === p.id))
+      .slice(0, 6);
+    setRecommendations(items);
+  }, [cart, products]);
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "settings", "delivery"), (snap) => {
+    async function fetchSlots() {
+      const snap = await getDoc(doc(db, "settings", "delivery"));
       if (snap.exists()) setAvailableSlots(snap.data().slots || []);
-    });
-    return () => unsub();
+    }
+    fetchSlots();
   }, []);
 
   const handleCheckout = async () => {
@@ -148,12 +144,12 @@ export default function CheckoutPage() {
 
   const RecCard = ({ product }: { product: Product }) => (
     <div className="flex flex-col gap-1 min-w-[100px] max-w-[100px]">
-      <div className="relative aspect-square bg-zinc-50 rounded-xl overflow-hidden border border-zinc-100 uppercase">
+      <div className="relative aspect-square bg-zinc-50 rounded-xl overflow-hidden border border-zinc-100">
         <img className="w-full h-full p-2 object-contain" src={product.image} alt="" />
-        <button onClick={() => addToCart({...product, quantity: 1})} className="absolute bottom-1 right-1 bg-white border border-green-600 text-green-600 text-[8px] font-black px-2 py-0.5 rounded shadow-sm uppercase">Add</button>
+        <button onClick={() => addToCart({...product, quantity: 1})} className="absolute bottom-1 right-1 bg-white border border-green-600 text-green-600 text-[8px] font-black px-2 py-0.5 rounded shadow-sm">Add</button>
       </div>
-      <p className="text-[8px] font-bold text-zinc-800 line-clamp-1 truncate uppercase">{product.name}</p>
-      <p className="text-[9px] font-black text-zinc-900 uppercase">₹{product.price}</p>
+      <p className="text-[8px] font-bold text-zinc-800 line-clamp-1 truncate">{product.name}</p>
+      <p className="text-[9px] font-black text-zinc-900">₹{product.price}</p>
     </div>
   );
 
@@ -163,102 +159,102 @@ export default function CheckoutPage() {
     <main className="bg-zinc-50 min-h-screen pb-44">
       <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-xl flex items-center px-4 py-4 border-b border-zinc-100">
         <button onClick={() => router.back()} className="p-2 mr-2"><span className="material-symbols-outlined font-bold text-zinc-900">arrow_back</span></button>
-        <h1 className="text-lg font-black font-headline text-zinc-900 tracking-tighter uppercase">Checkout</h1>
+        <h1 className="text-lg font-black font-headline text-zinc-900 tracking-tighter">Checkout</h1>
       </header>
 
       {cart.length === 0 ? (
         <div className="pt-[140px] flex flex-col items-center justify-center p-10 text-center">
           <span className="material-symbols-outlined text-zinc-200 text-8xl mb-6">shopping_bag</span>
-          <h2 className="text-2xl font-black text-zinc-900 mb-2 uppercase">Cart is empty</h2>
-          <button onClick={() => router.push("/")} className="bg-primary text-zinc-900 px-8 py-3 rounded-2xl font-black text-[10px] tracking-widest mt-4 uppercase">Go shop</button>
+          <h2 className="text-2xl font-black text-zinc-900 mb-2">Cart is empty</h2>
+          <button onClick={() => router.push("/")} className="bg-primary text-zinc-900 px-8 py-3 rounded-2xl font-black text-[10px] tracking-widest mt-4">Go shop</button>
         </div>
       ) : (
         <>
-          <div className="pt-20 space-y-3 px-4 uppercase">
+          <div className="pt-20 space-y-3 px-4">
             {recommendations.length > 0 && (
-              <section className="bg-white rounded-3xl p-5 shadow-sm border border-zinc-100 uppercase">
-                <h3 className="text-[10px] font-black tracking-widest text-zinc-900 mb-4 uppercase">You might also like</h3>
+              <section className="bg-white rounded-3xl p-5 shadow-sm border border-zinc-100">
+                <h3 className="text-[10px] font-black tracking-widest text-zinc-900 mb-4">You might also like</h3>
                 <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
                   {recommendations.map(p => <RecCard key={p.id} product={p} />)}
                 </div>
               </section>
             )}
 
-            <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100 uppercase">
-              <h3 className="text-[10px] font-black tracking-widest text-zinc-400 mb-4 uppercase">Select delivery slot</h3>
+            <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100">
+              <h3 className="text-[10px] font-black tracking-widest text-zinc-400 mb-4">Select delivery slot</h3>
               {availableSlots.length > 0 ? (
                 <div className="grid grid-cols-1 gap-2">
                   {availableSlots.map(slot => (
                     <button key={slot} onClick={() => setSelectedSlot(slot)} className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${selectedSlot === slot ? 'bg-primary/5 border-primary shadow-sm' : 'bg-zinc-50 border-zinc-100 text-zinc-500'}`}>
-                      <span className="text-xs font-black tracking-tight uppercase">{slot}</span>
+                      <span className="text-xs font-black tracking-tight">{slot}</span>
                       {selectedSlot === slot && <span className="material-symbols-outlined text-primary text-sm">check_circle</span>}
                     </button>
                   ))}
                 </div>
-              ) : <p className="text-[10px] font-bold text-zinc-400 uppercase">No slots available right now.</p>}
+              ) : <p className="text-[10px] font-bold text-zinc-400">No slots available right now.</p>}
             </section>
 
-            <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100 uppercase">
-              <h3 className="text-[10px] font-black tracking-widest text-zinc-400 mb-6 uppercase">Bill details</h3>
-              <div className="space-y-4 uppercase">
-                <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600 uppercase">
-                  <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">sticky_note_2</span><span className="tracking-widest capitalize uppercase">Items total</span></div>
-                  <span className="text-zinc-900 font-black uppercase">₹{subtotal.toFixed(0)}</span>
+            <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100">
+              <h3 className="text-[10px] font-black tracking-widest text-zinc-400 mb-6">Bill details</h3>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
+                  <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">sticky_note_2</span><span className="tracking-widest capitalize">Items total</span></div>
+                  <span className="text-zinc-900 font-black">₹{subtotal.toFixed(0)}</span>
                 </div>
-                <div className="flex flex-col gap-1 uppercase">
-                  <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600 uppercase">
-                    <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">delivery_dining</span><span className="tracking-widest capitalize uppercase">Delivery charge</span></div>
-                    <span className="text-zinc-900 font-black uppercase text-[10px]">{deliveryCharge === 0 ? 'Free' : `₹${deliveryCharge}`}</span>
+                <div className="flex flex-col gap-1">
+                  <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
+                    <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">delivery_dining</span><span className="tracking-widest capitalize">Delivery charge</span></div>
+                    <span className="text-zinc-900 font-black text-[10px]">{deliveryCharge === 0 ? 'Free' : `₹${deliveryCharge}`}</span>
                   </div>
-                  {deliveryCharge > 0 && settings?.freeDeliveryThreshold && <p className="text-[7px] font-black text-orange-500 tracking-widest ml-7 uppercase">Free on orders above ₹{settings.freeDeliveryThreshold}</p>}
+                  {deliveryCharge > 0 && settings?.freeDeliveryThreshold && <p className="text-[7px] font-black text-orange-500 tracking-widest ml-7">Free on orders above ₹{settings.freeDeliveryThreshold}</p>}
                 </div>
-                <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600 uppercase">
-                  <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">shopping_basket</span><span className="tracking-widest capitalize uppercase">Handling fee</span></div>
-                  <span className="text-zinc-900 font-black uppercase">₹{handlingFee}</span>
+                <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
+                  <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">shopping_basket</span><span className="tracking-widest capitalize">Handling fee</span></div>
+                  <span className="text-zinc-900 font-black">₹{handlingFee}</span>
                 </div>
                 {smallCartCharge > 0 && (
-                  <div className="flex flex-col gap-1 uppercase">
-                    <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600 uppercase">
-                      <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">shopping_cart_checkout</span><span className="tracking-widest capitalize uppercase">Small cart charge</span></div>
-                      <span className="text-zinc-900 font-black uppercase">₹{smallCartCharge}</span>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
+                      <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">shopping_cart_checkout</span><span className="tracking-widest capitalize">Small cart charge</span></div>
+                      <span className="text-zinc-900 font-black">₹{smallCartCharge}</span>
                     </div>
-                    <p className="text-[7px] font-black text-orange-500 tracking-widest ml-7 uppercase">Orders below ₹{settings?.smallCartThreshold || 100}</p>
+                    <p className="text-[7px] font-black text-orange-500 tracking-widest ml-7">Orders below ₹{settings?.smallCartThreshold || 100}</p>
                   </div>
                 )}
                 {settings?.customCharges?.map((c, i) => (
-                  <div key={i} className="flex justify-between items-center text-[11px] font-bold text-zinc-600 uppercase">
-                    <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">add_circle</span><span className="tracking-widest capitalize uppercase">{c.label}</span></div>
-                    <span className="text-zinc-900 font-black uppercase">₹{c.amount}</span>
+                  <div key={i} className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
+                    <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">add_circle</span><span className="tracking-widest capitalize">{c.label}</span></div>
+                    <span className="text-zinc-900 font-black">₹{c.amount}</span>
                   </div>
                 ))}
-                <div className="pt-4 border-t border-zinc-50 flex justify-between items-center text-sm font-black text-zinc-900 uppercase">
-                  <span className="tracking-widest uppercase">Grand total</span>
-                  <span className="text-xl tracking-tighter uppercase">₹{total.toFixed(0)}</span>
+                <div className="pt-4 border-t border-zinc-50 flex justify-between items-center text-sm font-black text-zinc-900">
+                  <span className="tracking-widest">Grand total</span>
+                  <span className="text-xl tracking-tighter">₹{total.toFixed(0)}</span>
                 </div>
               </div>
             </section>
 
-            <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100 uppercase">
-              <h3 className="text-[10px] font-black tracking-widest text-zinc-900 mb-6 uppercase">Payment mode</h3>
-              <div className="bg-green-50 border-2 border-green-100 rounded-2xl p-5 flex items-center justify-between uppercase">
-                <div className="flex items-center gap-4 uppercase">
+            <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100">
+              <h3 className="text-[10px] font-black tracking-widest text-zinc-900 mb-6">Payment mode</h3>
+              <div className="bg-green-50 border-2 border-green-100 rounded-2xl p-5 flex items-center justify-between">
+                <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-green-600 shadow-sm"><span className="material-symbols-outlined">payments</span></div>
-                  <div className="uppercase">
-                    <p className="text-xs font-black text-zinc-900 uppercase">Cash on delivery</p>
-                    <p className="text-[9px] font-bold text-zinc-400 tracking-widest uppercase">Pay at doorstep</p>
+                  <div>
+                    <p className="text-xs font-black text-zinc-900">Cash on delivery</p>
+                    <p className="text-[9px] font-bold text-zinc-400 tracking-widest">Pay at doorstep</p>
                   </div>
                 </div>
                 <span className="material-symbols-outlined text-green-600">check_circle</span>
               </div>
             </section>
 
-            <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100 uppercase">
-              <h3 className="text-[10px] font-black tracking-widest text-zinc-900 mb-6 uppercase">Delivery instructions</h3>
-              <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-1 uppercase">
+            <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100">
+              <h3 className="text-[10px] font-black tracking-widest text-zinc-900 mb-6">Delivery instructions</h3>
+              <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
                 {[{id: 'door', icon: 'door_open', label: 'At door'}, {id: 'guard', icon: 'guardian', label: 'With guard'}].map(opt => (
                   <button key={opt.id} onClick={() => setInstruction(opt.id === instruction ? null : opt.id)} className={`flex flex-col items-center justify-center min-w-[100px] h-[100px] rounded-2xl border transition-all ${instruction === opt.id ? 'bg-primary/5 border-primary shadow-inner' : 'bg-zinc-50 border-zinc-100 text-zinc-400'}`}>
                     <span className="material-symbols-outlined mb-2 text-2xl" style={{fontVariationSettings: instruction === opt.id ? "'FILL'1" : ""}}>{opt.icon}</span>
-                    <span className="text-[8px] font-black tracking-widest text-center px-2 uppercase">{opt.label}</span>
+                    <span className="text-[8px] font-black tracking-widest text-center px-2">{opt.label}</span>
                   </button>
                 ))}
               </div>
@@ -266,17 +262,17 @@ export default function CheckoutPage() {
           </div>
 
           <div className="fixed bottom-0 left-0 w-full bg-white border-t border-zinc-100 p-4 z-[60] shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-            <div className="max-w-3xl mx-auto flex items-center justify-between gap-4 uppercase">
-              <div className="flex flex-col overflow-hidden uppercase">
-                <div className="flex items-center gap-2 uppercase">
+            <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
+              <div className="flex flex-col overflow-hidden">
+                <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-lg text-zinc-900" style={{fontVariationSettings: "'FILL'1"}}>home</span>
-                  <p className="text-[10px] font-black text-zinc-900 truncate uppercase">{selectedSlot || 'Set slot'}</p>
+                  <p className="text-[10px] font-black text-zinc-900 truncate">{selectedSlot || 'Set slot'}</p>
                 </div>
-                <p className="text-[8px] font-bold text-zinc-400 truncate max-w-[140px] ml-6 uppercase">{displayAddress}</p>
+                <p className="text-[8px] font-bold text-zinc-400 truncate max-w-[140px] ml-6">{displayAddress}</p>
               </div>
-              <button onClick={handleCheckout} disabled={placingOrder} className="flex-1 bg-green-600 text-white h-14 rounded-xl flex items-center justify-between px-6 active:scale-[0.98] transition-all disabled:opacity-50 uppercase">
-                <div className="flex flex-col items-start leading-none uppercase"><span className="text-[14px] font-black uppercase">₹{total.toFixed(0)}</span><span className="text-[8px] font-bold tracking-widest opacity-80 uppercase">Total</span></div>
-                <div className="flex items-center gap-2 uppercase"><span className="text-[14px] font-black tracking-widest uppercase">{placingOrder ? 'Wait...' : 'Place order'}</span><span className="material-symbols-outlined text-sm">arrow_right</span></div>
+              <button onClick={handleCheckout} disabled={placingOrder} className="flex-1 bg-green-600 text-white h-14 rounded-xl flex items-center justify-between px-6 active:scale-[0.98] transition-all disabled:opacity-50">
+                <div className="flex flex-col items-start leading-none"><span className="text-[14px] font-black">₹{total.toFixed(0)}</span><span className="text-[8px] font-bold tracking-widest opacity-80">Total</span></div>
+                <div className="flex items-center gap-2"><span className="text-[14px] font-black tracking-widest">{placingOrder ? 'Wait...' : 'Place order'}</span><span className="material-symbols-outlined text-sm">arrow_right</span></div>
               </button>
             </div>
           </div>

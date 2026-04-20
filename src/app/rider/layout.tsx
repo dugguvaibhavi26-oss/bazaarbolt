@@ -58,8 +58,8 @@ export default function RiderLayout({ children }: { children: React.ReactNode })
  </div>
  </main>
 
- {/* Simple Bottom Bar for Rider - Hidden on detail pages */}
- {!pathname.includes('/orders/') && (
+ {/* Simple Bottom Bar for Rider - Hidden on detail pages and account/earnings if needed, but primarily job details */}
+ {!(pathname.includes('/rider/orders/') || pathname.split('/').length > 3) && (
  <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] z-50 bg-zinc-900/95 backdrop-blur-3xl shadow-2xl rounded-full px-6 py-3 flex justify-around items-center">
  <Link href="/rider"className={`flex flex-col items-center gap-1 ${pathname === '/rider'? 'text-primary': 'text-white/40'}`}>
  <span className="material-symbols-outlined text-2xl font-bold">dashboard</span>

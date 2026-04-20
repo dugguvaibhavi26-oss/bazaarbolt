@@ -1,14 +1,22 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, getDocs, collection, query, where, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { AppSettings, CartItem, Address } from "@/types";
+import { AppSettings, CartItem, Address, Product } from "@/types";
 import toast from "react-hot-toast";
-import { mapSettings } from "@/lib/mappers";
+import { mapSettings, mapProduct } from "@/lib/mappers";
+
+// Step 9: Monitor reads
+const logFirestoreRead = (collection: string, count: number) => {
+  console.log(`%c[FIRESTORE READ] %c${count} doc(s) from %c${collection}`, "color: #f59e0b; font-weight: bold", "color: #10b981", "color: #3b82f6");
+};
 
 interface StoreState {
   settings: AppSettings | null;
   settingsLoading: boolean;
+  categories: any[];
+  products: Product[];
+  catalogLoading: boolean;
   cart: CartItem[];
   selectedAddress: Address | null;
   activeCoupon: { code: string; discount: number } | null;
@@ -19,7 +27,8 @@ interface StoreState {
   applyCoupon: (code: string) => void;
   removeCoupon: () => void;
   setSelectedAddress: (address: Address | null) => void;
-  initSettings: () => () => void;
+  initSettings: () => Promise<void>;
+  fetchCatalog: (forced?: boolean) => Promise<void>;
 }
 
 export const useStore = create<StoreState>()(
@@ -27,6 +36,9 @@ export const useStore = create<StoreState>()(
     (set, get) => ({
       settings: null,
       settingsLoading: true,
+      categories: [],
+      products: [],
+      catalogLoading: true,
       cart: [],
       selectedAddress: null,
       activeCoupon: null,
@@ -113,46 +125,80 @@ export const useStore = create<StoreState>()(
         toast.success("Coupon removed");
       },
 
-      initSettings: () => {
+      initSettings: async () => {
+        const { settings } = get();
+        if (settings) return; // Fetch only once per session
+
+        set({ settingsLoading: true });
         const settingsRef = doc(db, "settings", "config");
-        const unsubscribe = onSnapshot(settingsRef, (docSnap) => {
+        
+        try {
+          // Step 2 & 7: Cache-first
+          const docSnap = await getDoc(settingsRef);
+          logFirestoreRead("settings", 1);
+          
           if (docSnap.exists()) {
-            try {
-              const data = mapSettings(docSnap);
-              set({ settings: data, settingsLoading: false });
-              if (data.primaryColor) {
-                document.documentElement.style.setProperty('--primary', data.primaryColor);
-              }
-            } catch (e) {
-              console.error("Settings error:", e);
-              set({ settingsLoading: false });
+            const data = mapSettings(docSnap);
+            set({ settings: data, settingsLoading: false });
+            if (data.primaryColor) {
+              document.documentElement.style.setProperty('--primary', data.primaryColor);
             }
-          } else {
-            const defaultSettings: AppSettings = {
-              storeOpen: true,
-              bannerImage: "",
-              announcement: "Welcome to BazaarBolt!",
-              primaryColor: "#22c55e",
-              taxPercent: 5,
-              codEnabled: true,
-              coupon: { code: "TRYNEW", discount: 10 },
-              handlingCharge: 2,
-              deliveryFee: 25,
-              freeDeliveryThreshold: 500,
-              smallCartFee: 20,
-              smallCartThreshold: 99,
-              customCharges: []
-            };
-            set({ settings: defaultSettings, settingsLoading: false });
           }
-        });
-        return unsubscribe;
+        } catch (e) {
+          console.error("Settings error:", e);
+          set({ settingsLoading: false });
+        }
+      },
+
+      // Step 2, 3, 8: Centralized catalog fetch with pagination/limit
+      fetchCatalog: async (forced = false) => {
+        const { products, catalogLoading } = get();
+        if (products.length > 0 && !forced) return;
+        
+        set({ catalogLoading: true });
+        try {
+          // Fetch Categories
+          const catQuery = query(collection(db, "categories"), where("active", "==", true));
+          const catSnap = await getDocs(catQuery);
+          logFirestoreRead("categories", catSnap.size);
+          const cats = catSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          cats.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+
+          // Fetch Products (Step 8: Limited query)
+          const prodQuery = query(
+            collection(db, "products"), 
+            where("active", "==", true), 
+            limit(100) // Avoid unbounded queries
+          );
+          const prodSnap = await getDocs(prodQuery);
+          logFirestoreRead("products", prodSnap.size);
+          
+          const prods: Product[] = [];
+          prodSnap.forEach(docSnap => {
+            const data = docSnap.data();
+            if (!data.isDeleted) prods.push(mapProduct(docSnap));
+          });
+
+          set({ 
+            products: prods, 
+            categories: cats, 
+            catalogLoading: false 
+          });
+        } catch (e) {
+          console.error("Catalog fetch error:", e);
+          set({ catalogLoading: false });
+        }
       }
     }),
     {
       name: "bazaarbolt-storage",
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ cart: state.cart, selectedAddress: state.selectedAddress }),
+      partialize: (state) => ({ 
+        cart: state.cart, 
+        selectedAddress: state.selectedAddress,
+        products: state.products,
+        categories: state.categories
+      }),
     }
   )
 );

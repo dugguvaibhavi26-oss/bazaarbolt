@@ -36,34 +36,28 @@ export const mapOrder = (doc: DocumentSnapshot<DocumentData>): Order => {
   const data = doc.data();
   if (!data) throw new Error(`Order document ${doc.id} is non-existent`);
 
-  // Critical Validation
-  if (typeof data.userId !== "string") throw new Error(`Invalid userId for order ${doc.id}`);
-  if (typeof data.total !== "number") throw new Error(`Invalid total for order ${doc.id}`);
-  if (typeof data.status !== "string") throw new Error(`Invalid status for order ${doc.id}`);
-  if (!Array.isArray(data.items)) throw new Error(`Invalid items array for order ${doc.id}`);
+  // Robust parsing: Don't throw if one or two fields are slightly off, use defaults
+  const items = Array.isArray(data.items) ? data.items.map((item: any, idx: number): CartItem => {
+    return {
+      id: typeof item.id === "string" ? item.id : `item-${idx}`,
+      name: typeof item.name === "string" ? item.name : "Item",
+      price: typeof item.price === "number" ? item.price : 0,
+      image: typeof item.image === "string" ? item.image : "",
+      category: typeof item.category === "string" ? item.category : "",
+      quantity: typeof item.quantity === "number" ? item.quantity : 1,
+      stock: typeof item.stock === "number" ? item.stock : 0,
+      unavailable: typeof item.unavailable === "boolean" ? item.unavailable : false,
+    };
+  }) : [];
 
   return {
     id: doc.id,
-    userId: data.userId,
+    userId: typeof data.userId === "string" ? data.userId : "unknown",
     customerName: typeof data.customerName === "string" ? data.customerName : "Customer",
-    items: data.items.map((item: any, idx: number): CartItem => {
-      if (!item || typeof item.id !== "string" || typeof item.price !== "number" || typeof item.quantity !== "number") {
-        throw new Error(`Invalid item at index ${idx} in order ${doc.id}`);
-      }
-      return {
-        id: item.id,
-        name: typeof item.name === "string" ? item.name : "Item",
-        price: item.price,
-        image: typeof item.image === "string" ? item.image : "",
-        category: typeof item.category === "string" ? item.category : "",
-        quantity: item.quantity,
-        stock: typeof item.stock === "number" ? item.stock : 0,
-        unavailable: typeof item.unavailable === "boolean" ? item.unavailable : false,
-      };
-    }),
+    items,
     subtotal: typeof data.subtotal === "number" ? data.subtotal : 0,
     tax: typeof data.tax === "number" ? data.tax : 0,
-    total: data.total,
+    total: typeof data.total === "number" ? data.total : 0,
     status: (["PLACED", "ACCEPTED", "PICKED", "ON_THE_WAY", "DELIVERED", "CANCELLED"].includes(data.status) ? data.status : "PLACED") as OrderStatus,
     paymentMethod: typeof data.paymentMethod === "string" ? data.paymentMethod : "COD",
     riderId: typeof data.riderId === "string" ? data.riderId : null,

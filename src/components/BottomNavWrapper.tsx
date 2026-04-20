@@ -6,8 +6,8 @@ import { BottomNav } from "./BottomNav";
 export function BottomNavWrapper() {
   const pathname = usePathname();
   
-  // Hide bottom nav on admin, rider, and login pages
-  const hideOn = ["/admin", "/rider", "/login"];
+  // Hide bottom nav on admin, rider, login, checkout, and product detail pages
+  const hideOn = ["/admin", "/rider", "/login", "/checkout", "/product"];
   const shouldHide = hideOn.some(path => pathname.startsWith(path));
   
   if (shouldHide) return null;
