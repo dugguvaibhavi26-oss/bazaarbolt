@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { AdUnit } from "@/components/AdUnit";
 import { BottomNav } from "@/components/BottomNav";
 import { Logo } from "@/components/Logo";
+import { Portal } from "@/components/Portal";
 
 export default function Home() {
   const { 
@@ -399,115 +400,119 @@ export default function Home() {
       </main>
 
       {isAddressModalOpen && (
-        <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsAddressModalOpen(false)}></div>
-          <div className="bg-white w-full max-w-lg rounded-t-[40px] sm:rounded-[40px] p-8 md:p-12 shadow-2xl animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-500 relative z-10 max-h-[90vh] flex flex-col pointer-events-auto">
-            <button onClick={() => setIsAddressModalOpen(false)} className="absolute top-6 right-6 w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-500 hover:bg-zinc-200 transition-colors z-20">
-              <span className="material-symbols-outlined text-[18px]">close</span>
-            </button>
-            <div className="absolute top-0 right-0 p-10 opacity-5 -z-10 pointer-events-none border-b border-white"><span className="material-symbols-outlined text-[140px]">location_on</span></div>
-            <div className="flex-shrink-0 flex justify-between items-start mb-6">
-              <div>
-                <h2 className="text-4xl font-headline font-black text-zinc-900 tracking-tighter leading-none">Select address</h2>
-                <p className="text-[10px] font-bold text-zinc-400 tracking-widest mt-2">Where should we bolt your order?</p>
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 -mr-2 space-y-6">
-              {userData?.addresses?.length > 0 && (
-                <div className="space-y-3">
-                  <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">Saved addresses</label>
-                  <div className="grid grid-cols-1 gap-2">
-                    {userData.addresses.map((addr: Address, idx: number) => (
-                      <button 
-                        key={idx}
-                        onClick={() => { setSelectedAddress(addr); setIsAddressModalOpen(false); }}
-                        className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center gap-4 ${selectedAddress?.line1 === addr.line1 ? 'bg-primary/5 border-primary shadow-sm' : 'bg-zinc-50 border-zinc-100 hover:bg-zinc-100'}`}
-                      >
-                         <span className="material-symbols-outlined text-zinc-400">home</span>
-                         <div className="flex flex-col">
-                           <span className="text-[10px] font-black text-zinc-900">{addr.city}</span>
-                           <span className="text-[9px] font-bold text-zinc-400 truncate max-w-[200px]">{addr.line1}</span>
-                         </div>
-                         {selectedAddress?.line1 === addr.line1 && <span className="material-symbols-outlined ml-auto text-primary text-sm">check_circle</span>}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="pt-4 border-t border-zinc-100">
-                <button onClick={() => { setAddressForm({line1:"", line2:"", city:"", pincode:"", landmark:""}); /* logic to show form below */ }} className="flex items-center gap-2 text-primary font-black text-[10px] tracking-widest mb-4">
-                  <span className="material-symbols-outlined text-lg">add_circle</span>
-                  Add a New Address
-                </button>
-
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">Building / house no.</label>
-                    <input type="text" placeholder="Flat no, house name, street" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all placeholder:text-zinc-300" value={addressForm.line1} onChange={e => setAddressForm({ ...addressForm, line1: e.target.value })} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">City</label>
-                      <input type="text" placeholder="e.g. Noida" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all placeholder:text-zinc-300" value={addressForm.city} onChange={e => setAddressForm({ ...addressForm, city: e.target.value })} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">Pincode</label>
-                      <input type="number" placeholder="110001" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all" value={addressForm.pincode} onChange={e => setAddressForm({ ...addressForm, pincode: e.target.value })} />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex gap-4 pt-6">
-                  <button onClick={() => setIsAddressModalOpen(false)} className="flex-1 bg-zinc-100 text-zinc-500 py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-zinc-200">Cancel</button>
-                  <button onClick={handleSaveAddress} className="flex-1 bg-zinc-900 text-white py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-black shadow-xl shadow-zinc-900/10">Save & Use</button>
+        <Portal>
+          <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div className="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsAddressModalOpen(false)}></div>
+            <div className="bg-white w-full max-w-lg rounded-t-[40px] sm:rounded-[40px] p-8 md:p-12 shadow-2xl animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-500 relative z-10 max-h-[90vh] flex flex-col pointer-events-auto">
+              <button onClick={() => setIsAddressModalOpen(false)} className="absolute top-6 right-6 w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-500 hover:bg-zinc-200 transition-colors z-20">
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+              <div className="absolute top-0 right-0 p-10 opacity-5 -z-10 pointer-events-none border-b border-white"><span className="material-symbols-outlined text-[140px]">location_on</span></div>
+              <div className="flex-shrink-0 flex justify-between items-start mb-6">
+                <div>
+                  <h2 className="text-4xl font-headline font-black text-zinc-900 tracking-tighter leading-none">Select address</h2>
+                  <p className="text-[10px] font-bold text-zinc-400 tracking-widest mt-2">Where should we bolt your order?</p>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {pendingRatingOrder && (
-        <div className="fixed inset-0 z-[200] bg-zinc-950/60 backdrop-blur-md flex items-end sm:items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white max-w-md w-full rounded-[40px] p-8 shadow-2xl relative animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-500 overflow-hidden">
-            <button onClick={() => setPendingRatingOrder(null)} className="absolute top-6 right-6 w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-500 hover:bg-zinc-200 transition-colors z-10">
-              <span className="material-symbols-outlined text-[18px]">close</span>
-            </button>
-            <div className="text-center mb-8 relative">
-               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                 <span className="material-symbols-outlined text-4xl text-primary" style={{fontVariationSettings: "'FILL'1"}}>star</span>
-               </div>
-               <h2 className="text-2xl font-headline font-black text-zinc-900 tracking-tight leading-none mb-2">How was your order?</h2>
-               <p className="text-[10px] font-black text-zinc-400 tracking-[0.1em] uppercase">Rate these items and help us make customers happier!</p>
-            </div>
-
-            <div className="space-y-4 max-h-[40vh] overflow-y-auto mb-8 pr-2 custom-scrollbar">
-              {pendingRatingOrder.items.map((item, idx) => (
-                <div key={`${item.id}-${idx}`} className="flex items-center gap-4 bg-zinc-50 p-4 rounded-2xl border border-zinc-100">
-                  <div className="w-12 h-12 flex-shrink-0 bg-white p-1 shadow-sm rounded-lg border border-zinc-100"><img src={item.image} alt={item.name} className="w-full h-full object-contain" /></div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-bold text-zinc-900 truncate leading-none mb-2">{item.name}</p>
-                    <div className="flex gap-1">
-                      {[1,2,3,4,5].map(star => (
-                        <button key={star} onClick={() => setRatings({...ratings, [item.id]: star})}>
-                          <span className={`material-symbols-outlined text-2xl ${ratings[item.id] >= star ? 'text-yellow-400' : 'text-zinc-200'} active:scale-95 transition-transform`} style={{fontVariationSettings: "'FILL'1"}}>star</span>
+              <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 -mr-2 space-y-6">
+                {userData?.addresses?.length > 0 && (
+                  <div className="space-y-3">
+                    <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">Saved addresses</label>
+                    <div className="grid grid-cols-1 gap-2">
+                      {userData.addresses.map((addr: Address, idx: number) => (
+                        <button 
+                          key={idx}
+                          onClick={() => { setSelectedAddress(addr); setIsAddressModalOpen(false); }}
+                          className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center gap-4 ${selectedAddress?.line1 === addr.line1 ? 'bg-primary/5 border-primary shadow-sm' : 'bg-zinc-50 border-zinc-100 hover:bg-zinc-100'}`}
+                        >
+                          <span className="material-symbols-outlined text-zinc-400">home</span>
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-black text-zinc-900">{addr.city}</span>
+                            <span className="text-[9px] font-bold text-zinc-400 truncate max-w-[200px]">{addr.line1}</span>
+                          </div>
+                          {selectedAddress?.line1 === addr.line1 && <span className="material-symbols-outlined ml-auto text-primary text-sm">check_circle</span>}
                         </button>
                       ))}
                     </div>
                   </div>
+                )}
+
+                <div className="pt-4 border-t border-zinc-100">
+                  <button onClick={() => { setAddressForm({line1:"", line2:"", city:"", pincode:"", landmark:""}); /* logic to show form below */ }} className="flex items-center gap-2 text-primary font-black text-[10px] tracking-widest mb-4">
+                    <span className="material-symbols-outlined text-lg">add_circle</span>
+                    Add a New Address
+                  </button>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">Building / house no.</label>
+                      <input type="text" placeholder="Flat no, house name, street" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all placeholder:text-zinc-300" value={addressForm.line1} onChange={e => setAddressForm({ ...addressForm, line1: e.target.value })} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">City</label>
+                        <input type="text" placeholder="e.g. Noida" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all placeholder:text-zinc-300" value={addressForm.city} onChange={e => setAddressForm({ ...addressForm, city: e.target.value })} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">Pincode</label>
+                        <input type="number" placeholder="110001" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all" value={addressForm.pincode} onChange={e => setAddressForm({ ...addressForm, pincode: e.target.value })} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-4 pt-6">
+                    <button onClick={() => setIsAddressModalOpen(false)} className="flex-1 bg-zinc-100 text-zinc-500 py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-zinc-200">Cancel</button>
+                    <button onClick={handleSaveAddress} className="flex-1 bg-zinc-900 text-white py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-black shadow-xl shadow-zinc-900/10">Save & Use</button>
+                  </div>
                 </div>
-              ))}
+              </div>
             </div>
-            
-            <button 
-               onClick={submitRating}
-               className="w-full bg-primary text-zinc-900 font-headline font-black text-sm tracking-widest py-4 rounded-2xl hover:bg-green-500 shadow-xl shadow-primary/20 transition-all active:scale-95"
-            >
-              Submit Ratings
-            </button>
           </div>
-        </div>
+        </Portal>
+      )}
+
+      {pendingRatingOrder && (
+        <Portal>
+          <div className="fixed inset-0 z-[200] bg-zinc-950/60 backdrop-blur-md flex items-end sm:items-center justify-center p-4 animate-in fade-in duration-300">
+            <div className="bg-white max-w-md w-full rounded-[40px] p-8 shadow-2xl relative animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-500 overflow-hidden pointer-events-auto">
+              <button onClick={() => setPendingRatingOrder(null)} className="absolute top-6 right-6 w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-500 hover:bg-zinc-200 transition-colors z-10">
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+              <div className="text-center mb-8 relative">
+                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                   <span className="material-symbols-outlined text-4xl text-primary" style={{fontVariationSettings: "'FILL'1"}}>star</span>
+                 </div>
+                 <h2 className="text-2xl font-headline font-black text-zinc-900 tracking-tight leading-none mb-2">How was your order?</h2>
+                 <p className="text-[10px] font-black text-zinc-400 tracking-[0.1em] uppercase">Rate these items and help us make customers happier!</p>
+              </div>
+
+              <div className="space-y-4 max-h-[40vh] overflow-y-auto mb-8 pr-2 custom-scrollbar">
+                {pendingRatingOrder.items.map((item, idx) => (
+                  <div key={`${item.id}-${idx}`} className="flex items-center gap-4 bg-zinc-50 p-4 rounded-2xl border border-zinc-100">
+                    <div className="w-12 h-12 flex-shrink-0 bg-white p-1 shadow-sm rounded-lg border border-zinc-100"><img src={item.image} alt={item.name} className="w-full h-full object-contain" /></div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-bold text-zinc-900 truncate leading-none mb-2">{item.name}</p>
+                      <div className="flex gap-1">
+                        {[1,2,3,4,5].map(star => (
+                          <button key={star} onClick={() => setRatings({...ratings, [item.id]: star})}>
+                            <span className={`material-symbols-outlined text-2xl ${ratings[item.id] >= star ? 'text-yellow-400' : 'text-zinc-200'} active:scale-95 transition-transform`} style={{fontVariationSettings: "'FILL'1"}}>star</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <button 
+                 onClick={submitRating}
+                 className="w-full bg-primary text-zinc-900 font-headline font-black text-sm tracking-widest py-4 rounded-2xl hover:bg-green-500 shadow-xl shadow-primary/20 transition-all active:scale-95"
+              >
+                Submit Ratings
+              </button>
+            </div>
+          </div>
+        </Portal>
       )}
     </div>
   );
