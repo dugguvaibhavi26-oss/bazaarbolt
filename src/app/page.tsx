@@ -399,17 +399,21 @@ export default function Home() {
       </main>
 
       {isAddressModalOpen && (
-        <div className="fixed inset-0 z-[100] bg-zinc-950/40 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-lg rounded-t-[40px] sm:rounded-[40px] p-8 md:p-12 shadow-2xl animate-in slide-in-from-bottom-full duration-500 overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-10 opacity-5 -z-10"><span className="material-symbols-outlined text-[140px]">location_on</span></div>
-            <div className="flex justify-between items-start mb-6">
+        <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsAddressModalOpen(false)}></div>
+          <div className="bg-white w-full max-w-lg rounded-t-[40px] sm:rounded-[40px] p-8 md:p-12 shadow-2xl animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-500 relative z-10 max-h-[90vh] flex flex-col pointer-events-auto">
+            <button onClick={() => setIsAddressModalOpen(false)} className="absolute top-6 right-6 w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-500 hover:bg-zinc-200 transition-colors z-20">
+              <span className="material-symbols-outlined text-[18px]">close</span>
+            </button>
+            <div className="absolute top-0 right-0 p-10 opacity-5 -z-10 pointer-events-none border-b border-white"><span className="material-symbols-outlined text-[140px]">location_on</span></div>
+            <div className="flex-shrink-0 flex justify-between items-start mb-6">
               <div>
                 <h2 className="text-4xl font-headline font-black text-zinc-900 tracking-tighter leading-none">Select address</h2>
                 <p className="text-[10px] font-bold text-zinc-400 tracking-widest mt-2">Where should we bolt your order?</p>
               </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 -mr-2 space-y-6">
               {userData?.addresses?.length > 0 && (
                 <div className="space-y-3">
                   <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">Saved addresses</label>

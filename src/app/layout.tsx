@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
@@ -15,7 +15,16 @@ export const metadata: Metadata = {
   description: "Get groceries delivered in minutes",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+};
+
 import { PushNotificationManager } from "@/components/PushNotificationManager";
+import { CapacitorAppConfig } from "@/components/CapacitorAppConfig";
 
 export default function RootLayout({
   children,
@@ -33,6 +42,7 @@ export default function RootLayout({
         <ErrorBoundary>
           <AuthProvider>
             <PushNotificationManager />
+            <CapacitorAppConfig />
             <PageTransition>
               {children}
             </PageTransition>

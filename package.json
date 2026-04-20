@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@capacitor/android": "^8.3.1",
+    "@capacitor/app": "^8.1.0",
     "@capacitor/cli": "^8.3.1",
     "@capacitor/core": "^8.3.1",
     "@capacitor/push-notifications": "^8.0.3",
+    "@capacitor/screen-orientation": "^8.0.1",
     "@capacitor/splash-screen": "^8.0.1",
     "firebase": "^10.14.1",
     "firebase-admin": "^13.8.0",
