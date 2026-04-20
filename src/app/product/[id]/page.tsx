@@ -167,12 +167,18 @@ export default function ProductPage() {
  {/* Fixed Bottom Action Bar */}
  <div className="fixed bottom-0 left-0 w-full bg-white border-t border-zinc-100 p-4 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] uppercase">
  <div className="max-w-2xl mx-auto flex items-center gap-4 uppercase">
- {!cartItem ? (
- <button disabled={outOfStock}
- onClick={() => addToCart({...product, quantity: 1})}
- className="flex-1 h-12 bg-primary hover:bg-green-600 text-zinc-900 rounded-xl font-black text-[11px] tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all disabled:opacity-50 disabled:bg-zinc-200 disabled:text-zinc-500 disabled:shadow-none uppercase"
+ {outOfStock ? (
+ <button disabled
+ className="flex-1 h-12 bg-red-50 text-red-600 border border-red-100 rounded-xl font-black text-[11px] tracking-widest cursor-not-allowed uppercase"
  >
- {outOfStock ? 'Out of Stock': 'Add to cart'}
+ SOLD OUT
+ </button>
+ ) : !cartItem ? (
+ <button
+ onClick={() => addToCart({...product, quantity: 1})}
+ className="flex-1 h-12 bg-primary hover:bg-green-600 text-zinc-900 rounded-xl font-black text-[11px] tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all uppercase"
+ >
+ Add to cart
  </button>
  ) : (
  <div className="w-full flex items-center gap-4 uppercase">

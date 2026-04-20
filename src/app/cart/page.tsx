@@ -3,7 +3,7 @@
 import { useStore } from "@/store/useStore";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Product } from "@/types";
+import { Product, CartItem as CartItemType } from "@/types";
 import { BottomNav } from "@/components/BottomNav";
 
 export default function CartPage() {
@@ -25,7 +25,7 @@ export default function CartPage() {
     router.push("/checkout");
   };
 
-  const CartItem = ({ item }: { item: Product & { quantity: number } }) => (
+  const CartItem = ({ item }: { item: CartItemType }) => (
     <div className="flex items-center gap-4 bg-white p-4 rounded-[28px] border border-zinc-100 shadow-sm transition-all hover:shadow-md">
       <div className="w-20 h-20 bg-zinc-50 rounded-2xl p-2 flex items-center justify-center border border-zinc-100 flex-shrink-0">
         <img className="w-full h-full object-contain" src={item.image} alt={item.name} />

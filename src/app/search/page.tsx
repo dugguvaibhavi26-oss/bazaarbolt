@@ -58,9 +58,12 @@ export default function SearchPage() {
         <div className="relative aspect-square bg-[#F3F4F6] rounded-2xl overflow-hidden border border-zinc-100 cursor-pointer uppercase" onClick={() => router.push(`/product/${product.id}`)}>
           <img className="w-full h-full p-2 object-contain group-hover:scale-105 transition-transform duration-500 uppercase" src={product.image} alt={product.name} />
           <div className="absolute bottom-1 right-1 uppercase">
-            {!cartItem ? (
+            {outOfStock ? (
+              <div className="bg-red-50 border border-red-100 text-red-600 px-2 py-1 rounded-lg text-[8px] font-black shadow-sm uppercase">
+                SOLD OUT
+              </div>
+            ) : !cartItem ? (
               <button
-                disabled={outOfStock}
                 onClick={(e) => { e.stopPropagation(); addToCart({ ...product, quantity: 1 }); }}
                 className="bg-white border-[1.5px] border-green-600 text-green-600 px-3 py-1 rounded-lg text-[10px] font-black shadow-lg active:scale-90 transition-all uppercase"
               >
