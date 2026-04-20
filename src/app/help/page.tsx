@@ -1,112 +1,106 @@
 "use client";
 
+import { useStore } from "@/store/useStore";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, query } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import toast from "react-hot-toast";
+import { BottomNav } from "@/components/BottomNav";
+
+interface FAQ {
+  q: string;
+  a: string;
+  order?: number;
+}
 
 export default function HelpPage() {
   const router = useRouter();
-  const [search, setSearch] = useState("");
-  const [faqs, setFaqs] = useState<any[]>([]);
+  const { cart } = useStore();
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
-    const q = query(collection(db, "faqs"));
+    const q = query(collection(db, "faqs"), orderBy("order", "asc"));
     const unsub = onSnapshot(q, (snap) => {
-      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      items.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
-      setFaqs(items);
+      setFaqs(snap.docs.map(d => d.data() as FAQ));
       setLoading(false);
     });
     return () => unsub();
   }, []);
 
+  const filteredFaqs = faqs.filter(f => 
+    f.q.toLowerCase().includes(search.toLowerCase()) || 
+    f.a.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <main className="min-h-screen bg-zinc-50 pb-32">
-      <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-2xl shadow-sm pt-safe">
-        <div className="flex items-center px-4 py-4 w-full max-w-3xl mx-auto gap-4">
-          <button onClick={() => router.back()} className="p-2 hover:bg-zinc-100 rounded-full transition-colors">
-            <span className="material-symbols-outlined text-zinc-900 font-bold">arrow_back</span>
+    <main className="bg-white min-h-screen pb-44 uppercase">
+      {/* Premium Header with Back Arrow Top Left */}
+      <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-3xl pt-safe border-b border-zinc-100 uppercase">
+        <div className="flex items-center px-4 py-5 w-full max-w-2xl mx-auto gap-4 uppercase">
+          <button onClick={() => router.back()} className="p-2 bg-zinc-100 rounded-full hover:bg-zinc-200 transition-colors uppercase">
+            <span className="material-symbols-outlined text-zinc-900 font-bold uppercase">arrow_back</span>
           </button>
-          <h1 className="text-xl font-headline font-black text-zinc-900 tracking-tight leading-none italic-remove">Help center</h1>
+          <div className="flex flex-col uppercase">
+            <h1 className="text-xl font-headline font-black text-zinc-900 tracking-tighter leading-none uppercase">Help Center</h1>
+            <span className="text-[10px] font-black text-zinc-400 tracking-widest mt-1 uppercase">Instant answers for you</span>
+          </div>
         </div>
       </header>
 
-      <div className="pt-24 px-5 max-w-3xl mx-auto">
-        <div className="bg-zinc-900 rounded-[32px] p-8 text-white mb-8 shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-bl-[100px] pointer-events-none"></div>
-          <h2 className="text-3xl font-headline font-black mb-6 tracking-tight italic-remove">How can we help?</h2>
-          <div className="relative">
-            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500">search</span>
+      <div className="pt-28 px-4 max-w-2xl mx-auto uppercase">
+        {/* Bolt Styled Search Bar */}
+        <div className="mb-8 uppercase">
+          <div className="bg-zinc-100 rounded-2xl flex items-center px-4 py-3 gap-3 border border-zinc-200 shadow-inner group focus-within:bg-white focus-within:border-primary transition-all uppercase">
+            <span className="material-symbols-outlined text-zinc-400 text-lg uppercase">search</span>
             <input 
               type="text" 
-              placeholder="Search for issues..." 
-              className="w-full bg-white/10 border-none rounded-2xl py-4 pl-12 pr-4 text-sm font-bold placeholder:text-zinc-500 focus:ring-2 ring-primary/50 transition-all outline-none"
+              placeholder="Search for questions..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 bg-transparent border-none p-0 font-bold text-xs focus:ring-0 placeholder:text-zinc-400 text-zinc-900 uppercase placeholder:uppercase"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-10">
-          <button onClick={() => toast.success("Connecting to chat...")} className="bg-white p-6 rounded-[32px] border border-zinc-100 shadow-sm flex flex-col items-center gap-3 active:scale-95 transition-all">
-            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
-              <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL'1"}}>chat</span>
-            </div>
-            <span className="font-headline font-black text-xs tracking-widest text-zinc-900">Live chat</span>
-          </button>
-          <button onClick={() => window.open('tel:1800-BOLT-HELP')} className="bg-white p-6 rounded-[32px] border border-zinc-100 shadow-sm flex flex-col items-center gap-3 active:scale-95 transition-all">
-            <div className="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center">
-              <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL'1"}}>call</span>
-            </div>
-            <span className="font-headline font-black text-xs tracking-widest text-zinc-900">Call us</span>
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="font-headline font-black text-sm text-zinc-400 tracking-widest ml-2 mb-4">Common questions</h3>
+        <div className="space-y-6 uppercase">
+          <h3 className="text-[10px] font-black text-zinc-400 tracking-widest uppercase mb-4 ml-1">Frequently Asked Questions</h3>
+          
           {loading ? (
-            [1, 2, 3].map(i => <div key={i} className="h-24 bg-white rounded-3xl animate-pulse" />)
-          ) : faqs.length === 0 ? (
-             <p className="text-center text-zinc-400 text-xs py-10">No FAQs found.</p>
+            <div className="space-y-4 uppercase">
+               {[1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-zinc-50 rounded-3xl animate-pulse uppercase" />)}
+            </div>
+          ) : filteredFaqs.length === 0 ? (
+             <div className="py-20 flex flex-col items-center justify-center opacity-30 uppercase">
+                <span className="material-symbols-outlined text-6xl mb-4 uppercase">support_agent</span>
+                <p className="font-headline font-black tracking-widest text-xs uppercase">No answers found yet</p>
+             </div>
           ) : (
-            faqs.filter(f => f.q.toLowerCase().includes(search.toLowerCase())).map((faq, idx) => (
-              <div key={idx} className="bg-white rounded-3xl p-6 border border-zinc-100 shadow-sm group">
-                <h4 className="font-headline font-black text-zinc-900 mb-3 group-hover:text-primary transition-colors">{faq.q}</h4>
-                <p className="text-zinc-500 text-sm font-medium leading-relaxed">{faq.a}</p>
-              </div>
-            ))
+            <div className="space-y-3 uppercase">
+              {filteredFaqs.map((faq, idx) => (
+                <div key={idx} className="bg-white rounded-3xl p-6 border border-zinc-100 shadow-sm hover:border-primary transition-all group uppercase">
+                  <h4 className="font-headline font-black text-sm text-zinc-900 mb-3 group-hover:text-green-600 transition-colors uppercase leading-tight">{faq.q}</h4>
+                  <div className="h-[1px] w-8 bg-zinc-100 mb-3 group-hover:w-full group-hover:bg-primary/20 transition-all uppercase"></div>
+                  <p className="text-zinc-500 text-xs font-bold leading-relaxed uppercase">{faq.a}</p>
+                </div>
+              ))}
+            </div>
           )}
         </div>
-        <div className="mt-12 text-center p-8 bg-zinc-100 rounded-[40px] border border-dashed border-zinc-300">
-          <span className="material-symbols-outlined text-4xl text-zinc-300 mb-3" style={{fontVariationSettings: "'FILL'1"}}>mail</span>
-          <p className="text-zinc-500 font-bold text-sm italic-remove">Still need help?</p>
-          <p className="text-zinc-400 text-xs mt-1">support@bazaarbolt.rapid</p>
+
+        {/* Support Card */}
+        <div className="mt-12 p-8 bg-zinc-950 rounded-[40px] text-center relative overflow-hidden shadow-2xl uppercase">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-bl-full pointer-events-none uppercase"></div>
+          <span className="material-symbols-outlined text-4xl text-primary mb-4 block uppercase" style={{fontVariationSettings: "'FILL'1"}}>mail</span>
+          <h3 className="text-white font-headline font-black text-lg tracking-tight mb-1 uppercase">Still need help?</h3>
+          <p className="text-zinc-400 text-[10px] font-black tracking-widest mb-6 uppercase">Our team is active 24/7</p>
+          <a href="mailto:support@bazaarbolt.shop" className="inline-block bg-white text-zinc-900 px-8 py-3.5 rounded-2xl font-black text-[10px] tracking-widest hover:bg-primary transition-all active:scale-95 uppercase">
+            Support@BazaarBolt.Shop
+          </a>
         </div>
       </div>
 
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] z-50 bg-white/95 backdrop-blur-3xl shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] border border-white/40 rounded-full px-6 py-3 flex justify-between items-center transition-all">
-        <button onClick={() => router.push("/")} className="flex flex-col items-center justify-center text-zinc-400 hover:text-zinc-900 group active:scale-95 transition-all">
-          <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">home</span>
-          <span className="font-headline text-[9px] font-black tracking-widest mt-1 text-zinc-400 group-hover:text-zinc-900">Home</span>
-        </button>
-        <button onClick={() => router.push("/frequently-bought")} className="flex flex-col items-center justify-center text-zinc-400 hover:text-zinc-900 group active:scale-95 transition-all">
-          <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">history</span>
-          <span className="font-headline text-[9px] font-black tracking-widest mt-1 text-zinc-400 group-hover:text-zinc-900">Order again</span>
-        </button>
-        <button onClick={() => {}} className="flex flex-col items-center justify-center text-zinc-900 group active:scale-95 transition-transform">
-          <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform" style={{fontVariationSettings: "'FILL'1"}}>support_agent</span>
-          <span className="font-headline text-[9px] font-black tracking-widest mt-1 text-zinc-900">Support</span>
-        </button>
-        <button onClick={() => router.push("/cart")} className="flex flex-col items-center justify-center text-zinc-400 hover:text-zinc-900 group active:scale-95 transition-transform relative">
-          <div className="relative">
-            <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">shopping_bag</span>
-          </div>
-          <span className="font-headline text-[9px] font-black tracking-widest mt-1 text-zinc-400 group-hover:text-zinc-900">Cart</span>
-        </button>
-      </nav>
     </main>
   );
 }

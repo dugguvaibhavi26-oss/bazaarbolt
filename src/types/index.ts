@@ -3,10 +3,17 @@ export * from "./order";
 
 export type Role = "customer" | "admin" | "rider";
 
+export interface HeroBanner {
+  url: string;
+  section: "BB" | "CAFE";
+  title?: string;
+  subtitle?: string;
+}
+
 export interface AppSettings {
   storeOpen: boolean;
   bannerImage: string;
-  heroBanners?: string[];
+  heroBanners?: HeroBanner[];
   announcement: string;
   primaryColor: string;
   taxPercent: number;

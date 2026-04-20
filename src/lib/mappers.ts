@@ -28,6 +28,7 @@ export const mapProduct = (doc: DocumentSnapshot<DocumentData>): Product => {
     stock: data.stock,
     active: typeof data.active === "boolean" ? data.active : false,
     isDeleted: typeof data.isDeleted === "boolean" ? data.isDeleted : false,
+    section: ["BB", "CAFE"].includes(data.section) ? data.section : "BB",
   };
 };
 
@@ -82,6 +83,7 @@ export const mapSettings = (doc: DocumentSnapshot<DocumentData>): AppSettings =>
   return {
     storeOpen: typeof data.storeOpen === "boolean" ? data.storeOpen : true,
     bannerImage: typeof data.bannerImage === "string" ? data.bannerImage : "",
+    heroBanners: Array.isArray(data.heroBanners) ? data.heroBanners : [],
     announcement: typeof data.announcement === "string" ? data.announcement : "",
     primaryColor: typeof data.primaryColor === "string" ? data.primaryColor : "#22c55e",
     taxPercent: typeof data.taxPercent === "number" ? data.taxPercent : 5,

@@ -11,6 +11,7 @@ import { triggerNotification } from "@/lib/notificationClient";
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [activeTab, setActiveTab] = useState<"BB" | "CAFE">("BB");
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<any[]>([]);
   const [isAdding, setIsAdding] = useState(false);
@@ -22,7 +23,8 @@ export default function AdminProducts() {
     category: "",
     description: "",
     stock: 100,
-    active: true
+    active: true,
+    section: "BB" as "BB" | "CAFE"
   });
 
   const [uploadMode, setUploadMode] = useState<"manual" | "bulk">("manual");
@@ -76,7 +78,7 @@ export default function AdminProducts() {
         toast.success("Added to inventory", { id: toastId });
       }
 
-      setNewProduct({ name: "", price: 0, image: "", category: categories[0]?.id || "", description: "", stock: 100, active: true });
+      setNewProduct({ name: "", price: 0, image: "", category: categories[0]?.id || "", description: "", stock: 100, active: true, section: "BB" });
       setIsAdding(false);
       setEditingProduct(null);
     } catch (err) {
@@ -93,8 +95,15 @@ export default function AdminProducts() {
       category: product.category,
       description: product.description || "",
       stock: product.stock,
-      active: product.active
+      active: product.active,
+      section: (product as any).section || "BB"
     });
+    setIsAdding(true);
+  };
+
+  const startAdd = () => {
+    setEditingProduct(null);
+    setNewProduct(prev => ({ ...prev, section: activeTab }));
     setIsAdding(true);
   };
 
@@ -192,6 +201,11 @@ export default function AdminProducts() {
     </div>
   );
 
+  const filteredProducts = products.filter(p => {
+    const section = (p as any).section || 'BB';
+    return section === activeTab;
+  });
+
   return (
     <div className="space-y-10 pb-32">
       <div className="flex items-center justify-between">
@@ -199,20 +213,38 @@ export default function AdminProducts() {
           <h3 className="text-2xl font-black text-zinc-900 tracking-tight">Inventory Control</h3>
           <p className="text-xs font-bold text-zinc-400 tracking-widest mt-1">Total SKU Count: {products.length}</p>
         </div>
-        <button onClick={() => { setEditingProduct(null); setIsAdding(true); }} className="bg-zinc-900 text-white px-8 py-4 rounded-2xl font-black text-[10px] tracking-widest flex items-center gap-2 hover:bg-black shadow-xl active:scale-95 transition-all">
+        <button onClick={startAdd} className="bg-zinc-900 text-white px-8 py-4 rounded-2xl font-black text-[10px] tracking-widest flex items-center gap-2 hover:bg-black shadow-xl active:scale-95 transition-all">
           <span className="material-symbols-outlined text-sm">inventory</span>
           Add New SKU
         </button>
       </div>
 
+      <div className="flex gap-2 border-b border-zinc-100 pb-2">
+        <button 
+          onClick={() => setActiveTab("BB")}
+          className={`px-6 py-3 rounded-2xl text-[10px] font-black tracking-widest transition-all uppercase ${activeTab === "BB" ? "bg-zinc-900 text-white shadow-md scale-100" : "bg-zinc-50 text-zinc-500 hover:bg-zinc-100 scale-95"}`}
+        >
+          BAZAARBOLT ({products.filter(p => ((p as any).section || 'BB') === 'BB').length})
+        </button>
+        <button 
+          onClick={() => setActiveTab("CAFE")}
+          className={`px-6 py-3 rounded-2xl text-[10px] font-black tracking-widest transition-all uppercase ${activeTab === "CAFE" ? "bg-zinc-900 text-white shadow-md scale-100" : "bg-zinc-50 text-zinc-500 hover:bg-zinc-100 scale-95"}`}
+        >
+          BB CAFE ({products.filter(p => (p as any).section === 'CAFE').length})
+        </button>
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {products.map(p => (
+        {filteredProducts.map(p => (
           <div key={p.id} className="bg-white rounded-2xl p-3 shadow-sm border border-zinc-100 group transition-all">
             <div className="aspect-square bg-zinc-50 rounded-xl mb-2 p-2 flex items-center justify-center border border-zinc-50 relative overflow-hidden">
               <img src={p.image} alt={p.name} className="w-20 h-20 object-contain group-hover:scale-110 transition-transform" />
               <div className="absolute top-1 right-1 flex flex-col gap-1 items-end">
                 <span className={`px-1.5 py-0.5 rounded-md text-[7px] font-black tracking-widest border ${p.active ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
                   {p.active ? 'LIVE' : 'HIDDEN'}
+                </span>
+                <span className={`px-1.5 py-0.5 rounded-md text-[7px] font-black tracking-widest border border-zinc-100 bg-white text-zinc-600`}>
+                  {(p as any).section || 'BB'}
                 </span>
               </div>
             </div>
@@ -282,6 +314,13 @@ export default function AdminProducts() {
                   <div>
                     <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Opening Stock</label>
                     <input type="number" required value={newProduct.stock || ""} onChange={e => setNewProduct({ ...newProduct, stock: parseInt(e.target.value) })} className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Store Section</label>
+                    <select value={newProduct.section} onChange={e => setNewProduct({ ...newProduct, section: e.target.value as any })} className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all">
+                      <option value="BB">BAZAAR BOLT (MAIN)</option>
+                      <option value="CAFE">BB CAFE</option>
+                    </select>
                   </div>
                   <div className="col-span-2">
                     <label className="text-[10px) font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Image URL</label>

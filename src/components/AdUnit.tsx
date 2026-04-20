@@ -12,8 +12,9 @@ export function AdUnit({ slotId = "", type = 'banner', className = "" }: AdUnitP
   const isLoaded = useRef(false);
 
   useEffect(() => {
-    // Only push the ad once per component mount to avoid duplication errors
-    if (!isLoaded.current) {
+    // Only push ads in production and only if the element exists
+    const isDev = process.env.NODE_ENV === 'development';
+    if (!isLoaded.current && !isDev) {
       try {
         // @ts-ignore
         (window.adsbygoogle = window.adsbygoogle || []).push({});

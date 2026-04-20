@@ -9,6 +9,7 @@ export interface Product {
   active: boolean;
   isDeleted?: boolean;
   createdAt?: string;
+  section?: "BB" | "CAFE";
 }
 
 export interface CartItem extends Omit<Product, 'active' | 'isDeleted'> {

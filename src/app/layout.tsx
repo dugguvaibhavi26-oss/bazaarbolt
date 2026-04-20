@@ -4,6 +4,8 @@ import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Toaster } from "react-hot-toast";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { PageTransition } from "@/components/PageTransition";
+import { BottomNavWrapper } from "@/components/BottomNavWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 const plusJakartaSans = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
@@ -31,7 +33,10 @@ export default function RootLayout({
         <ErrorBoundary>
           <AuthProvider>
             <PushNotificationManager />
-            {children}
+            <PageTransition>
+              {children}
+            </PageTransition>
+            <BottomNavWrapper />
           </AuthProvider>
           <Toaster position="top-center" />
         </ErrorBoundary>

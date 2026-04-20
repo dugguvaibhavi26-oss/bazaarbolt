@@ -11,6 +11,7 @@ interface Category {
  img: string;
  active: boolean;
  order?: number;
+ section?: "BB" | "CAFE";
 }
 
 const DEFAULTS = [
@@ -22,6 +23,7 @@ const DEFAULTS = [
 
 export default function AdminCategories() {
  const [categories, setCategories] = useState<Category[]>([]);
+ const [activeTab, setActiveTab] = useState<"BB" | "CAFE">("BB");
  const [loading, setLoading] = useState(true);
  const [isModalOpen, setIsModalOpen] = useState(false);
  const [editingCategory, setEditingCategory] = useState<Partial<Category> | null>(null);
@@ -50,6 +52,7 @@ export default function AdminCategories() {
  img: editingCategory.img,
  active: editingCategory.active ?? true,
  order: editingCategory.order ?? categories.length,
+ section: editingCategory.section || "BB",
  };
 
  try {
@@ -112,7 +115,7 @@ export default function AdminCategories() {
  >
  Sync Defaults
  </button>
- <button onClick={() => { setEditingCategory(null); setIsModalOpen(true); }}
+ <button onClick={() => { setEditingCategory({ section: activeTab }); setIsModalOpen(true); }}
  className="bg-zinc-900 text-white px-8 py-4 rounded-2xl font-black text-[10px] tracking-widest flex items-center gap-2 hover:bg-black transition-all shadow-xl active:scale-95 whitespace-nowrap"
  >
  <span className="material-symbols-outlined text-sm">add</span>
@@ -121,8 +124,23 @@ export default function AdminCategories() {
  </div>
  </div>
 
+ <div className="flex gap-2 border-b border-zinc-100 pb-2">
+ <button 
+ onClick={() => setActiveTab("BB")}
+ className={`px-6 py-3 rounded-2xl text-[10px] font-black tracking-widest transition-all uppercase ${activeTab === "BB" ? "bg-zinc-900 text-white shadow-md scale-100" : "bg-zinc-50 text-zinc-500 hover:bg-zinc-100 scale-95"}`}
+ >
+ BAZAARBOLT ({categories.filter(c => (c.section || "BB") === "BB").length})
+ </button>
+ <button 
+ onClick={() => setActiveTab("CAFE")}
+ className={`px-6 py-3 rounded-2xl text-[10px] font-black tracking-widest transition-all uppercase ${activeTab === "CAFE" ? "bg-zinc-900 text-white shadow-md scale-100" : "bg-zinc-50 text-zinc-500 hover:bg-zinc-100 scale-95"}`}
+ >
+ BB CAFE ({categories.filter(c => c.section === "CAFE").length})
+ </button>
+ </div>
+
  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
- {categories.map((cat) => (
+ {categories.filter(c => (c.section || "BB") === activeTab).map((cat) => (
  <div key={cat.id} className={`bg-white rounded-[32px] p-6 shadow-sm border border-zinc-200 group hover:shadow-2xl hover:border-primary/20 transition-all flex flex-col ${!cat.active ? 'opacity-60 bg-zinc-50': ''}`}>
  <div className="flex items-center gap-5 mb-6">
  <div className="w-20 h-20 bg-zinc-50 rounded-2xl p-4 border border-zinc-100 flex items-center justify-center group-hover:bg-primary/5 transition-colors relative overflow-hidden">
