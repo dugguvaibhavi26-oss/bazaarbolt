@@ -19,4 +19,5 @@ export interface Order {
   deliverySlot?: string;
   createdAt: string;
   phoneNumber?: string;
+  rated?: boolean;
 }

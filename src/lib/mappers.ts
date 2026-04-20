@@ -67,6 +67,7 @@ export const mapOrder = (doc: DocumentSnapshot<DocumentData>): Order => {
     deliverySlot: typeof data.deliverySlot === "string" ? data.deliverySlot : undefined,
     createdAt: typeof data.createdAt === "string" ? data.createdAt : new Date().toISOString(),
     phoneNumber: typeof data.phoneNumber === "string" ? data.phoneNumber : undefined,
+    rated: typeof data.rated === "boolean" ? data.rated : undefined,
   };
 };
 
