@@ -14,8 +14,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
  const router = useRouter();
 
  useEffect(() => {
- const unsub = initSettings();
- return () => unsub();
+ initSettings();
  }, [initSettings]);
 
  const nav = [
