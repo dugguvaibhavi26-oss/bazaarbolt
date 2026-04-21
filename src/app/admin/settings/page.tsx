@@ -65,8 +65,9 @@ export default function AdminSettings() {
     if (!newBanner.url) return;
     const currentBanners = settings.heroBanners || [];
     setSettings({ ...settings, heroBanners: [...currentBanners, { ...newBanner }] });
-    setNewBanner({ url: "", section: "BB", title: "", subtitle: "" });
-    toast.success("Banner added to queue");
+    // Reset but keep the current section
+    setNewBanner({ url: "", section: activeBannerTab, title: "", subtitle: "" });
+    toast.success("Banner added locally. Remember to click 'Propagate Changes' to save!", { duration: 4000 });
   };
 
   const removeBanner = (index: number) => {
@@ -146,7 +147,15 @@ export default function AdminSettings() {
                     </div>
                     <div className="space-y-1.5 uppercase">
                       <label className="text-[10px] font-black text-zinc-400 ml-1 uppercase">Section</label>
-                      <select value={newBanner.section} onChange={e => setNewBanner({...newBanner, section: e.target.value as any})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-xs font-bold uppercase">
+                      <select 
+                        value={newBanner.section} 
+                        onChange={e => {
+                          const val = e.target.value as "BB" | "CAFE";
+                          setNewBanner({...newBanner, section: val});
+                          setActiveBannerTab(val);
+                        }} 
+                        className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-xs font-bold uppercase"
+                      >
                         <option value="BB">BAZAAR BOLT</option>
                         <option value="CAFE">BB CAFE</option>
                       </select>

@@ -24,7 +24,8 @@ export default function AdminProducts() {
     description: "",
     stock: 100,
     active: true,
-    section: "BB" as "BB" | "CAFE"
+    section: "BB" as "BB" | "CAFE",
+    isBestseller: false
   });
 
   const [uploadMode, setUploadMode] = useState<"manual" | "bulk">("manual");
@@ -79,7 +80,7 @@ export default function AdminProducts() {
         toast.success("Added to inventory", { id: toastId });
       }
 
-      setNewProduct({ name: "", price: 0, image: "", category: categories[0]?.id || "", description: "", stock: 100, active: true, section: "BB" });
+      setNewProduct({ name: "", price: 0, image: "", category: categories[0]?.id || "", description: "", stock: 100, active: true, section: "BB", isBestseller: false });
       setIsAdding(false);
       setEditingProduct(null);
     } catch (err) {
@@ -97,7 +98,8 @@ export default function AdminProducts() {
       description: product.description || "",
       stock: product.stock,
       active: product.active,
-      section: (product as any).section || "BB"
+      section: (product as any).section || "BB",
+      isBestseller: product.isBestseller || false
     });
     setIsAdding(true);
   };
@@ -112,6 +114,14 @@ export default function AdminProducts() {
     try {
       await updateDoc(doc(db, "products", id), { active: !current });
       toast.success(current ? "Hidden from store" : "Live on store");
+    } catch (e) { toast.error("Update failed"); }
+  };
+
+  const toggleBestseller = async (id: string, current: boolean) => {
+    try {
+      await updateDoc(doc(db, "products", id), { isBestseller: !current });
+      setProducts(prev => prev.map(p => p.id === id ? { ...p, isBestseller: !current } : p));
+      toast.success(!current ? "Marked as Bestseller" : "Removed from Bestsellers");
     } catch (e) { toast.error("Update failed"); }
   };
 
@@ -237,7 +247,7 @@ export default function AdminProducts() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {filteredProducts.map(p => (
-          <div key={p.id} className="bg-white rounded-2xl p-3 shadow-sm border border-zinc-100 group transition-all">
+          <div key={p.id} className={`bg-white rounded-2xl p-3 shadow-sm border transition-all group ${p.isBestseller ? 'border-orange-400 ring-2 ring-orange-400/10 shadow-orange-100' : 'border-zinc-100'}`}>
             <div className="aspect-square bg-zinc-50 rounded-xl mb-2 p-2 flex items-center justify-center border border-zinc-50 relative overflow-hidden">
               <img src={p.image} alt={p.name} className="w-20 h-20 object-contain group-hover:scale-110 transition-transform" />
               <div className="absolute top-1 right-1 flex flex-col gap-1 items-end">
@@ -259,6 +269,9 @@ export default function AdminProducts() {
                 </button>
                 <button onClick={() => toggleActive(p.id, p.active)} className="w-6 h-6 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-400 hover:text-zinc-900 transition-colors">
                   <span className="material-symbols-outlined text-[14px]">{p.active ? 'visibility_off' : 'visibility'}</span>
+                </button>
+                <button onClick={() => toggleBestseller(p.id, !!p.isBestseller)} className={`w-6 h-6 flex items-center justify-center rounded-lg bg-zinc-50 transition-colors ${p.isBestseller ? 'text-orange-500 hover:text-zinc-400' : 'text-zinc-400 hover:text-orange-500'}`}>
+                  <span className="material-symbols-outlined text-[14px]" style={{fontVariationSettings: p.isBestseller ? "'FILL'1" : "'FILL'0"}}>local_fire_department</span>
                 </button>
                 <button onClick={() => removeProduct(p.id)} className="w-6 h-6 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-400 hover:text-red-500 transition-colors">
                   <span className="material-symbols-outlined text-[14px]">delete</span>
@@ -326,6 +339,10 @@ export default function AdminProducts() {
                   <div className="col-span-2">
                     <label className="text-[10px) font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Image URL</label>
                     <input type="text" required value={newProduct.image} onChange={e => setNewProduct({ ...newProduct, image: e.target.value })} className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all" />
+                  </div>
+                  <div className="col-span-2 flex items-center gap-2 bg-zinc-50 p-4 rounded-2xl">
+                    <input type="checkbox" id="isBestseller" checked={newProduct.isBestseller} onChange={e => setNewProduct({ ...newProduct, isBestseller: e.target.checked })} className="w-4 h-4 text-primary focus:ring-primary border-zinc-300 rounded" />
+                    <label htmlFor="isBestseller" className="text-sm font-bold text-zinc-700 cursor-pointer">Mark as Bestseller (Manual Override)</label>
                   </div>
                   <div className="col-span-2">
                     <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Product Description</label>

@@ -12,6 +12,7 @@ export interface Product {
   section?: "BB" | "CAFE";
   rating?: number;
   ratingCount?: number;
+  isBestseller?: boolean;
 }
 
 export interface CartItem extends Omit<Product, 'active' | 'isDeleted'> {

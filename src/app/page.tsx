@@ -217,18 +217,21 @@ export default function Home() {
             <span className="bg-zinc-100 text-zinc-500 text-[7px] font-bold px-1.5 py-0.5 rounded tracking-wider leading-none">1 Unit</span>
             {product.stock < 10 && product.stock > 0 && <span className="bg-orange-50 text-orange-600 text-[7px] font-bold px-1.5 py-0.5 rounded tracking-wider leading-none">Only {product.stock} Left</span>}
           </div>
-          <Link href={`/product/${product.id}`} className="text-[10px] font-bold text-zinc-900 leading-[1.2] mb-1.5 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
+          <Link href={`/product/${product.id}`} className="text-[10px] font-bold text-zinc-900 leading-[1.2] mb-1 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
             {product.name}
           </Link>
+          {(product.rating || 0) > 0 ? (
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <div className="flex items-center bg-[#f3f9f3] text-[#2d7d2d] px-1.5 py-0.5 rounded-md border border-[#e1eee1]">
+                <span className="text-[10px] font-black mr-0.5">{product.rating?.toFixed(1)}</span>
+                <span className="material-symbols-outlined text-[10px]" style={{fontVariationSettings: "'FILL'1"}}>star</span>
+              </div>
+              <span className="text-[9px] font-bold text-zinc-400">{product.ratingCount || 0} Ratings</span>
+            </div>
+          ) : null}
           <div className="flex items-center flex-wrap gap-x-1.5">
             <span className="text-xs font-black text-zinc-900 tracking-tight">₹{product.price.toFixed(0)}</span>
             <span className="text-[9px] text-zinc-400 line-through font-medium tracking-tight opacity-50">₹{(product.price * 1.25).toFixed(0)}</span>
-            {product.rating && product.rating > 0 && (
-              <div className="flex items-center gap-0.5 ml-auto">
-                <span className="material-symbols-outlined text-[10px] text-yellow-500" style={{fontVariationSettings: "'FILL'1"}}>star</span>
-                <span className="text-[9px] font-black text-zinc-600">{product.rating.toFixed(1)}</span>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -255,14 +258,17 @@ export default function Home() {
 
   return (
     <div className={`min-h-screen relative transition-colors duration-700 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : 'bg-white'}`}>
-      <div className={`fixed top-0 left-0 w-full h-8 flex items-center overflow-hidden z-[60] transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#2D1B14] text-[#EAD8C0]' : 'bg-black text-white'}`}>
-        <div className="flex whitespace-nowrap animate-marquee">
-          <span className="text-[10px] font-bold tracking-widest px-4">{settings?.announcement || "⚡️ Instant Delivery Available • Curated Premium Selections ⚡️"}</span>
-          <span className="text-[10px] font-bold tracking-widest px-4">{settings?.announcement || "⚡️ Instant Delivery Available • Curated Premium Selections ⚡️"}</span>
+      <div className={`fixed top-0 left-0 w-full flex flex-col z-[60] transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#2D1B14] text-[#EAD8C0]' : 'bg-black text-white'}`}>
+        <div className="pt-safe" />
+        <div className="h-8 flex items-center overflow-hidden">
+          <div className="flex whitespace-nowrap animate-marquee">
+            <span className="text-[10px] font-bold tracking-widest px-4">{settings?.announcement || "⚡️ Instant Delivery Available • Curated Premium Selections ⚡️"}</span>
+            <span className="text-[10px] font-bold tracking-widest px-4">{settings?.announcement || "⚡️ Instant Delivery Available • Curated Premium Selections ⚡️"}</span>
+          </div>
         </div>
       </div>
 
-      <header className={`fixed top-8 w-full z-50 transition-all border-b ${activeSection === 'CAFE' ? 'border-[#EAD8C0]/20' : 'border-zinc-100'}`}>
+      <header className={`fixed top-[calc(theme(spacing.8)+env(safe-area-inset-top))] w-full z-50 transition-all border-b ${activeSection === 'CAFE' ? 'border-[#EAD8C0]/20' : 'border-zinc-100'}`}>
         {/* Top area with neutral background */}
         <div className={`pt-4 px-4 flex flex-col transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]/80 backdrop-blur-xl' : 'bg-zinc-100'}`}>
           {/* Top Row: Address and Account */}
@@ -360,7 +366,7 @@ export default function Home() {
                 title: activeSection === "CAFE" ? "Cafe Specials" : "Bestsellers", 
                 icon: activeSection === "CAFE" ? "coffee" : "local_fire_department", 
                 iconColor: activeSection === "CAFE" ? "text-[#8B5E3C]" : "text-orange-500", 
-                products: [...filteredProducts].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 10), 
+                products: filteredProducts.filter(p => p.isBestseller), 
                 link: "/search" 
               },
               { 
@@ -371,7 +377,7 @@ export default function Home() {
                   const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
                   const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
                   return dateB - dateA;
-                }).slice(0, 10), 
+                }).slice(0, 30), 
                 link: "/search" 
               }
             ].map((section, idx) => section.products.length > 0 && (

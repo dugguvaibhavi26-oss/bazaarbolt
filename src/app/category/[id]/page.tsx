@@ -67,18 +67,21 @@ export default function CategoryPage() {
           <div className="flex gap-1 mb-1">
             <span className="bg-zinc-100 text-zinc-500 text-[7px] font-bold px-1.5 py-0.5 rounded tracking-wider">1 Unit</span>
           </div>
-          <Link href={`/product/${product.id}`} className="text-[10px] font-bold text-zinc-900 leading-[1.2] mb-1.5 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
+          <Link href={`/product/${product.id}`} className="text-[10px] font-bold text-zinc-900 leading-[1.2] mb-1 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
             {product.name}
           </Link>
+          {(product.rating || 0) > 0 ? (
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <div className="flex items-center bg-[#f3f9f3] text-[#2d7d2d] px-1.5 py-0.5 rounded-md border border-[#e1eee1]">
+                <span className="text-[10px] font-black mr-0.5">{product.rating?.toFixed(1)}</span>
+                <span className="material-symbols-outlined text-[10px]" style={{fontVariationSettings: "'FILL'1"}}>star</span>
+              </div>
+              <span className="text-[9px] font-bold text-zinc-400">{product.ratingCount || 0} Ratings</span>
+            </div>
+          ) : null}
           <div className="flex items-center flex-wrap gap-x-1.5">
             <span className="text-xs font-black text-zinc-900 tracking-tight">₹{product.price.toFixed(0)}</span>
             <span className="text-[9px] text-zinc-400 line-through font-medium tracking-tight opacity-50">₹{(product.price * 1.25).toFixed(0)}</span>
-            {product.rating && product.rating > 0 && (
-              <div className="flex items-center gap-0.5 ml-auto">
-                <span className="material-symbols-outlined text-[10px] text-yellow-500" style={{fontVariationSettings: "'FILL'1"}}>star</span>
-                <span className="text-[9px] font-black text-zinc-600">{product.rating.toFixed(1)}</span>
-              </div>
-            )}
           </div>
         </div>
       </div>

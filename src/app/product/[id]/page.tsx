@@ -65,7 +65,7 @@ export default function ProductPage() {
  return (
  <main className="min-h-screen bg-zinc-50 pb-40">
  {/* Simple Floating Header */}
- <header className="fixed top-0 w-full z-50 p-4 flex justify-between items-center pointer-events-none">
+ <header className="fixed top-0 w-full z-50 pt-safe px-4 py-4 flex justify-between items-center pointer-events-none">
  <button onClick={() => router.back()} className="w-10 h-10 bg-white rounded-full shadow-lg pointer-events-auto active:scale-90 transition-transform flex items-center justify-center border border-zinc-100">
  <span className="material-symbols-outlined text-zinc-900 font-bold">arrow_back</span>
  </button>
@@ -93,15 +93,17 @@ export default function ProductPage() {
  <span className="text-[10px] font-black text-zinc-400 tracking-widest">{product.category}</span>
  </div>
  <h1 className="text-xl font-bold text-zinc-900 leading-snug">{product.name}</h1>
-  {product.rating && product.rating > 0 && (
-    <div className="flex items-center gap-1.5 mt-2">
-      <div className="flex items-center bg-yellow-50 text-yellow-700 px-2 py-0.5 rounded-md text-[10px] font-black border border-yellow-100">
+  {(product.rating || 0) > 0 ? (
+    <div className="flex items-center gap-2 mt-2">
+      <div className="flex items-center bg-[#f3f9f3] text-[#2d7d2d] px-2 py-0.5 rounded-md border border-[#e1eee1]">
+        <span className="text-xs font-black mr-0.5">{product.rating?.toFixed(1)}</span>
         <span className="material-symbols-outlined text-xs" style={{fontVariationSettings: "'FILL'1"}}>star</span>
-        <span>{product.rating.toFixed(1)}</span>
       </div>
-      <span className="text-[10px] font-bold text-zinc-400">({product.ratingCount || 0} reviews)</span>
+      <button className="text-xs font-bold text-zinc-400 border-b border-zinc-200 pb-0.5 hover:text-zinc-600 transition-colors">
+        {product.ratingCount || 0} Ratings & Reviews
+      </button>
     </div>
-  )}
+  ) : null}
  <p className="text-sm font-bold text-zinc-400 mt-1 tracking-tight">Net quantity: 1 unit</p>
  </div>
  <button className="w-10 h-10 bg-white border border-zinc-100 rounded-full text-zinc-400 shadow-sm active:scale-90 transition-transform flex items-center justify-center">

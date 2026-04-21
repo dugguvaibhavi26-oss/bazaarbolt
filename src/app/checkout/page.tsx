@@ -19,6 +19,7 @@ export default function CheckoutPage() {
   const [recommendations, setRecommendations] = useState<Product[]>([]);
   const [instruction, setInstruction] = useState<string | null>(null);
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toLocaleDateString('en-CA')); // YYYY-MM-DD
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
 
   const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
@@ -52,10 +53,42 @@ export default function CheckoutPage() {
   useEffect(() => {
     async function fetchSlots() {
       const snap = await getDoc(doc(db, "settings", "delivery"));
-      if (snap.exists()) setAvailableSlots(snap.data().slots || []);
+      if (snap.exists()) {
+        const slots = snap.data().slots || [];
+        setAvailableSlots(slots);
+      }
     }
     fetchSlots();
   }, []);
+
+  const getFilteredSlots = () => {
+    const isToday = selectedDate === new Date().toLocaleDateString('en-CA');
+    if (!isToday) return availableSlots;
+
+    const now = new Date();
+    return availableSlots.filter(slot => {
+      try {
+        // Expected format: "10:30 AM - 11:30 AM" or "10:30 AM"
+        const startTimeStr = slot.split('-')[0].trim();
+        const [time, modifier] = startTimeStr.split(' ');
+        let [hours, minutes] = time.split(':').map(Number);
+        
+        if (modifier === 'PM' && hours < 12) hours += 12;
+        if (modifier === 'AM' && hours === 12) hours = 0;
+
+        const slotStartTime = new Date();
+        slotStartTime.setHours(hours, minutes, 0, 0);
+
+        // Buffer: 15 minutes before slot starts
+        const bufferTime = new Date(slotStartTime.getTime() - 15 * 60000);
+        return now < bufferTime;
+      } catch (e) {
+        return true; // Fallback to showing if parsing fails
+      }
+    });
+  };
+
+  const filteredSlots = getFilteredSlots();
 
   const handleCheckout = async () => {
     if (!user) {
@@ -121,6 +154,7 @@ export default function CheckoutPage() {
           paymentMethod: "COD",
           instruction,
           deliveryCode,
+          deliveryDate: selectedDate,
           deliverySlot: selectedSlot,
           deliveryAddress: selectedAddress,
           createdAt: new Date().toISOString(),
@@ -155,6 +189,15 @@ export default function CheckoutPage() {
 
   const displayAddress = selectedAddress ? `${selectedAddress.line1}, ${selectedAddress.city}` : "No address set";
 
+  const next7Days = Array.from({length: 7}, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    return {
+      date: d.toLocaleDateString('en-CA'),
+      label: i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })
+    };
+  });
+
   return (
     <main className="bg-zinc-50 min-h-screen pb-44">
       <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-xl flex items-center px-4 py-4 border-b border-zinc-100">
@@ -181,17 +224,32 @@ export default function CheckoutPage() {
             )}
 
             <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100">
-              <h3 className="text-[10px] font-black tracking-widest text-zinc-400 mb-4">Select delivery slot</h3>
-              {availableSlots.length > 0 ? (
+              <h3 className="text-[10px] font-black tracking-widest text-zinc-400 mb-4 uppercase">Select Date & Slot</h3>
+              
+              <div className="flex gap-2 overflow-x-auto hide-scrollbar mb-6">
+                {next7Days.map(d => (
+                  <button key={d.date} onClick={() => { setSelectedDate(d.date); setSelectedSlot(null); }} className={`flex flex-col items-center justify-center min-w-[100px] py-4 rounded-2xl border transition-all ${selectedDate === d.date ? 'bg-primary/5 border-primary shadow-inner' : 'bg-zinc-50 border-zinc-100 text-zinc-400'}`}>
+                    <span className="text-[10px] font-black tracking-widest uppercase">{d.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {filteredSlots.length > 0 ? (
                 <div className="grid grid-cols-1 gap-2">
-                  {availableSlots.map(slot => (
+                  {filteredSlots.map(slot => (
                     <button key={slot} onClick={() => setSelectedSlot(slot)} className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${selectedSlot === slot ? 'bg-primary/5 border-primary shadow-sm' : 'bg-zinc-50 border-zinc-100 text-zinc-500'}`}>
                       <span className="text-xs font-black tracking-tight">{slot}</span>
                       {selectedSlot === slot && <span className="material-symbols-outlined text-primary text-sm">check_circle</span>}
                     </button>
                   ))}
                 </div>
-              ) : <p className="text-[10px] font-bold text-zinc-400">No slots available right now.</p>}
+              ) : (
+                <div className="flex flex-col items-center justify-center py-10 text-center bg-zinc-50 rounded-2xl border border-dashed border-zinc-200">
+                  <span className="material-symbols-outlined text-zinc-200 text-4xl mb-2">schedule</span>
+                  <p className="text-[10px] font-bold text-zinc-400">No more slots available for today.</p>
+                  <p className="text-[8px] font-black text-primary uppercase mt-1">Try selecting a different date</p>
+                </div>
+              )}
             </section>
 
             <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100">

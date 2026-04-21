@@ -31,6 +31,7 @@ export const mapProduct = (doc: DocumentSnapshot<DocumentData>): Product => {
     section: ["BB", "CAFE"].includes(data.section) ? data.section : "BB",
     rating: typeof data.rating === "number" ? data.rating : 0,
     ratingCount: typeof data.ratingCount === "number" ? data.ratingCount : 0,
+    isBestseller: typeof data.isBestseller === "boolean" ? data.isBestseller : false,
   };
 };
 

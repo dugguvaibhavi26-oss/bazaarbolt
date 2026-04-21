@@ -74,17 +74,20 @@ export default function SearchPage() {
             <span className="bg-zinc-100 text-zinc-500 text-[7px] font-bold px-1.5 py-0.5 rounded tracking-wider">1 Unit</span>
             {product.stock < 10 && product.stock > 0 && <span className="bg-orange-50 text-orange-600 text-[7px] font-bold px-1.5 py-0.5 rounded tracking-wider">Only {product.stock} left</span>}
           </div>
-          <Link href={`/product/${product.id}`} className="text-[10px] font-bold text-zinc-900 leading-[1.2] mb-1.5 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
+          <Link href={`/product/${product.id}`} className="text-[10px] font-bold text-zinc-900 leading-[1.2] mb-1 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
             {product.name}
           </Link>
+          {(product.rating || 0) > 0 ? (
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <div className="flex items-center bg-[#f3f9f3] text-[#2d7d2d] px-1.5 py-0.5 rounded-md border border-[#e1eee1]">
+                <span className="text-[10px] font-black mr-0.5">{product.rating?.toFixed(1)}</span>
+                <span className="material-symbols-outlined text-[10px]" style={{fontVariationSettings: "'FILL'1"}}>star</span>
+              </div>
+              <span className="text-[9px] font-bold text-zinc-400">{product.ratingCount || 0} Ratings</span>
+            </div>
+          ) : null}
           <div className="flex items-center flex-wrap gap-x-1.5">
             <span className="text-xs font-black text-zinc-900">₹{product.price.toFixed(0)}</span>
-            {product.rating && product.rating > 0 && (
-              <div className="flex items-center gap-0.5 ml-auto">
-                <span className="material-symbols-outlined text-[10px] text-yellow-500" style={{fontVariationSettings: "'FILL'1"}}>star</span>
-                <span className="text-[9px] font-black text-zinc-600">{product.rating.toFixed(1)}</span>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -94,7 +97,8 @@ export default function SearchPage() {
   return (
     <div className="bg-white min-h-screen relative overflow-x-hidden pb-44 text-zinc-900 font-body selection:bg-primary/30">
       
-      <header className="sticky top-0 z-50 bg-white pt-4 pb-4 px-4 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border-b border-zinc-100">
+      <header className="sticky top-0 z-50 bg-white pt-safe pb-4 px-4 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border-b border-zinc-100">
+        <div className="pt-4" />
          <div className="flex items-center gap-3 bg-zinc-100 rounded-2xl px-4 py-3 shadow-inner border border-zinc-200 focus-within:bg-white focus-within:border-primary transition-all">
            <button onClick={() => router.back()} className="text-zinc-600 hover:text-zinc-900 transition-colors flex items-center">
              <span className="material-symbols-outlined text-[20px]">arrow_back</span>
