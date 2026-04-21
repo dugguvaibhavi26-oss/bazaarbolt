@@ -225,17 +225,17 @@ export default function Home() {
   }
 
   return (
-    <div className="bg-white min-h-screen relative overflow-x-hidden">
-      <div className="fixed top-0 left-0 w-full h-8 bg-black text-white flex items-center overflow-hidden z-[60]">
+    <div className={`min-h-screen relative transition-colors duration-700 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : 'bg-white'}`}>
+      <div className={`fixed top-0 left-0 w-full h-8 flex items-center overflow-hidden z-[60] transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#2D1B14] text-[#EAD8C0]' : 'bg-black text-white'}`}>
         <div className="flex whitespace-nowrap animate-marquee">
           <span className="text-[10px] font-bold tracking-widest px-4">{settings?.announcement || "⚡️ Instant Delivery Available • Curated Premium Selections ⚡️"}</span>
           <span className="text-[10px] font-bold tracking-widest px-4">{settings?.announcement || "⚡️ Instant Delivery Available • Curated Premium Selections ⚡️"}</span>
         </div>
       </div>
 
-      <header className={`fixed top-8 w-full z-50 transition-all shadow-sm`}>
+      <header className={`fixed top-8 w-full z-50 transition-all border-b ${activeSection === 'CAFE' ? 'border-[#EAD8C0]/20' : 'border-zinc-100'}`}>
         {/* Top area with neutral background */}
-        <div className="bg-zinc-100 pt-4 px-4 flex flex-col">
+        <div className={`pt-4 px-4 flex flex-col transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]/80 backdrop-blur-xl' : 'bg-zinc-100'}`}>
           {/* Top Row: Address and Account */}
           <div className="flex items-center justify-between w-full mb-5">
             <div className="flex flex-col cursor-pointer group" onClick={() => setIsAddressModalOpen(true)}>
@@ -258,30 +258,30 @@ export default function Home() {
           <div className="flex gap-2 overflow-x-auto hide-scrollbar items-end">
             <button 
               onClick={() => setActiveSection("BB")}
-              className={`flex-shrink-0 px-6 py-3 text-[16px] font-black tracking-tighter transition-all flex items-center justify-center min-w-[100px] lowercase ${activeSection === "BB" ? "bg-white rounded-t-2xl" : "bg-transparent opacity-50 hover:opacity-100"}`}
+              className={`flex-shrink-0 px-6 py-3 text-[16px] font-black tracking-tighter transition-all flex items-center justify-center min-w-[100px] lowercase ${activeSection === "BB" ? "bg-white rounded-t-2xl shadow-[0_-4px_12px_rgba(0,0,0,0.03)]" : "bg-transparent opacity-50 hover:opacity-100"}`}
             >
               <span className="text-primary">bazaar</span><span className="text-zinc-900">bolt</span>
             </button>
             <button 
               onClick={() => setActiveSection("CAFE")}
-              className={`flex-shrink-0 px-6 py-3 text-[16px] font-black tracking-tighter transition-all flex items-center justify-center min-w-[100px] lowercase ${activeSection === "CAFE" ? "bg-white rounded-t-2xl" : "bg-transparent opacity-50 hover:opacity-100"}`}
+              className={`flex-shrink-0 px-6 py-3 text-[16px] font-black tracking-tighter transition-all flex items-center justify-center min-w-[100px] lowercase ${activeSection === "CAFE" ? "bg-[#FAF7F2] border-t border-x border-[#EAD8C0]/30 rounded-t-2xl" : "bg-transparent opacity-50 hover:opacity-100"}`}
             >
-              <span className="text-primary">bb&nbsp;</span><span className="text-zinc-900">cafe</span>
+              <span className="text-[#8B5E3C]">bb&nbsp;</span><span className="text-[#2D1B14]">cafe</span>
             </button>
           </div>
         </div>
 
         {/* Search Bar area with exact same bg as active tab to seamlessly connect */}
-        <div className="bg-white px-4 py-3 border-b border-zinc-100">
-          <div onClick={() => router.push('/search')} className="bg-white border border-zinc-200 rounded-[12px] flex items-center px-4 py-3.5 gap-3 cursor-pointer shadow-sm">
-            <span className="material-symbols-outlined text-zinc-400 text-xl font-bold">search</span>
-            <span className="text-xs font-bold tracking-widest text-zinc-400">Search For "{activeSection === "CAFE" ? "Espresso" : "Safai Abhiyaan"}"</span>
+        <div className={`px-4 py-3 border-b transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2] border-[#EAD8C0]/20' : 'bg-white border-zinc-100'}`}>
+          <div onClick={() => router.push('/search')} className={`rounded-[12px] flex items-center px-4 py-3.5 gap-3 cursor-pointer shadow-sm border transition-all ${activeSection === 'CAFE' ? 'bg-[#FFFBF5] border-[#EAD8C0]/40' : 'bg-white border-zinc-200'}`}>
+            <span className={`material-symbols-outlined text-xl font-bold ${activeSection === 'CAFE' ? 'text-[#8B5E3C]' : 'text-zinc-400'}`}>search</span>
+            <span className={`text-xs font-bold tracking-widest ${activeSection === 'CAFE' ? 'text-[#8B5E3C]/60' : 'text-zinc-400'}`}>Search For "{activeSection === "CAFE" ? "Cold Brew" : "Safai Abhiyaan"}"</span>
           </div>
         </div>
       </header>
 
-      <main className="pt-[220px] pb-32 overflow-x-hidden min-h-[100dvh] bg-white">
-        {!settings?.storeOpen ? (
+      <main className={`pt-[220px] pb-32 overflow-x-hidden min-h-[100dvh] transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : 'bg-white'}`}>
+        {settings && settings.storeOpen === false ? (
           <section className="px-6 py-20 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-700">
             <h2 className="text-5xl font-headline font-black text-zinc-900 tracking-tighter leading-[0.8] mb-8">Currently <br /><span className="text-primary">Unavailable</span></h2>
             <p className="max-w-xs mx-auto text-[10px] font-bold text-zinc-400 tracking-[0.2em] leading-relaxed mb-12">We're Not Serving This Area At The Moment.</p>
@@ -302,7 +302,7 @@ export default function Home() {
             </section>
 
             <section className="px-4 mb-8">
-              <div className="relative w-full aspect-[21/10] rounded-[32px] overflow-hidden shadow-xl bg-zinc-100 group">
+              <div className={`relative w-full aspect-[21/12] rounded-[40px] overflow-hidden shadow-2xl transition-all duration-500 ${activeSection === 'CAFE' ? 'bg-[#EAD8C0]/20' : 'bg-zinc-100'}`}>
                 {BANNERS.map((banner, idx) => (
                   <div 
                     key={idx}
@@ -327,8 +327,20 @@ export default function Home() {
 
             {/* Sliding Sections: Bestsellers & New Arrivals */}
             {[
-              { title: "Bestsellers", icon: "local_fire_department", iconColor: "text-orange-500", products: filteredProducts.slice(0, 10), link: "/search" },
-              { title: "New Arrivals", icon: "new_releases", iconColor: "text-blue-600", products: [...filteredProducts].reverse().slice(0, 10), link: "/search" }
+              { 
+                title: activeSection === "CAFE" ? "Cafe Specials" : "Bestsellers", 
+                icon: activeSection === "CAFE" ? "coffee" : "local_fire_department", 
+                iconColor: activeSection === "CAFE" ? "text-[#8B5E3C]" : "text-orange-500", 
+                products: filteredProducts.slice(0, 10), 
+                link: "/search" 
+              },
+              { 
+                title: activeSection === "CAFE" ? "Fresh Bakes" : "New Arrivals", 
+                icon: activeSection === "CAFE" ? "bakery_dining" : "new_releases", 
+                iconColor: activeSection === "CAFE" ? "text-[#8B5E3C]" : "text-blue-600", 
+                products: [...filteredProducts].reverse().slice(0, 10), 
+                link: "/search" 
+              }
             ].map((section, idx) => section.products.length > 0 && (
               <section key={idx} className="mb-10 pl-4 w-full overflow-hidden">
                 <div className="flex items-center justify-between mb-4 pr-4">

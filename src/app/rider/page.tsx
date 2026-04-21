@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/components/AuthProvider";
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, where, or } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Order } from "@/types";
 import toast from "react-hot-toast";
@@ -17,39 +17,55 @@ export default function RiderApp() {
  const [loading, setLoading] = useState(true);
 
  useEffect(() => {
- const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
- const unsub = onSnapshot(q, (snap) => {
- try {
- const allOrds = mapQuerySnapshot(snap, mapOrder);
- const ords = allOrds.filter(data => data.status === "PLACED"|| (data.riderId === user?.uid && data.status !== "DELIVERED")
- );
- // Extract unique slots for filtering
- const slots = Array.from(new Set(ords.map(o => o.deliverySlot).filter(Boolean))) as string[];
- setAvailableSlots(slots);
+  if (!user) return;
+  // We removed orderBy here to avoid needing complex Firestore indexes.
+  // We will sort the data locally instead.
+  const q = query(
+    collection(db, "orders"), 
+    or(
+      where("status", "==", "PLACED"),
+      where("riderId", "==", user.uid)
+    )
+  );
+  
+  const unsub = onSnapshot(q, (snap) => {
+  try {
+  const allOrds = mapQuerySnapshot(snap, mapOrder);
+  const ords = allOrds.filter(data => 
+    data.status === "PLACED" || (data.riderId === user?.uid && data.status !== "DELIVERED")
+  );
+  
+  // Local sorting: Newest first, and Assigned jobs at the very top
+  ords.sort((a, b) => {
+    if (a.riderId === user?.uid && b.riderId !== user?.uid) return -1;
+    if (a.riderId !== user?.uid && b.riderId === user?.uid) return 1;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
- ords.sort((a, b) => {
- if (a.riderId === user?.uid && b.riderId !== user?.uid) return -1;
- if (a.riderId !== user?.uid && b.riderId === user?.uid) return 1;
- return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
- });
+  // Extract unique slots for filtering
+  const slots = Array.from(new Set(ords.map(o => o.deliverySlot).filter(Boolean))) as string[];
+  setAvailableSlots(slots);
 
- setOrders(ords);
- } catch (e) {
- console.error("Mapping error in RiderApp:", e);
- }
- setLoading(false);
- });
- return () => unsub();
+  setOrders(ords);
+  } catch (e) {
+  console.error("Mapping error in RiderApp:", e);
+  }
+  setLoading(false);
+  }, (err) => {
+    console.error("Pulse Feed error:", err);
+    setLoading(false);
+  });
+  return () => unsub();
  }, [user]);
 
  const filteredOrders = selectedFilterSlot === "ALL"? orders : orders.filter(o => o.deliverySlot === selectedFilterSlot);
 
  if (loading) return (
- <div className="space-y-4 pt-10">
- {[1,2,3,4].map(i => (
- <div key={i} className="h-20 bg-white rounded-2xl animate-pulse"/>
- ))}
- </div>
+  <div className="space-y-4 pt-10">
+  {[1,2,3,4].map(i => (
+  <div key={i} className="h-20 bg-white rounded-2xl animate-pulse"/>
+  ))}
+  </div>
  );
 
  return (

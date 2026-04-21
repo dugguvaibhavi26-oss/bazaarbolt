@@ -22,17 +22,31 @@ export async function triggerNotification(params: {
     } else if (params.topic) {
         targetParams.topic = params.topic;
     } else if (params.userId) {
-        // We'll need to fetch the token from the users collection
-        const { db } = await import("@/lib/firebase");
-        const { getDoc, doc } = await import("firebase/firestore");
-        const userSnap = await getDoc(doc(db, "users", params.userId));
-        if (userSnap.exists()) {
-            const userData = userSnap.data();
-            if (userData.fcmToken) {
-                targetParams.token = userData.fcmToken;
-            } else {
-                return; // Silently return if no token (normal in browser testing)
+        try {
+            const { db } = await import("@/lib/firebase");
+            const { getDoc, doc } = await import("firebase/firestore");
+            try {
+                const userSnap = await getDoc(doc(db, "users", params.userId));
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    if (userData.fcmToken) {
+                        targetParams.token = userData.fcmToken;
+                    } else {
+                        return; 
+                    }
+                }
+            } catch (err: any) {
+                if (err.code === 'permission-denied') {
+                    return null;
+                }
+                throw err;
             }
+        } catch (err: any) {
+            if (err.message?.includes("permission")) {
+                console.log("Skipping notification lookup (restricted permission)");
+                return;
+            }
+            throw err;
         }
     }
 

@@ -79,11 +79,6 @@ export default function ProductPage() {
  {/* Hero Image Section */}
  <section className="bg-white w-full aspect-square flex items-center justify-center p-10 relative">
  <img src={product.image} alt={product.name} className="w-full h-full object-contain"/>
- <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 px-3 py-1.5 bg-zinc-100/50 backdrop-blur-sm rounded-full">
- <div className="w-1.5 h-1.5 bg-zinc-900 rounded-full"></div>
- <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full"></div>
- <div className="w-1.5 h-1.5 bg-zinc-300 rounded-full"></div>
- </div>
  </section>
 
  {/* Main Info Card */}
@@ -165,44 +160,44 @@ export default function ProductPage() {
  </section>
 
  {/* Fixed Bottom Action Bar */}
- <div className="fixed bottom-0 left-0 w-full bg-white border-t border-zinc-100 p-4 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+ <div className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-xl border-t border-zinc-100 p-4 pb-safe z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.08)]">
  <div className="max-w-2xl mx-auto flex items-center gap-4">
  {outOfStock ? (
  <button disabled
- className="flex-1 h-12 bg-red-50 text-red-600 border border-red-100 rounded-xl font-black text-[11px] tracking-widest cursor-not-allowed"
+ className="flex-1 h-14 bg-red-50 text-red-600 border border-red-100 rounded-2xl font-black text-[12px] tracking-widest cursor-not-allowed uppercase"
  >
  Sold Out
  </button>
  ) : !cartItem ? (
  <button
  onClick={() => addToCart({...product, quantity: 1})}
- className="flex-1 h-12 bg-primary hover:bg-green-600 text-zinc-900 rounded-xl font-black text-[11px] tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all"
+ className="flex-1 h-14 bg-primary text-zinc-900 rounded-2xl font-black text-[12px] tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all uppercase"
  >
  Add to cart
  </button>
  ) : (
  <div className="w-full flex items-center gap-4">
- <div className="flex-1 h-12 bg-zinc-900 text-white rounded-xl flex items-center justify-between px-2 overflow-hidden shadow-xl">
+ <div className="flex-1 h-14 bg-zinc-900 text-white rounded-2xl flex items-center justify-between px-2 overflow-hidden shadow-2xl">
  <button onClick={() => updateQuantity(product.id, -1)}
- className="w-12 h-10 flex items-center justify-center hover:bg-white/10 rounded-xl"
+ className="w-14 h-12 flex items-center justify-center hover:bg-white/10 rounded-xl transition-colors"
  >
  <span className="material-symbols-outlined font-black">remove</span>
  </button>
  <div className="flex flex-col items-center">
- <span className="text-xs font-black leading-none">{cartItem.quantity}</span>
- <span className="text-[7px] font-black text-zinc-500 mt-1">units in cart</span>
+ <span className="text-sm font-black leading-none">{cartItem.quantity}</span>
+ <span className="text-[7px] font-black text-zinc-500 mt-1 uppercase tracking-widest">In Cart</span>
  </div>
  <button onClick={() => updateQuantity(product.id, 1)}
  disabled={cartItem.quantity >= product.stock}
- className="w-12 h-10 flex items-center justify-center hover:bg-white/10 rounded-xl disabled:opacity-30"
+ className="w-14 h-12 flex items-center justify-center hover:bg-white/10 rounded-xl transition-colors disabled:opacity-20"
  >
  <span className="material-symbols-outlined font-black">add</span>
  </button>
  </div>
  <button onClick={() => router.push("/cart")}
- className="w-12 h-12 bg-primary text-zinc-900 rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 active:scale-95 transition-all"
+ className="w-14 h-14 bg-primary text-zinc-900 rounded-2xl flex items-center justify-center shadow-xl shadow-primary/20 active:scale-95 transition-all"
  >
- <span className="material-symbols-outlined font-black">shopping_bag</span>
+ <span className="material-symbols-outlined font-black text-2xl">shopping_bag</span>
  </button>
  </div>
  )}

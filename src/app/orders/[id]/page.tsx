@@ -15,37 +15,52 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
   const [rider, setRider] = useState<any>(null);
 
   useEffect(() => {
-    const unsubOrder = onSnapshot(doc(db, "orders", resolvedParams.id), (docSnap) => {
-      try {
-        if (docSnap.exists()) {
-          const orderData = mapOrder(docSnap);
-          // Check for newly unavailable items to show a toast alert
-          if (order) {
-            const newlyUnavailable = orderData.items.find((item, idx) => item.unavailable && !order.items[idx]?.unavailable);
-            if (newlyUnavailable) {
-              import("react-hot-toast").then(t => 
-                t.default.error(`Item update: ${newlyUnavailable.name} is out of stock. Order total updated.`, {
-                  duration: 6000,
-                  icon: '⚠️'
-                })
-              );
+    if (!resolvedParams.id) return;
+    
+    const unsubOrder = onSnapshot(doc(db, "orders", resolvedParams.id), {
+      next: (docSnap) => {
+        try {
+          if (docSnap.exists()) {
+            const orderData = mapOrder(docSnap);
+            
+            // Check for newly unavailable items to show a toast alert
+            if (order) {
+              const newlyUnavailable = orderData.items.find((item, idx) => item.unavailable && !order.items[idx]?.unavailable);
+              if (newlyUnavailable) {
+                import("react-hot-toast").then(t => 
+                  t.default.error(`Item update: ${newlyUnavailable.name} is out of stock. Order total updated.`, {
+                    duration: 6000,
+                    icon: '⚠️'
+                  })
+                );
+              }
+            }
+
+            setOrder(orderData);
+            
+            if (orderData.riderId && !rider) {
+              const unsubRider = onSnapshot(doc(db, "users", orderData.riderId), {
+                next: (rSnap) => {
+                  if (rSnap.exists()) setRider(rSnap.data());
+                },
+                error: (err) => {
+                  console.warn("Rider lookup permission restricted:", err);
+                }
+              });
+              return () => unsubRider();
             }
           }
-
-          setOrder(orderData);
-          if (orderData.riderId) {
-            const unsubRider = onSnapshot(doc(db, "users", orderData.riderId), (rSnap) => {
-              if (rSnap.exists()) setRider(rSnap.data());
-            });
-            return () => unsubRider();
-          }
+        } catch (e) {
+          console.error("Tracking mapping error:", e);
         }
-      } catch (e) {
-        console.error("Tracking mapping error:", e);
+      },
+      error: (err) => {
+        console.error("Order tracking error:", err);
       }
     });
+
     return () => unsubOrder();
-  }, [resolvedParams.id, order]);
+  }, [resolvedParams.id, !!order, !!rider]);
 
   if (!order) return (
     <div className="min-h-[100dvh] bg-surface flex items-center justify-center space-x-2">

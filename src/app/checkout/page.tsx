@@ -73,7 +73,7 @@ export default function CheckoutPage() {
       toast.error("Please select a delivery slot");
       return;
     }
-    if (!settings?.storeOpen) {
+    if (settings && settings.storeOpen === false) {
       toast.error("Store is currently closed.");
       return;
     }
