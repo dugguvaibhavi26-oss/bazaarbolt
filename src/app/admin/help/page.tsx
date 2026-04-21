@@ -19,6 +19,10 @@ export default function AdminHelp() {
       items.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
       setFaqs(items);
       setLoading(false);
+    }, (error) => {
+      console.error("FAQ snapshot error:", error);
+      toast.error("Permission denied: Cannot read FAQs");
+      setLoading(false);
     });
     return () => unsub();
   }, []);
@@ -83,7 +87,16 @@ export default function AdminHelp() {
                 <span className="material-symbols-outlined text-xl">edit</span>
               </button>
               <button 
-                onClick={() => confirm("Delete this FAQ?") && deleteDoc(doc(db, "faqs", faq.id))}
+                onClick={() => {
+                  if (confirm("Delete this FAQ?")) {
+                    deleteDoc(doc(db, "faqs", faq.id))
+                      .then(() => toast.success("Deleted FAQ"))
+                      .catch(err => {
+                        console.error("Delete failed:", err);
+                        toast.error("Permission denied: Cannot delete FAQ");
+                      });
+                  }
+                }}
                 className="w-10 h-10 rounded-xl bg-zinc-50 flex items-center justify-center text-zinc-400 hover:text-red-500 transition-all shadow-sm"
               >
                 <span className="material-symbols-outlined text-xl">delete</span>

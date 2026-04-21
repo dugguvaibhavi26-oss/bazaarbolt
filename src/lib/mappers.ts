@@ -29,6 +29,8 @@ export const mapProduct = (doc: DocumentSnapshot<DocumentData>): Product => {
     active: typeof data.active === "boolean" ? data.active : false,
     isDeleted: typeof data.isDeleted === "boolean" ? data.isDeleted : false,
     section: ["BB", "CAFE"].includes(data.section) ? data.section : "BB",
+    rating: typeof data.rating === "number" ? data.rating : 0,
+    ratingCount: typeof data.ratingCount === "number" ? data.ratingCount : 0,
   };
 };
 

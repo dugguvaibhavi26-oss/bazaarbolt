@@ -13,6 +13,7 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [rider, setRider] = useState<any>(null);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     if (!resolvedParams.id) return;
@@ -79,6 +80,43 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
       case "ON_THE_WAY": return { title: "On the way", desc: "Rider is nearby!", percent: "w-[90%]", icon: "bolt", color: "text-primary" };
       case "DELIVERED": return { title: "Delivered", desc: "Enjoy your items!", percent: "w-full", icon: "task_alt", color: "text-green-600" };
       default: return { title: order.status, desc: "Processing...", percent: "w-1/4", icon: "pending_actions", color: "text-zinc-500" };
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!order || order.status !== "PLACED") return;
+    if (!confirm("Are you sure you want to cancel this order?")) return;
+
+    setCancelling(true);
+    const { runTransaction, collection, doc } = await import("firebase/firestore");
+    
+    try {
+      await runTransaction(db, async (transaction) => {
+        const orderRef = doc(db, "orders", order.id!);
+        const currentOrderSnap = await transaction.get(orderRef);
+        
+        if (!currentOrderSnap.exists()) throw new Error("Order not found");
+        if (currentOrderSnap.data().status !== "PLACED") throw new Error("Rider already assigned. Cannot cancel.");
+
+        // Return items to stock
+        for (const item of order.items) {
+          const prodRef = doc(db, "products", item.id);
+          const prodSnap = await transaction.get(prodRef);
+          if (prodSnap.exists()) {
+            transaction.update(prodRef, { stock: prodSnap.data().stock + item.quantity });
+          }
+        }
+
+        transaction.update(orderRef, { status: "CANCELLED" });
+      });
+      
+      const t = await import("react-hot-toast");
+      t.default.success("Order cancelled successfully");
+    } catch (e: any) {
+      const t = await import("react-hot-toast");
+      t.default.error(e.message || "Failed to cancel order");
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -205,10 +243,37 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
               <span className="text-xs font-bold font-headline text-zinc-900">₹{order.tax.toFixed(0)}</span>
             </div>
             <div className="flex justify-between items-center pt-2">
-              <span className="text-[11px] font-black tracking-widest text-zinc-900">Paid via {order.paymentMethod || 'COD'}</span>
+              <span className="text-[11px] font-black tracking-widest text-zinc-900">
+                {isDelivered ? 'Paid' : 'Pay'} via {order.paymentMethod || 'COD'}
+              </span>
               <span className="text-xl font-headline font-black text-primary tracking-tighter">₹{order.total.toFixed(0)}</span>
             </div>
           </div>
+          
+          {/* Cancel Order Section */}
+          {!isDelivered && order.status !== 'CANCELLED' && (
+            <div className="mt-8 pt-8 border-t border-zinc-100">
+              {order.status === 'PLACED' ? (
+                <button 
+                  onClick={handleCancel}
+                  disabled={cancelling}
+                  className="w-full py-4 rounded-2xl bg-zinc-50 border border-zinc-100 text-red-500 font-black text-[10px] tracking-widest hover:bg-red-50 transition-all disabled:opacity-50"
+                >
+                  {cancelling ? 'CANCELLING...' : 'CANCEL ORDER'}
+                </button>
+              ) : (
+                <button 
+                  disabled
+                  className="w-full py-4 rounded-2xl bg-zinc-100 text-zinc-400 font-black text-[10px] tracking-widest cursor-not-allowed opacity-50"
+                >
+                  CANCEL ORDER (DISABLED)
+                </button>
+              )}
+              <p className="text-[9px] font-bold text-zinc-400 text-center mt-3 tracking-wide">
+                * You can cancel only upto the rider gets assigned
+              </p>
+            </div>
+          )}
         </div>
 
         <section className="mt-8">

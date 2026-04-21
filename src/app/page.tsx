@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useStore } from "@/store/useStore";
-import { collection, onSnapshot, query, where, doc, updateDoc, arrayUnion, getDocs, limit, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, query, where, doc, updateDoc, arrayUnion, getDocs, limit, orderBy, runTransaction } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Product, Address, Order } from "@/types";
 import { mapOrder } from "@/lib/mappers";
@@ -59,10 +59,33 @@ export default function Home() {
   const submitRating = async () => {
     if (!pendingRatingOrder?.id) return;
     try {
-      await updateDoc(doc(db, "orders", pendingRatingOrder.id), { rated: true });
+      await runTransaction(db, async (transaction) => {
+        // Update Order
+        const orderRef = doc(db, "orders", pendingRatingOrder.id!);
+        transaction.update(orderRef, { rated: true });
+
+        // Update Products
+        for (const item of pendingRatingOrder.items) {
+          const rating = ratings[item.id];
+          if (!rating) continue;
+
+          const prodRef = doc(db, "products", item.id);
+          const prodSnap = await transaction.get(prodRef);
+          if (prodSnap.exists()) {
+            const data = prodSnap.data();
+            const currentRating = data.rating || 0;
+            const currentCount = data.ratingCount || 0;
+            const newCount = currentCount + 1;
+            const newRating = ((currentRating * currentCount) + rating) / newCount;
+            transaction.update(prodRef, { rating: newRating, ratingCount: newCount });
+          }
+        }
+      });
+      
       toast.success("Thank you for your feedback!");
       setPendingRatingOrder(null);
     } catch (e) {
+      console.error(e);
       toast.error("Failed to submit rating");
     }
   };
@@ -200,6 +223,12 @@ export default function Home() {
           <div className="flex items-center flex-wrap gap-x-1.5">
             <span className="text-xs font-black text-zinc-900 tracking-tight">₹{product.price.toFixed(0)}</span>
             <span className="text-[9px] text-zinc-400 line-through font-medium tracking-tight opacity-50">₹{(product.price * 1.25).toFixed(0)}</span>
+            {product.rating && product.rating > 0 && (
+              <div className="flex items-center gap-0.5 ml-auto">
+                <span className="material-symbols-outlined text-[10px] text-yellow-500" style={{fontVariationSettings: "'FILL'1"}}>star</span>
+                <span className="text-[9px] font-black text-zinc-600">{product.rating.toFixed(1)}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -331,14 +360,18 @@ export default function Home() {
                 title: activeSection === "CAFE" ? "Cafe Specials" : "Bestsellers", 
                 icon: activeSection === "CAFE" ? "coffee" : "local_fire_department", 
                 iconColor: activeSection === "CAFE" ? "text-[#8B5E3C]" : "text-orange-500", 
-                products: filteredProducts.slice(0, 10), 
+                products: [...filteredProducts].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 10), 
                 link: "/search" 
               },
               { 
                 title: activeSection === "CAFE" ? "Fresh Bakes" : "New Arrivals", 
                 icon: activeSection === "CAFE" ? "bakery_dining" : "new_releases", 
                 iconColor: activeSection === "CAFE" ? "text-[#8B5E3C]" : "text-blue-600", 
-                products: [...filteredProducts].reverse().slice(0, 10), 
+                products: [...filteredProducts].sort((a, b) => {
+                  const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                  const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                  return dateB - dateA;
+                }).slice(0, 10), 
                 link: "/search" 
               }
             ].map((section, idx) => section.products.length > 0 && (

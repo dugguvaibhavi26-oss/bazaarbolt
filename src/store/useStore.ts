@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { doc, getDoc, getDocs, collection, query, where, limit } from "firebase/firestore";
+import { doc, getDoc, getDocs, collection, query, where, limit, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AppSettings, CartItem, Address, Product } from "@/types";
 import toast from "react-hot-toast";
@@ -28,7 +28,8 @@ interface StoreState {
   removeCoupon: () => void;
   setSelectedAddress: (address: Address | null) => void;
   initSettings: () => Promise<void>;
-  fetchCatalog: (forced?: boolean) => Promise<void>;
+  fetchCatalog: (forced?: boolean) => void;
+  unsubscribeCatalog?: () => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -150,44 +151,52 @@ export const useStore = create<StoreState>()(
         }
       },
 
-      // Step 2, 3, 8: Centralized catalog fetch with pagination/limit
-      fetchCatalog: async (forced = false) => {
-        const { products, catalogLoading } = get();
-        if (products.length > 0 && !forced) return;
+      // Optimized Catalog Sync with Real-time Updates
+      fetchCatalog: () => {
+        const { products, unsubscribeCatalog } = get();
+        
+        // If already listening, don't start another listener
+        if (unsubscribeCatalog) return;
         
         set({ catalogLoading: true });
-        try {
-          // Fetch Categories
-          const catQuery = query(collection(db, "categories"), where("active", "==", true));
-          const catSnap = await getDocs(catQuery);
-          logFirestoreRead("categories", catSnap.size);
+
+        // 1. Categories Listener
+        const catQuery = query(collection(db, "categories"), where("active", "==", true));
+        const unsubCats = onSnapshot(catQuery, (catSnap) => {
+          logFirestoreRead("categories (sync)", catSnap.size);
           const cats = catSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           cats.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+          set({ categories: cats });
+        }, (err) => {
+          console.error("Categories sync error:", err);
+        });
 
-          // Fetch Products (Step 8: Limited query)
-          const prodQuery = query(
-            collection(db, "products"), 
-            where("active", "==", true), 
-            limit(100) // Avoid unbounded queries
-          );
-          const prodSnap = await getDocs(prodQuery);
-          logFirestoreRead("products", prodSnap.size);
-          
+        // 2. Products Listener
+        const prodQuery = query(
+          collection(db, "products"), 
+          where("active", "==", true), 
+          limit(100)
+        );
+        const unsubProds = onSnapshot(prodQuery, (prodSnap) => {
+          logFirestoreRead("products (sync)", prodSnap.size);
           const prods: Product[] = [];
           prodSnap.forEach(docSnap => {
             const data = docSnap.data();
             if (!data.isDeleted) prods.push(mapProduct(docSnap));
           });
-
-          set({ 
-            products: prods, 
-            categories: cats, 
-            catalogLoading: false 
-          });
-        } catch (e) {
-          console.error("Catalog fetch error:", e);
+          set({ products: prods, catalogLoading: false });
+        }, (err) => {
+          console.error("Products sync error:", err);
           set({ catalogLoading: false });
-        }
+        });
+
+        // Combined unsubscribe
+        const combinedUnsub = () => {
+          unsubCats();
+          unsubProds();
+        };
+
+        set({ unsubscribeCatalog: combinedUnsub });
       }
     }),
     {

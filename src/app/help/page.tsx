@@ -25,6 +25,9 @@ export default function HelpPage() {
     const unsub = onSnapshot(q, (snap) => {
       setFaqs(snap.docs.map(d => d.data() as FAQ));
       setLoading(false);
+    }, (error) => {
+      console.error("FAQ read error:", error);
+      setLoading(false);
     });
     return () => unsub();
   }, []);

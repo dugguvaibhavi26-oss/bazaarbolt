@@ -22,6 +22,10 @@ export default function AdminDashboard() {
  console.error("Dashboard mapping error:", e);
  }
  setLoading(false);
+ }, (error) => {
+ console.error("Dashboard snapshot error:", error);
+ // Silent error for dashboard to avoid spamming the user if they are navigating
+ setLoading(false);
  });
 
  const interval = setInterval(() => {

@@ -93,6 +93,15 @@ export default function ProductPage() {
  <span className="text-[10px] font-black text-zinc-400 tracking-widest">{product.category}</span>
  </div>
  <h1 className="text-xl font-bold text-zinc-900 leading-snug">{product.name}</h1>
+  {product.rating && product.rating > 0 && (
+    <div className="flex items-center gap-1.5 mt-2">
+      <div className="flex items-center bg-yellow-50 text-yellow-700 px-2 py-0.5 rounded-md text-[10px] font-black border border-yellow-100">
+        <span className="material-symbols-outlined text-xs" style={{fontVariationSettings: "'FILL'1"}}>star</span>
+        <span>{product.rating.toFixed(1)}</span>
+      </div>
+      <span className="text-[10px] font-bold text-zinc-400">({product.ratingCount || 0} reviews)</span>
+    </div>
+  )}
  <p className="text-sm font-bold text-zinc-400 mt-1 tracking-tight">Net quantity: 1 unit</p>
  </div>
  <button className="w-10 h-10 bg-white border border-zinc-100 rounded-full text-zinc-400 shadow-sm active:scale-90 transition-transform flex items-center justify-center">

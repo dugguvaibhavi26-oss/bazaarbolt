@@ -73,6 +73,12 @@ export default function CategoryPage() {
           <div className="flex items-center flex-wrap gap-x-1.5">
             <span className="text-xs font-black text-zinc-900 tracking-tight">₹{product.price.toFixed(0)}</span>
             <span className="text-[9px] text-zinc-400 line-through font-medium tracking-tight opacity-50">₹{(product.price * 1.25).toFixed(0)}</span>
+            {product.rating && product.rating > 0 && (
+              <div className="flex items-center gap-0.5 ml-auto">
+                <span className="material-symbols-outlined text-[10px] text-yellow-500" style={{fontVariationSettings: "'FILL'1"}}>star</span>
+                <span className="text-[9px] font-black text-zinc-600">{product.rating.toFixed(1)}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
