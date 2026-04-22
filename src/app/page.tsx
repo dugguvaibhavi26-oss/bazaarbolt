@@ -14,12 +14,14 @@ import { AdUnit } from "@/components/AdUnit";
 import { BottomNav } from "@/components/BottomNav";
 import { Logo } from "@/components/Logo";
 import { Portal } from "@/components/Portal";
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 export default function Home() {
-  const { 
-    settings, initSettings, settingsLoading, 
+  usePushNotifications();
+  const {
+    settings, initSettings, settingsLoading,
     products, categories, catalogLoading, fetchCatalog,
-    cart, addToCart, updateQuantity, selectedAddress, setSelectedAddress 
+    cart, addToCart, updateQuantity, selectedAddress, setSelectedAddress
   } = useStore();
   const { user, role, loading: authLoading, userData } = useAuth();
   const router = useRouter();
@@ -49,8 +51,8 @@ export default function Home() {
         // Find the most recent DELIVERED order that has not been rated yet
         const orderToRate = orders.find(o => o.status === "DELIVERED" && !o.rated);
         if (orderToRate) setPendingRatingOrder(orderToRate);
-      } catch (e) { 
-        console.error("Rating check error", e); 
+      } catch (e) {
+        console.error("Rating check error", e);
       }
     };
     fetchPendingRating();
@@ -81,7 +83,7 @@ export default function Home() {
           }
         }
       });
-      
+
       toast.success("Thank you for your feedback!");
       setPendingRatingOrder(null);
     } catch (e) {
@@ -91,22 +93,22 @@ export default function Home() {
   };
 
   // Dynamic Banners from Settings
-  const BANNERS = (settings?.heroBanners?.length 
-    ? settings.heroBanners 
+  const BANNERS = (settings?.heroBanners?.length
+    ? settings.heroBanners
     : [
-        { 
-          url: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1000", 
-          title: "Fresh Harvest", 
-          subtitle: "Direct From Farms", 
-          section: "BB" as const
-        },
-        { 
-          url: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&q=80&w=1000", 
-          title: "Artisan Brews", 
-          subtitle: "Freshly Roasted", 
-          section: "CAFE" as const
-        }
-      ]
+      {
+        url: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1000",
+        title: "Fresh Harvest",
+        subtitle: "Direct From Farms",
+        section: "BB" as const
+      },
+      {
+        url: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&q=80&w=1000",
+        title: "Artisan Brews",
+        subtitle: "Freshly Roasted",
+        section: "CAFE" as const
+      }
+    ]
   ).filter(b => b.section === activeSection);
 
   useEffect(() => {
@@ -160,14 +162,14 @@ export default function Home() {
     }
 
     if (user && !userData?.addresses?.some((a: any) => a.line1 === addressForm.line1)) {
-        try {
-            await updateDoc(doc(db, "users", user.uid), {
-                addresses: arrayUnion(addressForm)
-            });
-            toast.success("SAVED TO ADDRESS BOOK!");
-        } catch (e) {
-            console.error("FAILED TO SAVE ADDRESS", e);
-        }
+      try {
+        await updateDoc(doc(db, "users", user.uid), {
+          addresses: arrayUnion(addressForm)
+        });
+        toast.success("SAVED TO ADDRESS BOOK!");
+      } catch (e) {
+        console.error("FAILED TO SAVE ADDRESS", e);
+      }
     }
 
     setSelectedAddress(addressForm);
@@ -227,7 +229,7 @@ export default function Home() {
             <div className="flex items-center gap-1.5 mb-1.5">
               <div className="flex items-center bg-[#f3f9f3] text-[#2d7d2d] px-1.5 py-0.5 rounded-md border border-[#e1eee1]">
                 <span className="text-[10px] font-black mr-0.5">{product.rating?.toFixed(1)}</span>
-                <span className="material-symbols-outlined text-[10px]" style={{fontVariationSettings: "'FILL'1"}}>star</span>
+                <span className="material-symbols-outlined text-[10px]" style={{ fontVariationSettings: "'FILL'1" }}>star</span>
               </div>
               <span className="text-[9px] font-bold text-zinc-400">{product.ratingCount || 0} Ratings</span>
             </div>
@@ -294,13 +296,13 @@ export default function Home() {
 
           {/* Section Tabs (Bazaarbolt Style) */}
           <div className="flex gap-2 overflow-x-auto hide-scrollbar items-end">
-            <button 
+            <button
               onClick={() => setActiveSection("BB")}
               className={`flex-shrink-0 px-6 py-3 text-[16px] font-black tracking-tighter transition-all flex items-center justify-center min-w-[100px] lowercase ${activeSection === "BB" ? "bg-white rounded-t-2xl shadow-[0_-4px_12px_rgba(0,0,0,0.03)]" : "bg-transparent opacity-50 hover:opacity-100"}`}
             >
               <span className="text-primary">bazaar</span><span className="text-zinc-900">bolt</span>
             </button>
-            <button 
+            <button
               onClick={() => setActiveSection("CAFE")}
               className={`flex-shrink-0 px-6 py-3 text-[16px] font-black tracking-tighter transition-all flex items-center justify-center min-w-[100px] lowercase ${activeSection === "CAFE" ? "bg-[#FAF7F2] border-t border-x border-[#EAD8C0]/30 rounded-t-2xl" : "bg-transparent opacity-50 hover:opacity-100"}`}
             >
@@ -342,7 +344,7 @@ export default function Home() {
             <section className="px-4 mb-8">
               <div className={`relative w-full aspect-[21/12] rounded-[40px] overflow-hidden shadow-2xl transition-all duration-500 ${activeSection === 'CAFE' ? 'bg-[#EAD8C0]/20' : 'bg-zinc-100'}`}>
                 {BANNERS.map((banner, idx) => (
-                  <div 
+                  <div
                     key={idx}
                     className={`absolute inset-0 transition-all duration-1000 ${idx === currentBannerIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'}`}
                   >
@@ -365,23 +367,23 @@ export default function Home() {
 
             {/* Sliding Sections: Bestsellers & New Arrivals */}
             {[
-              { 
-                title: activeSection === "CAFE" ? "Cafe Specials" : "Bestsellers", 
-                icon: activeSection === "CAFE" ? "coffee" : "local_fire_department", 
-                iconColor: activeSection === "CAFE" ? "text-[#8B5E3C]" : "text-orange-500", 
-                products: filteredProducts.filter(p => p.isBestseller), 
-                link: "/search" 
+              {
+                title: activeSection === "CAFE" ? "Cafe Specials" : "Bestsellers",
+                icon: activeSection === "CAFE" ? "coffee" : "local_fire_department",
+                iconColor: activeSection === "CAFE" ? "text-[#8B5E3C]" : "text-orange-500",
+                products: filteredProducts.filter(p => p.isBestseller),
+                link: "/search"
               },
-              { 
-                title: activeSection === "CAFE" ? "Fresh Bakes" : "New Arrivals", 
-                icon: activeSection === "CAFE" ? "bakery_dining" : "new_releases", 
-                iconColor: activeSection === "CAFE" ? "text-[#8B5E3C]" : "text-blue-600", 
+              {
+                title: activeSection === "CAFE" ? "Fresh Bakes" : "New Arrivals",
+                icon: activeSection === "CAFE" ? "bakery_dining" : "new_releases",
+                iconColor: activeSection === "CAFE" ? "text-[#8B5E3C]" : "text-blue-600",
                 products: [...filteredProducts].sort((a, b) => {
                   const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
                   const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
                   return dateB - dateA;
-                }).slice(0, 30), 
-                link: "/search" 
+                }).slice(0, 30),
+                link: "/search"
               }
             ].filter(section => {
               if (activeSection === "CAFE" && section.title === "Fresh Bakes") return false;
@@ -416,7 +418,7 @@ export default function Home() {
             {filteredCategories.map(cat => {
               const catProducts = filteredProducts.filter(p => p.category === cat.id || p.category === cat.label).slice(0, 12);
               if (catProducts.length === 0) return null;
-              
+
               return (
                 <section key={cat.id} className="mb-10 px-4">
                   <div className="mb-4">
@@ -478,7 +480,7 @@ export default function Home() {
                     <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">Saved addresses</label>
                     <div className="grid grid-cols-1 gap-2">
                       {userData.addresses.map((addr: Address, idx: number) => (
-                        <button 
+                        <button
                           key={idx}
                           onClick={() => { setSelectedAddress(addr); setIsAddressModalOpen(false); }}
                           className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center gap-4 ${selectedAddress?.line1 === addr.line1 ? 'bg-primary/5 border-primary shadow-sm' : 'bg-zinc-50 border-zinc-100 hover:bg-zinc-100'}`}
@@ -496,7 +498,7 @@ export default function Home() {
                 )}
 
                 <div className="pt-4 border-t border-zinc-100">
-                  <button onClick={() => { setAddressForm({line1:"", line2:"", city:"", pincode:"", landmark:""}); /* logic to show form below */ }} className="flex items-center gap-2 text-primary font-black text-[10px] tracking-widest mb-4">
+                  <button onClick={() => { setAddressForm({ line1: "", line2: "", city: "", pincode: "", landmark: "" }); /* logic to show form below */ }} className="flex items-center gap-2 text-primary font-black text-[10px] tracking-widest mb-4">
                     <span className="material-symbols-outlined text-lg">add_circle</span>
                     Add a New Address
                   </button>
@@ -536,11 +538,11 @@ export default function Home() {
                 <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
               <div className="text-center mb-8 relative">
-                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                   <span className="material-symbols-outlined text-4xl text-primary" style={{fontVariationSettings: "'FILL'1"}}>star</span>
-                 </div>
-                 <h2 className="text-2xl font-headline font-black text-zinc-900 tracking-tight leading-none mb-2">How was your order?</h2>
-                 <p className="text-[10px] font-black text-zinc-400 tracking-[0.1em] uppercase">Rate these items and help us make customers happier!</p>
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="material-symbols-outlined text-4xl text-primary" style={{ fontVariationSettings: "'FILL'1" }}>star</span>
+                </div>
+                <h2 className="text-2xl font-headline font-black text-zinc-900 tracking-tight leading-none mb-2">How was your order?</h2>
+                <p className="text-[10px] font-black text-zinc-400 tracking-[0.1em] uppercase">Rate these items and help us make customers happier!</p>
               </div>
 
               <div className="space-y-4 max-h-[40vh] overflow-y-auto mb-8 pr-2 custom-scrollbar">
@@ -550,9 +552,9 @@ export default function Home() {
                     <div className="flex-1 min-w-0">
                       <p className="text-[11px] font-bold text-zinc-900 truncate leading-none mb-2">{item.name}</p>
                       <div className="flex gap-1">
-                        {[1,2,3,4,5].map(star => (
-                          <button key={star} onClick={() => setRatings({...ratings, [item.id]: star})}>
-                            <span className={`material-symbols-outlined text-2xl ${ratings[item.id] >= star ? 'text-yellow-400' : 'text-zinc-200'} active:scale-95 transition-transform`} style={{fontVariationSettings: "'FILL'1"}}>star</span>
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <button key={star} onClick={() => setRatings({ ...ratings, [item.id]: star })}>
+                            <span className={`material-symbols-outlined text-2xl ${ratings[item.id] >= star ? 'text-yellow-400' : 'text-zinc-200'} active:scale-95 transition-transform`} style={{ fontVariationSettings: "'FILL'1" }}>star</span>
                           </button>
                         ))}
                       </div>
@@ -560,10 +562,10 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              
-              <button 
-                 onClick={submitRating}
-                 className="w-full bg-primary text-zinc-900 font-headline font-black text-sm tracking-widest py-4 rounded-2xl hover:bg-green-500 shadow-xl shadow-primary/20 transition-all active:scale-95"
+
+              <button
+                onClick={submitRating}
+                className="w-full bg-primary text-zinc-900 font-headline font-black text-sm tracking-widest py-4 rounded-2xl hover:bg-green-500 shadow-xl shadow-primary/20 transition-all active:scale-95"
               >
                 Submit Ratings
               </button>
