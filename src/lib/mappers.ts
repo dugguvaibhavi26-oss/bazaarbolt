@@ -68,6 +68,7 @@ export const mapOrder = (doc: DocumentSnapshot<DocumentData>): Order => {
     deliveryAddress: data.deliveryAddress || "N/A",
     deliveryCharge: typeof data.deliveryCharge === "number" ? data.deliveryCharge : 0,
     deliverySlot: typeof data.deliverySlot === "string" ? data.deliverySlot : undefined,
+    deliveryDate: typeof data.deliveryDate === "string" ? data.deliveryDate : undefined,
     createdAt: typeof data.createdAt === "string" ? data.createdAt : new Date().toISOString(),
     phoneNumber: typeof data.phoneNumber === "string" ? data.phoneNumber : undefined,
     rated: typeof data.rated === "boolean" ? data.rated : undefined,

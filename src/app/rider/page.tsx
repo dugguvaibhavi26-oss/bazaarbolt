@@ -139,7 +139,7 @@ export default function RiderApp() {
                       <span className="text-2xl font-headline font-black text-zinc-900 tracking-tighter">#{order.id?.slice(-8).toUpperCase()}</span>
                     </div>
                     {order.riderId === user?.uid && (
-                      <span className="bg-primary/20 text-primary-dark text-[8px] font-black px-2 py-1 rounded-lg uppercase tracking-widest">My Task</span>
+                      <span className="bg-primary/20 text-zinc-900 text-[8px] font-black px-2 py-1 rounded-lg uppercase tracking-widest">My Task</span>
                     )}
                   </div>
 
