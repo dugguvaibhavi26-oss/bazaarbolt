@@ -12,15 +12,33 @@ export const BottomNav = () => {
   
   const navItems = [
     { label: "Home", icon: "home", href: "/" },
-    { label: "Search", icon: "search", href: "/search" },
     { label: "Orders", icon: "history", href: "/orders" },
     { label: "Helpdesk", icon: "support_agent", href: "/help" },
-    { label: "Cart", icon: "shopping_bag", href: "/cart" },
   ];
 
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMoving, setIsMoving] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      // Scroll down -> hide
+      if (currentScrollY > lastScrollY.current + 10 && currentScrollY > 50) {
+        setIsVisible(false);
+      } 
+      // Scroll up or at top -> show
+      else if (currentScrollY < lastScrollY.current - 10 || currentScrollY < 50) {
+        setIsVisible(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const updateIndicator = () => {
@@ -42,10 +60,24 @@ export const BottomNav = () => {
     updateIndicator();
     window.addEventListener('resize', updateIndicator);
     return () => window.removeEventListener('resize', updateIndicator);
-  }, [pathname]);
+  }, [pathname, navItems.length]); // added navItems.length so it recalculates if items change
 
   return (
-    <div className="fixed bottom-8 left-0 w-full z-50 flex justify-center px-4 pointer-events-none mb-safe">
+    <div className={`fixed bottom-4 left-0 w-full z-50 flex flex-col items-center px-4 pointer-events-none mb-safe transition-all duration-500 ease-in-out ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-[150%] opacity-0'}`}>
+      
+      {/* Floating Cart Button */}
+      <div className="w-full max-w-md flex justify-end mb-4 pointer-events-none">
+        <button 
+          onClick={() => router.push('/cart')} 
+          className={`pointer-events-auto bg-primary text-zinc-900 shadow-xl flex items-center justify-center transition-all duration-300 ease-out active:scale-95 ${cartCount > 0 ? 'rounded-full px-5 py-3.5 gap-2' : 'rounded-full w-14 h-14'}`}
+        >
+          <span className="material-symbols-outlined text-[24px] font-black" style={{ fontVariationSettings: "'FILL'1" }}>shopping_bag</span>
+          {cartCount > 0 && (
+            <span className="font-headline font-black text-sm tracking-widest whitespace-nowrap">+{cartCount}</span>
+          )}
+        </button>
+      </div>
+
       <nav 
         ref={containerRef}
         className="bg-white/95 backdrop-blur-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.25)] border border-zinc-100 rounded-[36px] p-2 flex items-center justify-between w-full max-w-md pointer-events-auto relative overflow-hidden"
@@ -83,12 +115,6 @@ export const BottomNav = () => {
                   >
                     {item.label === 'Helpdesk' ? 'support_agent' : item.icon}
                   </span>
-                  
-                  {item.label === "Cart" && cartCount > 0 && !isActive && (
-                    <div className="absolute -top-1.5 -right-2 bg-primary text-zinc-900 text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-sm border border-white">
-                      {cartCount}
-                    </div>
-                  )}
                 </div>
 
                 <div 
@@ -98,7 +124,6 @@ export const BottomNav = () => {
                 >
                   <span className="font-headline font-black text-xs text-primary whitespace-nowrap">
                     {item.label}
-                    {item.label === "Cart" && cartCount > 0 && ` (${cartCount})`}
                   </span>
                 </div>
               </div>
