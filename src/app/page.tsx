@@ -323,14 +323,14 @@ export default function Home() {
           </section>
         ) : (
           <>
-            <section className="mt-4 mb-10 overflow-hidden">
-              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-x-3 gap-y-6 px-4 justify-items-center">
+            <section className="mt-4 mb-8">
+              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-x-1 gap-y-8 px-2 justify-items-center">
                 {filteredCategories.map(cat => (
-                  <div key={cat.id} onClick={() => router.push(`/category/${cat.id}`)} className="flex flex-col items-center gap-2.5 cursor-pointer group w-full max-w-[85px]">
-                    <div className="w-[64px] h-[64px] rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center p-0 overflow-hidden flex-shrink-0 group-hover:border-primary transition-all shadow-sm">
+                  <div key={cat.id} onClick={() => router.push(`/category/${cat.id}`)} className="flex flex-col items-center gap-2 cursor-pointer group w-full max-w-[85px]">
+                    <div className="w-[56px] h-[56px] rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center p-0 overflow-hidden flex-shrink-0 group-hover:border-primary transition-all shadow-sm">
                       <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={cat.img} alt={cat.label} />
                     </div>
-                    <span className="text-[11px] font-bold tracking-tight text-center text-zinc-900 group-hover:text-primary leading-tight w-full break-words min-h-[2.4em] flex items-center justify-center">{cat.label}</span>
+                    <span className="text-[10px] font-black tracking-tight text-center text-zinc-900 group-hover:text-primary leading-[1.1] w-full break-words min-h-[2.2em] flex items-center justify-center px-1">{cat.label}</span>
                   </div>
                 ))}
               </div>

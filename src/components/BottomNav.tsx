@@ -45,7 +45,7 @@ export const BottomNav = () => {
   }, [pathname]);
 
   return (
-    <div className="fixed bottom-0 left-0 w-full z-50 flex justify-center pb-10 pb-safe px-4 pointer-events-none">
+    <div className="fixed bottom-12 left-0 w-full z-50 flex justify-center px-4 pointer-events-none mb-safe">
       <nav 
         ref={containerRef}
         className="bg-white/95 backdrop-blur-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.25)] border border-zinc-100 rounded-[36px] p-2 flex items-center justify-between w-full max-w-md pointer-events-auto relative overflow-hidden"
