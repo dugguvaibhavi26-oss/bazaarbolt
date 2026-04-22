@@ -55,12 +55,20 @@ export default function RiderOrderDetail() {
  await updateDoc(doc(db, "orders", order.id!), updatePayload);
  toast.success(`Order ${status}`);
 
- // Notify customer about status change
- triggerNotification({
- userId: order.userId,
- title: status === "PICKED"? "Order Shipped 🚚": (status === "ON_THE_WAY"? "Out for Delivery 🚀":`Order ${status}`),
- body: status === "PICKED"? "Your order has been picked up and is being prepared for delivery.": status === "ON_THE_WAY"? "Our rider is on the way to your location.":`Your order status has been updated to ${status}`,
- });
+  // Notify customer about status change
+  const getNotificationContent = (status: OrderStatus) => {
+    switch(status) {
+      case 'ACCEPTED': return { title: "Order Accepted ✅", body: "A rider has been assigned and is heading to the store." };
+      case 'PICKED': return { title: "Order Shipped 🚚", body: "Your order has been picked up and is being prepared for delivery." };
+      case 'ON_THE_WAY': return { title: "Out for Delivery 🚀", body: "Our rider is on the way to your location. Keep your phone handy!" };
+      case 'DELIVERED': return { title: "Order Delivered 🎉", body: "Your order has been delivered successfully. Enjoy your products!" };
+      case 'CANCELLED': return { title: "Order Cancelled 🚫", body: "Your order has been cancelled. If you paid online, a refund is being processed." };
+      default: return { title: `Order ${status}`, body: `Your order status has been updated to ${status}` };
+    }
+  };
+
+  const { title, body } = getNotificationContent(status);
+  triggerNotification({ userId: order.userId, title, body });
 
  } catch (error: any) {
  toast.error(error.message || "Update failed");

@@ -98,3 +98,14 @@ export async function sendToTopic(topic: string, title: string, body: string, da
     throw error;
   }
 }
+export async function subscribeToTopic(token: string, topic: string) {
+  if (!token || !topic) return;
+  try {
+    const response = await admin.messaging().subscribeToTopic(token, topic);
+    console.log(`Successfully subscribed token to topic ${topic}:`, response);
+    return response;
+  } catch (error) {
+    console.error(`Error subscribing to topic ${topic}:`, error);
+    throw error;
+  }
+}

@@ -72,25 +72,15 @@ export const usePushNotifications = () => {
     if (!user) return;
 
     try {
-      const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, {
-        fcmToken: fcmToken,
+      await fetch("/api/notifications/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.uid, fcmToken }),
       });
-      console.log('FCM Token saved to Firestore');
-      
-      // Also subscribe to topics based on role
-      // This part would typically be done server-side or via another API call
-      // to keep it within FCM topic limits and security
-      subscribeToTopics(user.uid);
+      console.log('FCM Token registered and topics subscribed');
     } catch (e) {
-      console.error('Error saving FCM token', e);
+      console.error('Error registering FCM token', e);
     }
-  };
-
-  const subscribeToTopics = async (userId: string) => {
-    // Note: Capacitor push utility doesn't directly support topic subscription
-    // usually you do this by calling a backend API that uses Firebase Admin SDK
-    // we already have the endpoint, let's assume the backend handles it or we call it.
   };
 
   return { token };
