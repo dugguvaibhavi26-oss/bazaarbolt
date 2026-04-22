@@ -203,20 +203,20 @@ export default function CheckoutPage() {
 
   return (
     <main className="bg-zinc-50 min-h-screen pb-44">
-      <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-xl flex items-center px-4 py-4 border-b border-zinc-100">
+      <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-xl flex items-center px-4 pt-safe pt-8 pb-4 border-b border-zinc-100">
         <button onClick={() => router.back()} className="p-2 mr-2"><span className="material-symbols-outlined font-bold text-zinc-900">arrow_back</span></button>
         <h1 className="text-lg font-black font-headline text-zinc-900 tracking-tighter">Checkout</h1>
       </header>
 
       {cart.length === 0 ? (
-        <div className="pt-[140px] flex flex-col items-center justify-center p-10 text-center">
+        <div className="pt-[180px] flex flex-col items-center justify-center p-10 text-center">
           <span className="material-symbols-outlined text-zinc-200 text-8xl mb-6">shopping_bag</span>
           <h2 className="text-2xl font-black text-zinc-900 mb-2">Cart is empty</h2>
           <button onClick={() => router.push("/")} className="bg-primary text-zinc-900 px-8 py-3 rounded-2xl font-black text-[10px] tracking-widest mt-4">Go shop</button>
         </div>
       ) : (
         <>
-          <div className="pt-20 space-y-3 px-4">
+          <div className="pt-32 space-y-3 px-4">
             {recommendations.length > 0 && (
               <section className="bg-white rounded-3xl p-5 shadow-sm border border-zinc-100">
                 <h3 className="text-[10px] font-black tracking-widest text-zinc-900 mb-4">You might also like</h3>

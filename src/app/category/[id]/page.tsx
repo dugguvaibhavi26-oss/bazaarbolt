@@ -93,7 +93,7 @@ export default function CategoryPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-xl shadow-sm border-b border-zinc-100 px-4 py-4 flex flex-col gap-4">
+      <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-xl shadow-sm border-b border-zinc-100 px-4 pt-safe pt-8 pb-4 flex flex-col gap-4">
         <div className="flex items-center gap-4">
           <button onClick={() => router.back()} className="p-2 hover:bg-zinc-100 rounded-full transition-colors">
             <span className="material-symbols-outlined text-zinc-900">arrow_back</span>
@@ -115,7 +115,7 @@ export default function CategoryPage() {
         </div>
       </header>
 
-      <main className="pt-40 pb-20 px-4">
+      <main className="pt-48 pb-20 px-4">
         {catalogLoading ? (
           <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-2">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(n => <div key={n} className="aspect-[3/4] bg-zinc-50 rounded-xl animate-pulse" />)}

@@ -175,7 +175,7 @@ export const useStore = create<StoreState>()(
         const prodQuery = query(
           collection(db, "products"), 
           where("active", "==", true), 
-          limit(100)
+          limit(1000)
         );
         const unsubProds = onSnapshot(prodQuery, (prodSnap) => {
           logFirestoreRead("products (sync)", prodSnap.size);
