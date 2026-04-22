@@ -12,8 +12,10 @@ export const BottomNav = () => {
   
   const navItems = [
     { label: "Home", icon: "home", href: "/" },
+    { label: "Search", icon: "search", href: "/search" },
     { label: "Orders", icon: "history", href: "/orders" },
     { label: "Helpdesk", icon: "support_agent", href: "/help" },
+    { label: "Cart", icon: "shopping_bag", href: "/cart" },
   ];
 
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
@@ -25,15 +27,11 @@ export const BottomNav = () => {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      // Scroll down -> hide
-      if (currentScrollY > lastScrollY.current + 10 && currentScrollY > 50) {
-        setIsVisible(false);
-      } 
-      // Scroll up or at top -> show
-      else if (currentScrollY < lastScrollY.current - 10 || currentScrollY < 50) {
+      if (currentScrollY < 50) {
         setIsVisible(true);
+      } else {
+        setIsVisible(false);
       }
-      lastScrollY.current = currentScrollY;
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -62,75 +60,102 @@ export const BottomNav = () => {
     return () => window.removeEventListener('resize', updateIndicator);
   }, [pathname, navItems.length]); // added navItems.length so it recalculates if items change
 
+  const isCartPillVisible = !isVisible && cartCount > 0;
+
   return (
-    <div className={`fixed bottom-4 left-0 w-full z-50 flex flex-col items-center px-4 pointer-events-none mb-safe transition-all duration-500 ease-in-out ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-[150%] opacity-0'}`}>
-      
-      {/* Floating Cart Button */}
-      <div className="w-full max-w-md flex justify-end mb-4 pointer-events-none">
-        <button 
-          onClick={() => router.push('/cart')} 
-          className={`pointer-events-auto bg-primary text-zinc-900 shadow-xl flex items-center justify-center transition-all duration-300 ease-out active:scale-95 ${cartCount > 0 ? 'rounded-full px-5 py-3.5 gap-2' : 'rounded-full w-14 h-14'}`}
-        >
-          <span className="material-symbols-outlined text-[24px] font-black" style={{ fontVariationSettings: "'FILL'1" }}>shopping_bag</span>
-          {cartCount > 0 && (
-            <span className="font-headline font-black text-sm tracking-widest whitespace-nowrap">+{cartCount}</span>
-          )}
-        </button>
+    <>
+      {/* Floating View Cart Pill (Shows when navbar is hidden) */}
+      <div className={`fixed bottom-6 left-0 w-full z-[45] flex justify-center px-4 pointer-events-none mb-safe transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${isCartPillVisible ? 'translate-y-0 opacity-100' : 'translate-y-[150%] opacity-0'}`}>
+        <div className="w-full max-w-md">
+          <button 
+            onClick={() => router.push('/cart')} 
+            className="pointer-events-auto w-full bg-[#318b18] text-white shadow-2xl rounded-full p-2 flex items-center justify-between active:scale-95 transition-transform"
+          >
+            {/* Left: Overlapping product images */}
+            <div className="flex items-center -space-x-4 pl-1">
+              {cart.slice(0, 3).map((item, idx) => (
+                <div key={idx} className="w-12 h-12 rounded-full bg-white border-2 border-[#318b18] overflow-hidden flex-shrink-0 z-[3] relative">
+                  <img src={item.image} alt={item.name} className="w-full h-full object-contain p-1" />
+                </div>
+              ))}
+            </div>
+
+            {/* Center: Text */}
+            <div className="flex flex-col items-center flex-1">
+              <span className="font-headline font-black text-lg tracking-tight leading-none mb-0.5">View cart</span>
+              <span className="text-[10px] font-bold tracking-[0.15em] uppercase opacity-90">{cartCount} ITEMS</span>
+            </div>
+
+            {/* Right: Chevron */}
+            <div className="pr-4">
+              <span className="material-symbols-outlined text-3xl font-bold">chevron_right</span>
+            </div>
+          </button>
+        </div>
       </div>
 
-      <nav 
-        ref={containerRef}
-        className="bg-white/95 backdrop-blur-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.25)] border border-zinc-100 rounded-[36px] p-2 flex items-center justify-between w-full max-w-md pointer-events-auto relative overflow-hidden"
-      >
-        {/* The Sliding Oval Indicator */}
-        <div 
-          className={`absolute h-12 bg-primary/10 rounded-2xl transition-all duration-[600ms] ${
-            isMoving ? "ease-[cubic-bezier(0.68,-0.6,0.32,1.6)] scale-y-[0.9] scale-x-[1.05]" : "ease-[cubic-bezier(0.4,0,0.2,1)] scale-100"
-          }`}
-          style={{
-            left: `${indicatorStyle.left}px`,
-            width: `${indicatorStyle.width}px`,
-          }}
-        />
+      {/* Main Bottom Navbar */}
+      <div className={`fixed bottom-4 left-0 w-full z-50 flex flex-col items-center px-4 pointer-events-none mb-safe transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-[150%] opacity-0'}`}>
+        <nav 
+          ref={containerRef}
+          className="bg-white/95 backdrop-blur-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.25)] border border-zinc-100 rounded-[36px] p-2 flex items-center justify-between w-full max-w-md pointer-events-auto relative overflow-hidden"
+        >
+          {/* The Sliding Oval Indicator */}
+          <div 
+            className={`absolute h-12 bg-primary/10 rounded-2xl transition-all duration-[600ms] ${
+              isMoving ? "ease-[cubic-bezier(0.68,-0.6,0.32,1.6)] scale-y-[0.9] scale-x-[1.05]" : "ease-[cubic-bezier(0.4,0,0.2,1)] scale-100"
+            }`}
+            style={{
+              left: `${indicatorStyle.left}px`,
+              width: `${indicatorStyle.width}px`,
+            }}
+          />
 
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          
-          return (
-            <button
-              key={item.href}
-              data-active={isActive}
-              onClick={() => router.push(item.href)}
-              className={`relative z-10 flex items-center justify-center h-12 rounded-2xl group outline-none transition-all duration-[600ms] ease-[cubic-bezier(0.4,0,0.2,1)] ${
-                isActive ? "flex-grow-[2.8]" : "flex-grow-[1]"
-              }`}
-            >
-              <div className="flex items-center gap-2 pointer-events-none">
-                <div className="relative">
-                  <span 
-                    className={`material-symbols-outlined text-[24px] transition-all duration-500 ${
-                      isActive ? "text-primary scale-110" : "text-zinc-400 group-hover:text-zinc-600 scale-100"
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            
+            return (
+              <button
+                key={item.href}
+                data-active={isActive}
+                onClick={() => router.push(item.href)}
+                className={`relative z-10 flex items-center justify-center h-12 rounded-2xl group outline-none transition-all duration-[600ms] ease-[cubic-bezier(0.4,0,0.2,1)] ${
+                  isActive ? "flex-grow-[2.8]" : "flex-grow-[1]"
+                }`}
+              >
+                <div className="flex items-center gap-2 pointer-events-none">
+                  <div className="relative">
+                    <span 
+                      className={`material-symbols-outlined text-[24px] transition-all duration-500 ${
+                        isActive ? "text-primary scale-110" : "text-zinc-400 group-hover:text-zinc-600 scale-100"
+                      }`}
+                      style={{ fontVariationSettings: isActive ? "'FILL'1" : "'FILL'0" }}
+                    >
+                      {item.label === 'Helpdesk' ? 'support_agent' : item.icon}
+                    </span>
+                    
+                    {item.label === "Cart" && cartCount > 0 && !isActive && (
+                      <div className="absolute -top-1.5 -right-2 bg-primary text-zinc-900 text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-sm border border-white">
+                        {cartCount}
+                      </div>
+                    )}
+                  </div>
+
+                  <div 
+                    className={`flex items-center overflow-hidden transition-all duration-[600ms] ease-[cubic-bezier(0.4,0,0.2,1)] ${
+                      isActive ? "max-w-[100px] opacity-100 ml-1" : "max-w-0 opacity-0"
                     }`}
-                    style={{ fontVariationSettings: isActive ? "'FILL'1" : "'FILL'0" }}
                   >
-                    {item.label === 'Helpdesk' ? 'support_agent' : item.icon}
-                  </span>
+                    <span className="font-headline font-black text-xs text-primary whitespace-nowrap">
+                      {item.label}
+                    </span>
+                  </div>
                 </div>
-
-                <div 
-                  className={`flex items-center overflow-hidden transition-all duration-[600ms] ease-[cubic-bezier(0.4,0,0.2,1)] ${
-                    isActive ? "max-w-[100px] opacity-100 ml-1" : "max-w-0 opacity-0"
-                  }`}
-                >
-                  <span className="font-headline font-black text-xs text-primary whitespace-nowrap">
-                    {item.label}
-                  </span>
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </nav>
-    </div>
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+    </>
   );
 };
