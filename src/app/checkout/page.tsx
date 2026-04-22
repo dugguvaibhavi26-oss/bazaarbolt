@@ -68,22 +68,25 @@ export default function CheckoutPage() {
     const now = new Date();
     return availableSlots.filter(slot => {
       try {
-        // Expected format: "10:30 AM - 11:30 AM" or "10:30 AM"
-        const startTimeStr = slot.split('-')[0].trim();
-        const [time, modifier] = startTimeStr.split(' ');
-        let [hours, minutes] = time.split(':').map(Number);
-        
+        // Robust parsing using Regex: matches "10:30 AM", "12:30PM", "9:00 PM", etc.
+        const timeMatch = slot.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        if (!timeMatch) return true;
+
+        let hours = parseInt(timeMatch[1]);
+        const minutes = parseInt(timeMatch[2]);
+        const modifier = timeMatch[3].toUpperCase();
+
         if (modifier === 'PM' && hours < 12) hours += 12;
         if (modifier === 'AM' && hours === 12) hours = 0;
 
         const slotStartTime = new Date();
         slotStartTime.setHours(hours, minutes, 0, 0);
 
-        // Buffer: 15 minutes before slot starts
+        // Lead time: Slot must be booked at least 15 minutes before it starts
         const bufferTime = new Date(slotStartTime.getTime() - 15 * 60000);
         return now < bufferTime;
       } catch (e) {
-        return true; // Fallback to showing if parsing fails
+        return true;
       }
     });
   };
