@@ -2,11 +2,12 @@ import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { Product } from "@/types";
 
-export const PRODUCT_TEMPLATE_HEADERS = ["name", "price", "category", "image", "stock", "description"];
+export const PRODUCT_TEMPLATE_HEADERS = ["name", "price", "category", "image", "stock", "description", "section"];
 
 export const downloadTemplate = () => {
   const csvContent = PRODUCT_TEMPLATE_HEADERS.join(",") + "\n" + 
-    'Example Product,99,Vegetables,https://example.com/image.jpg,100,"Short description of product"';
+    'Example Product,99,Vegetables,https://example.com/image.jpg,100,"Short description of product",BB\n' +
+    'Cafe Item,150,Bakery,https://example.com/cafe.jpg,50,"Fresh cake",CAFE';
   
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
@@ -58,7 +59,7 @@ export const parseFile = async (file: File): Promise<Partial<Product>[]> => {
   }
 };
 
-export const validateProducts = (products: any[]): { valid: Partial<Product>[], invalid: any[] } => {
+export const validateProducts = (products: any[], defaultSection: "BB" | "CAFE" = "BB"): { valid: Partial<Product>[], invalid: any[] } => {
   const valid: Partial<Product>[] = [];
   const invalid: any[] = [];
 
@@ -68,6 +69,8 @@ export const validateProducts = (products: any[]): { valid: Partial<Product>[], 
     const category = p.category?.toString().trim();
     const stock = parseInt(p.stock) || 0;
     const image = p.image?.toString().trim() || "https://placehold.co/400x400?text=No+Image";
+    const section = (p.section?.toString().trim().toUpperCase() === "CAFE") ? "CAFE" : 
+                    (p.section?.toString().trim().toUpperCase() === "BB") ? "BB" : defaultSection;
 
     if (name && !isNaN(price) && category) {
       valid.push({
@@ -78,6 +81,7 @@ export const validateProducts = (products: any[]): { valid: Partial<Product>[], 
         stock,
         description: p.description?.toString().trim() || "",
         active: true,
+        section: section as any,
       });
     } else {
       invalid.push({ row: index + 2, data: p }); // index + 2 because CSV header is 1st row and it's 0-indexed

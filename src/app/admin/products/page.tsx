@@ -131,7 +131,7 @@ export default function AdminProducts() {
       setUploadFile(file);
       try {
         const rawData = await parseFile(file);
-        const { valid, invalid } = validateProducts(rawData);
+        const { valid, invalid } = validateProducts(rawData, activeTab);
         setPreviewData(valid);
         setUploadStats({ total: rawData.length, valid: valid.length, failed: invalid.length });
         if (invalid.length > 0) {
@@ -317,7 +317,19 @@ export default function AdminProducts() {
                   </div>
                   <div>
                     <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Category</label>
-                    <select value={newProduct.category} onChange={e => setNewProduct({ ...newProduct, category: e.target.value })} className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all">
+                    <select 
+                      value={newProduct.category} 
+                      onChange={e => {
+                        const catId = e.target.value;
+                        const cat = categories.find(c => c.id === catId);
+                        setNewProduct({ 
+                          ...newProduct, 
+                          category: catId,
+                          section: cat?.section || "BB"
+                        });
+                      }} 
+                      className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all"
+                    >
                       {categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                     </select>
                   </div>
