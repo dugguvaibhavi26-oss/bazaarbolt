@@ -220,6 +220,9 @@ export default function Home() {
           <Link href={`/product/${product.id}`} className="text-[10px] font-bold text-zinc-900 leading-[1.2] mb-1 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
             {product.name}
           </Link>
+          {((product as any).section === "CAFE") && (
+            <p className="text-[7px] font-bold text-zinc-400 mb-1 leading-tight italic">Image for representation only</p>
+          )}
           {(product.rating || 0) > 0 ? (
             <div className="flex items-center gap-1.5 mb-1.5">
               <div className="flex items-center bg-[#f3f9f3] text-[#2d7d2d] px-1.5 py-0.5 rounded-md border border-[#e1eee1]">
@@ -380,7 +383,10 @@ export default function Home() {
                 }).slice(0, 30), 
                 link: "/search" 
               }
-            ].map((section, idx) => section.products.length > 0 && (
+            ].filter(section => {
+              if (activeSection === "CAFE" && section.title === "Fresh Bakes") return false;
+              return section.products.length > 0;
+            }).map((section, idx) => (
               <section key={idx} className="mb-10 pl-4 w-full overflow-hidden">
                 <div className="flex items-center justify-between mb-4 pr-4">
                   <h3 className="font-headline font-black text-lg tracking-tight text-zinc-900 flex items-center gap-2">

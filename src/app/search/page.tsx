@@ -77,6 +77,9 @@ export default function SearchPage() {
           <Link href={`/product/${product.id}`} className="text-[10px] font-bold text-zinc-900 leading-[1.2] mb-1 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
             {product.name}
           </Link>
+          {((product as any).section === "CAFE") && (
+            <p className="text-[7px] font-bold text-zinc-400 mb-1 leading-tight italic">Image for representation only</p>
+          )}
           {(product.rating || 0) > 0 ? (
             <div className="flex items-center gap-1.5 mb-1.5">
               <div className="flex items-center bg-[#f3f9f3] text-[#2d7d2d] px-1.5 py-0.5 rounded-md border border-[#e1eee1]">

@@ -140,6 +140,15 @@ export default function ProductPage() {
 
  {/* Detailed Info Sections */}
  <section className="mt-3 px-5 space-y-3">
+ {((product as any).section === "CAFE") && (
+    <div className="bg-orange-50 border border-orange-100 p-4 rounded-2xl flex gap-3">
+      <span className="material-symbols-outlined text-orange-500 shrink-0">info</span>
+      <p className="text-[11px] font-bold text-orange-800 leading-relaxed">
+        Notice: The actual product delivered may vary slightly from the image shown above due to fresh preparation and seasonal availability.
+      </p>
+    </div>
+  )}
+
  <div className="bg-white p-6 rounded-3xl border border-zinc-100">
  <h3 className="text-[10px] font-black text-zinc-900 tracking-widest mb-4">Product Details</h3>
  <p className="text-[13px] font-bold text-zinc-500 leading-relaxed">
