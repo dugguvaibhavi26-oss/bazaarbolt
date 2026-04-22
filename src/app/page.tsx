@@ -311,7 +311,7 @@ export default function Home() {
 
         {/* Search Bar area with exact same bg as active tab to seamlessly connect */}
         <div className={`px-4 py-3 border-b transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2] border-[#EAD8C0]/20' : 'bg-white border-zinc-100'}`}>
-          <div onClick={() => router.push('/search')} className={`rounded-[12px] flex items-center px-4 py-3.5 gap-3 cursor-pointer shadow-sm border transition-all ${activeSection === 'CAFE' ? 'bg-[#FFFBF5] border-[#EAD8C0]/40' : 'bg-white border-zinc-200'}`}>
+          <div onClick={() => router.push(`/search?section=${activeSection}`)} className={`rounded-[12px] flex items-center px-4 py-3.5 gap-3 cursor-pointer shadow-sm border transition-all ${activeSection === 'CAFE' ? 'bg-[#FFFBF5] border-[#EAD8C0]/40' : 'bg-white border-zinc-200'}`}>
             <span className={`material-symbols-outlined text-xl font-bold ${activeSection === 'CAFE' ? 'text-[#8B5E3C]' : 'text-zinc-400'}`}>search</span>
             <span className={`text-xs font-bold tracking-widest ${activeSection === 'CAFE' ? 'text-[#8B5E3C]/60' : 'text-zinc-400'}`}>Search For "{activeSection === "CAFE" ? "Cold Brew" : "Safai Abhiyaan"}"</span>
           </div>

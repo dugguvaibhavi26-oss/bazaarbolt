@@ -1,9 +1,9 @@
 "use client";
 
 import { useStore } from "@/store/useStore";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Product } from "@/types";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { db } from "@/lib/firebase";
@@ -13,6 +13,9 @@ import { BottomNav } from "@/components/BottomNav";
 
 export default function SearchPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentSection = (searchParams.get("section") || "BB") as "BB" | "CAFE";
+  
   const { cart, addToCart, updateQuantity, products, fetchCatalog } = useStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [recentSearches, setRecentSearches] = useState<string[]>(["Milk", "Bread", "Eggs", "Chips", "Cola"]);
@@ -24,17 +27,37 @@ export default function SearchPage() {
   }, [fetchCatalog]);
 
   const searchStr = searchTerm.trim().toLowerCase();
-  const filteredProducts = searchStr !== '' 
-    ? products.filter(p =>
-        p.name.toLowerCase().includes(searchStr) ||
-        (p.category || "").toLowerCase().includes(searchStr)
-      )
-    : [];
+  
+  // Products filtered by current section
+  const sectionProducts = useMemo(() => 
+    products.filter(p => ((p as any).section || "BB") === currentSection),
+  [products, currentSection]);
 
-  const cartCategories = Array.from(new Set(cart.map(item => item.category)));
-  const recommendations = cartCategories.length > 0 
-    ? products.filter(p => cartCategories.includes(p.category) && !cart.some(c => c.id === p.id)).slice(0, 8)
-    : products.slice(0, 8);
+  const filteredProducts = useMemo(() => 
+    searchStr !== '' 
+      ? sectionProducts.filter(p =>
+          p.name.toLowerCase().includes(searchStr) ||
+          (p.category || "").toLowerCase().includes(searchStr)
+        )
+      : [],
+  [searchStr, sectionProducts]);
+
+  // Check for matches in the OTHER section
+  const otherSectionMatches = useMemo(() => {
+    if (searchStr === '' || filteredProducts.length > 0) return 0;
+    return products.filter(p => 
+      ((p as any).section || "BB") !== currentSection && 
+      (p.name.toLowerCase().includes(searchStr) || (p.category || "").toLowerCase().includes(searchStr))
+    ).length;
+  }, [searchStr, filteredProducts, products, currentSection]);
+
+  const recommendations = useMemo(() => {
+    const cartCategories = Array.from(new Set(cart.map(item => item.category)));
+    const baseRecs = cartCategories.length > 0 
+      ? sectionProducts.filter(p => cartCategories.includes(p.category) && !cart.some(c => c.id === p.id))
+      : sectionProducts;
+    return baseRecs.slice(0, 8);
+  }, [cart, sectionProducts]);
 
   const ProductCard = ({ product }: { product: Product }) => {
     const cartItem = cart.find(c => c.id === product.id);
@@ -109,7 +132,7 @@ export default function SearchPage() {
            <input
              ref={inputRef}
              type="text"
-             placeholder="Search for milk, dal, chips and more..."
+             placeholder={currentSection === "CAFE" ? "Search in BB Cafe..." : "Search for milk, dal, chips and more..."}
              value={searchTerm}
              onChange={(e) => setSearchTerm(e.target.value)}
              className="bg-transparent border-none outline-none w-full text-xs font-black tracking-widest placeholder:text-zinc-400 text-zinc-900 placeholder:normal-case"
@@ -163,9 +186,28 @@ export default function SearchPage() {
           <div className="animate-in fade-in duration-300">
             <h3 className="font-headline font-black text-[10px] text-zinc-400 mb-4 tracking-widest">{filteredProducts.length} results for "{searchTerm}"</h3>
             {filteredProducts.length === 0 ? (
-              <div className="py-20 flex flex-col items-center justify-center text-center opacity-40">
-                <span className="material-symbols-outlined text-6xl mb-4 text-zinc-400">search_off</span>
-                <p className="font-headline font-black text-sm text-zinc-500">No items match your search</p>
+              <div className="py-20 flex flex-col items-center justify-center text-center">
+                {otherSectionMatches > 0 ? (
+                  <div className="bg-zinc-900 text-white p-8 rounded-[32px] shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-500">
+                    <div className="absolute -top-10 -right-10 opacity-10">
+                      <span className="material-symbols-outlined text-[160px]">explore</span>
+                    </div>
+                    <span className="material-symbols-outlined text-4xl mb-4 text-primary" style={{fontVariationSettings: "'FILL'1"}}>bolt</span>
+                    <h4 className="text-xl font-headline font-black tracking-tight mb-2">Not in {currentSection === "BB" ? "BazaarBolt" : "Cafe"}?</h4>
+                    <p className="text-[10px] font-bold text-zinc-400 tracking-widest uppercase mb-6">We found {otherSectionMatches} matching items in <span className="text-white">{currentSection === "BB" ? "BB Cafe" : "BazaarBolt"}</span></p>
+                    <button 
+                      onClick={() => router.replace(`/search?section=${currentSection === "BB" ? "CAFE" : "BB"}`)}
+                      className="bg-white text-zinc-900 px-8 py-4 rounded-2xl font-black text-[10px] tracking-widest uppercase hover:bg-primary hover:text-white transition-all shadow-xl active:scale-95"
+                    >
+                      Go to {currentSection === "BB" ? "Cafe" : "BazaarBolt"} Search
+                    </button>
+                  </div>
+                ) : (
+                  <div className="opacity-40">
+                    <span className="material-symbols-outlined text-6xl mb-4 text-zinc-400">search_off</span>
+                    <p className="font-headline font-black text-sm text-zinc-500">No items match your search</p>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-x-3 gap-y-6">
