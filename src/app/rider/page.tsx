@@ -14,7 +14,6 @@ export default function RiderApp() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectedFilterSlot, setSelectedFilterSlot] = useState<string>("ALL");
   const [selectedFilterDate, setSelectedFilterDate] = useState<string>(new Date().toLocaleDateString('en-CA'));
-  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -40,8 +39,6 @@ export default function RiderApp() {
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         });
 
-        const slots = Array.from(new Set(ords.map(o => o.deliverySlot).filter(Boolean))) as string[];
-        setAvailableSlots(slots);
         setOrders(ords);
       } catch (e) {
         console.error("Mapping error in RiderApp:", e);
@@ -54,11 +51,15 @@ export default function RiderApp() {
     return () => unsub();
   }, [user]);
 
-  const filteredOrders = orders.filter(o => {
-    const matchesSlot = selectedFilterSlot === "ALL" || o.deliverySlot === selectedFilterSlot;
+  const dateFilteredOrders = orders.filter(o => {
     const orderDate = o.deliveryDate || (o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-CA') : '');
-    const matchesDate = selectedFilterDate === "ALL" || orderDate === selectedFilterDate;
-    return matchesSlot && matchesDate;
+    return selectedFilterDate === "ALL" || orderDate === selectedFilterDate;
+  });
+
+  const availableSlots = Array.from(new Set(dateFilteredOrders.map(o => o.deliverySlot).filter(Boolean))) as string[];
+
+  const filteredOrders = dateFilteredOrders.filter(o => {
+    return selectedFilterSlot === "ALL" || o.deliverySlot === selectedFilterSlot;
   });
 
   if (loading) return (

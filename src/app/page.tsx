@@ -14,10 +14,7 @@ import { AdUnit } from "@/components/AdUnit";
 import { BottomNav } from "@/components/BottomNav";
 import { Logo } from "@/components/Logo";
 import { Portal } from "@/components/Portal";
-import { usePushNotifications } from '@/hooks/usePushNotifications';
-
 export default function Home() {
-  usePushNotifications();
   const {
     settings, initSettings, settingsLoading,
     products, categories, catalogLoading, fetchCatalog,
@@ -264,7 +261,7 @@ export default function Home() {
   return (
     <div className={`min-h-screen relative transition-colors duration-700 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : 'bg-white'}`}>
       <div className={`fixed top-0 left-0 w-full flex flex-col z-[60] transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#2D1B14] text-[#EAD8C0]' : 'bg-black text-white'}`}>
-        <div className="pt-safe pt-8" />
+        <div className="pt-safe" />
         <div className="h-8 flex items-center overflow-hidden">
           <div className="flex whitespace-nowrap animate-marquee">
             <span className="text-[10px] font-bold tracking-widest px-4">{settings?.announcement || "⚡️ Instant Delivery Available • Curated Premium Selections ⚡️"}</span>
@@ -273,7 +270,7 @@ export default function Home() {
         </div>
       </div>
 
-      <header className={`fixed top-[calc(theme(spacing.16)+env(safe-area-inset-top))] w-full z-50 transition-all border-b ${activeSection === 'CAFE' ? 'border-[#EAD8C0]/20' : 'border-zinc-100'}`}>
+      <header className={`fixed top-[calc(theme(spacing.8)+max(env(safe-area-inset-top),2rem))] w-full z-50 transition-all border-b ${activeSection === 'CAFE' ? 'border-[#EAD8C0]/20' : 'border-zinc-100'}`}>
         {/* Top area with neutral background */}
         <div className={`pt-4 px-4 flex flex-col transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]/80 backdrop-blur-xl' : 'bg-zinc-100'}`}>
           {/* Top Row: Address and Account */}
@@ -320,7 +317,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className={`pt-[292px] pb-32 overflow-x-hidden min-h-[100dvh] transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : 'bg-white'}`}>
+      <main className={`pt-[220px] pb-16 overflow-x-hidden min-h-[100dvh] transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : 'bg-white'}`}>
         {settings && settings.storeOpen === false ? (
           <section className="px-6 py-20 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-700">
             <h2 className="text-5xl font-headline font-black text-zinc-900 tracking-tighter leading-[0.8] mb-8">Currently <br /><span className="text-primary">Unavailable</span></h2>
@@ -346,7 +343,8 @@ export default function Home() {
                 {BANNERS.map((banner, idx) => (
                   <div
                     key={idx}
-                    className={`absolute inset-0 transition-all duration-1000 ${idx === currentBannerIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'}`}
+                    onClick={() => banner.redirectUrl && router.push(banner.redirectUrl)}
+                    className={`absolute inset-0 transition-all duration-1000 ${banner.redirectUrl ? 'cursor-pointer' : ''} ${idx === currentBannerIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'}`}
                   >
                     <img className="w-full h-full object-cover" src={banner.url} alt={banner.title} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-6">

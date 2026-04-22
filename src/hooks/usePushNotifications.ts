@@ -9,7 +9,10 @@ import { Capacitor } from '@capacitor/core';
 import { auth } from '@/lib/firebase';
 import toast from 'react-hot-toast';
 
+import { useRouter } from 'next/navigation';
+
 export const usePushNotifications = () => {
+  const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const initialized = useRef(false);
 
@@ -84,7 +87,11 @@ export const usePushNotifications = () => {
 
       PushNotifications.addListener('pushNotificationActionPerformed', (notification: ActionPerformed) => {
         console.log('👉 Push Action Performed:', notification.actionId, notification.notification);
-        // Handle deep linking or navigation here if needed
+        // Handle deep linking or navigation
+        const data = notification.notification.data;
+        if (data && data.url) {
+          router.push(data.url);
+        }
       });
 
     } catch (e) {

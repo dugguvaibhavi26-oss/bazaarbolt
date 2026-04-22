@@ -72,15 +72,15 @@ body {
 
 @layer utilities {
   .pt-safe {
-    padding-top: env(safe-area-inset-top);
+    padding-top: max(env(safe-area-inset-top), 2rem);
   }
   .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: max(env(safe-area-inset-bottom), 1.5rem);
   }
   .mt-safe {
-    margin-top: env(safe-area-inset-top);
+    margin-top: max(env(safe-area-inset-top), 2rem);
   }
   .mb-safe {
-    margin-bottom: env(safe-area-inset-bottom);
+    margin-bottom: max(env(safe-area-inset-bottom), 1.5rem);
   }
 }

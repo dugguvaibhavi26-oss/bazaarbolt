@@ -22,14 +22,16 @@ export async function POST(req: Request) {
         // return NextResponse.json({ error: "Forbidden: Admin only" }, { status: 403 });
     }
 
-    const { title, message, target } = await req.json();
+    const { title, message, target, url } = await req.json();
+
+    const payload = url ? { url } : undefined;
 
     if (target === "ALL" || target === "CUSTOMERS") {
-      await sendToTopic("customers", title, message);
+      await sendToTopic("customers", title, message, payload);
     }
     
     if (target === "ALL" || target === "RIDERS") {
-      await sendToTopic("riders", title, message);
+      await sendToTopic("riders", title, message, payload);
     }
 
     return NextResponse.json({ success: true });

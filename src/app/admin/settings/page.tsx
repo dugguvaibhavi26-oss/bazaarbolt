@@ -6,8 +6,10 @@ import { db } from "@/lib/firebase";
 import toast from "react-hot-toast";
 import { mapSettings } from "@/lib/mappers";
 import { AppSettings } from "@/types";
+import { useStore } from "@/store/useStore";
 
 export default function AdminSettings() {
+  const { categories, products } = useStore();
   const [settings, setSettings] = useState<AppSettings>({
     storeOpen: true,
     bannerImage: "",
@@ -30,9 +32,11 @@ export default function AdminSettings() {
     url: "",
     section: "BB" as "BB" | "CAFE",
     title: "",
-    subtitle: ""
+    subtitle: "",
+    redirectUrl: ""
   });
   const [activeBannerTab, setActiveBannerTab] = useState<"BB" | "CAFE">("BB");
+  const [bannerRedirectType, setBannerRedirectType] = useState<"NONE" | "CATEGORY" | "PRODUCT" | "CUSTOM">("NONE");
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "settings", "config"), (docSnap) => {
@@ -66,7 +70,8 @@ export default function AdminSettings() {
     const currentBanners = settings.heroBanners || [];
     setSettings({ ...settings, heroBanners: [...currentBanners, { ...newBanner }] });
     // Reset but keep the current section
-    setNewBanner({ url: "", section: activeBannerTab, title: "", subtitle: "" });
+    setNewBanner({ url: "", section: activeBannerTab, title: "", subtitle: "", redirectUrl: "" });
+    setBannerRedirectType("NONE");
     toast.success("Banner added locally. Remember to click 'Propagate Changes' to save!", { duration: 4000 });
   };
 
@@ -167,6 +172,58 @@ export default function AdminSettings() {
                     <div className="space-y-1.5 uppercase">
                       <label className="text-[10px] font-black text-zinc-400 ml-1 uppercase">Subtitle</label>
                       <input type="text" value={newBanner.subtitle} onChange={e => setNewBanner({...newBanner, subtitle: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. 50% OFF" />
+                    </div>
+                    
+                    <div className="col-span-2 space-y-1.5 mt-2 pt-4 border-t border-zinc-200">
+                      <label className="text-[10px] font-black text-zinc-400 ml-1 uppercase block">Redirect On Click</label>
+                      <div className="flex bg-zinc-200/50 p-1 rounded-xl mb-2">
+                        {(["NONE", "CATEGORY", "PRODUCT", "CUSTOM"] as const).map(t => (
+                          <button
+                            key={t}
+                            type="button"
+                            onClick={() => {
+                              setBannerRedirectType(t);
+                              if (t === "NONE") setNewBanner(prev => ({...prev, redirectUrl: ""}));
+                              else if (t === "CATEGORY" && categories.length > 0) setNewBanner(prev => ({...prev, redirectUrl: `/category/${categories[0].id}`}));
+                              else if (t === "PRODUCT" && products.length > 0) setNewBanner(prev => ({...prev, redirectUrl: `/product/${products[0].id}`}));
+                              else if (t === "CUSTOM") setNewBanner(prev => ({...prev, redirectUrl: "/search"}));
+                            }}
+                            className={`flex-1 py-1.5 rounded-lg text-[8px] font-black tracking-widest uppercase transition-all ${bannerRedirectType === t ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-500'}`}
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                      
+                      {bannerRedirectType === "CATEGORY" && (
+                        <select 
+                          value={newBanner.redirectUrl?.replace('/category/', '') || ''}
+                          onChange={e => setNewBanner({...newBanner, redirectUrl: `/category/${e.target.value}`})}
+                          className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-xs font-bold uppercase"
+                        >
+                          {categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                        </select>
+                      )}
+                      
+                      {bannerRedirectType === "PRODUCT" && (
+                        <select 
+                          value={newBanner.redirectUrl?.replace('/product/', '') || ''}
+                          onChange={e => setNewBanner({...newBanner, redirectUrl: `/product/${e.target.value}`})}
+                          className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-xs font-bold uppercase"
+                        >
+                          {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                        </select>
+                      )}
+                      
+                      {bannerRedirectType === "CUSTOM" && (
+                        <input
+                          type="text"
+                          value={newBanner.redirectUrl}
+                          onChange={(e) => setNewBanner({ ...newBanner, redirectUrl: e.target.value })}
+                          placeholder="e.g. /search"
+                          className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-xs font-bold"
+                        />
+                      )}
                     </div>
                   </div>
                   <button onClick={addBanner} className="w-full bg-primary text-zinc-900 py-4 rounded-xl font-black text-[10px] tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/10 uppercase">

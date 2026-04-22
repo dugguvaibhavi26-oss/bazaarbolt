@@ -8,6 +8,7 @@ export interface HeroBanner {
   section: "BB" | "CAFE";
   title?: string;
   subtitle?: string;
+  redirectUrl?: string;
 }
 
 export interface AppSettings {
