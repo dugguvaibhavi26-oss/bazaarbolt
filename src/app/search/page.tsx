@@ -1,7 +1,7 @@
 "use client";
 
 import { useStore } from "@/store/useStore";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, Suspense } from "react";
 import { Product } from "@/types";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -11,7 +11,7 @@ import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { AdUnit } from "@/components/AdUnit";
 import { BottomNav } from "@/components/BottomNav";
 
-export default function SearchPage() {
+function SearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentSection = (searchParams.get("section") || "BB") as "BB" | "CAFE";
@@ -28,7 +28,6 @@ export default function SearchPage() {
 
   const searchStr = searchTerm.trim().toLowerCase();
   
-  // Products filtered by current section
   const sectionProducts = useMemo(() => 
     products.filter(p => ((p as any).section || "BB") === currentSection),
   [products, currentSection]);
@@ -42,7 +41,6 @@ export default function SearchPage() {
       : [],
   [searchStr, sectionProducts]);
 
-  // Check for matches in the OTHER section
   const otherSectionMatches = useMemo(() => {
     if (searchStr === '' || filteredProducts.length > 0) return 0;
     return products.filter(p => 
@@ -226,5 +224,17 @@ export default function SearchPage() {
         <AdUnit slotId="search-bottom-banner" className="m-0" />
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
+      </div>
+    }>
+      <SearchContent />
+    </Suspense>
   );
 }
