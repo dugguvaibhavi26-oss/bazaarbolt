@@ -65,7 +65,7 @@ export default function OrdersPage() {
         </div>
       </header>
 
-      <div className="pt-24 px-4 max-w-3xl mx-auto space-y-4">
+      <div className="pt-36 px-4 max-w-3xl mx-auto space-y-4">
         {authLoading || (loading && user) ? (
           <div className="space-y-4">
             {[1, 2, 3].map(i => <div key={i} className="h-32 bg-white rounded-3xl animate-pulse" />)}

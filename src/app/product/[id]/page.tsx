@@ -111,20 +111,45 @@ export default function ProductPage() {
  </button>
  </div>
 
- <div className="mt-6 flex flex-col gap-1">
- <div className="flex items-center gap-3">
- <div className="bg-green-600 text-white px-3 py-1.5 rounded-lg font-black text-xl">
- ₹{product.price.toFixed(0)}
- </div>
- <div className="flex flex-col">
- <p className="text-[10px] font-bold text-zinc-400">
- MRP <span className="line-through">₹{(product.price * 1.5).toFixed(0)}</span>
- </p>
- <p className="text-[10px] font-black text-green-600">₹{(product.price * 0.5).toFixed(0)} Off</p>
- </div>
- </div>
- <p className="text-[9px] font-bold text-zinc-400 mt-1">(Incl. of all taxes)</p>
- </div>
+  <div className="mt-6 flex flex-col gap-1">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="bg-green-600 text-white px-3 py-1.5 rounded-lg font-black text-xl">
+          ₹{product.price.toFixed(0)}
+        </div>
+        <div className="flex flex-col">
+          <p className="text-[10px] font-bold text-zinc-400">
+            MRP <span className="line-through">₹{(product.price * 1.5).toFixed(0)}</span>
+          </p>
+          <p className="text-[10px] font-black text-green-600">₹{(product.price * 0.5).toFixed(0)} Off</p>
+        </div>
+      </div>
+      
+      {/* Add to Cart Button (Moved under price) */}
+      <div className="w-32">
+        {outOfStock ? (
+          <button disabled className="w-full h-10 bg-red-50 text-red-600 border border-red-100 rounded-xl font-black text-[10px] tracking-widest cursor-not-allowed uppercase">
+            Sold Out
+          </button>
+        ) : !cartItem ? (
+          <button onClick={() => addToCart({...product, quantity: 1})} className="w-full h-10 bg-primary text-zinc-900 rounded-xl font-black text-[10px] tracking-widest shadow-md shadow-primary/20 active:scale-95 transition-all uppercase">
+            Add to cart
+          </button>
+        ) : (
+          <div className="w-full h-10 bg-zinc-900 text-white rounded-xl flex items-center justify-between px-1 overflow-hidden shadow-md">
+            <button onClick={() => updateQuantity(product.id, -1)} className="w-10 h-full flex items-center justify-center hover:bg-white/10 transition-colors">
+              <span className="material-symbols-outlined font-black text-sm">remove</span>
+            </button>
+            <span className="text-xs font-black">{cartItem.quantity}</span>
+            <button onClick={() => updateQuantity(product.id, 1)} disabled={cartItem.quantity >= product.stock} className="w-10 h-full flex items-center justify-center hover:bg-white/10 transition-colors disabled:opacity-20">
+              <span className="material-symbols-outlined font-black text-sm">add</span>
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+    <p className="text-[9px] font-bold text-zinc-400 mt-1">(Incl. of all taxes)</p>
+  </div>
 
  {/* Brand Reference - Mini Promo */}
  <div onClick={() => router.push(`/category/${product.category}`)} className="mt-8 p-4 bg-zinc-50 rounded-2xl border border-zinc-100 flex items-center justify-between group active:bg-zinc-100 transition-colors cursor-pointer">
@@ -179,52 +204,6 @@ export default function ProductPage() {
  </div>
  </section>
 
-  {/* Fixed Bottom Action Bar */}
-  <div className="fixed bottom-8 left-0 w-full z-50 flex justify-center px-4 pointer-events-none mb-safe">
-    <div className="bg-white/95 backdrop-blur-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.25)] border border-zinc-100 rounded-[36px] p-2 w-full max-w-md pointer-events-auto">
-      <div className="flex items-center gap-2">
-        {outOfStock ? (
-          <button disabled
-            className="flex-1 h-14 bg-red-50 text-red-600 border border-red-100 rounded-[28px] font-black text-[12px] tracking-widest cursor-not-allowed uppercase"
-          >
-            Sold Out
-          </button>
-        ) : !cartItem ? (
-          <button
-            onClick={() => addToCart({...product, quantity: 1})}
-            className="flex-1 h-14 bg-primary text-zinc-900 rounded-[28px] font-black text-[12px] tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all uppercase"
-          >
-            Add to cart
-          </button>
-        ) : (
-          <div className="w-full flex items-center gap-2">
-            <div className="flex-1 h-14 bg-zinc-900 text-white rounded-[28px] flex items-center justify-between px-2 overflow-hidden shadow-2xl">
-              <button onClick={() => updateQuantity(product.id, -1)}
-                className="w-14 h-12 flex items-center justify-center hover:bg-white/10 rounded-2xl transition-colors"
-              >
-                <span className="material-symbols-outlined font-black">remove</span>
-              </button>
-              <div className="flex flex-col items-center">
-                <span className="text-sm font-black leading-none">{cartItem.quantity}</span>
-                <span className="text-[7px] font-black text-zinc-500 mt-1 uppercase tracking-widest">In Cart</span>
-              </div>
-              <button onClick={() => updateQuantity(product.id, 1)}
-                disabled={cartItem.quantity >= product.stock}
-                className="w-14 h-12 flex items-center justify-center hover:bg-white/10 rounded-2xl transition-colors disabled:opacity-20"
-              >
-                <span className="material-symbols-outlined font-black">add</span>
-              </button>
-            </div>
-            <button onClick={() => router.push("/cart")}
-              className="w-14 h-14 shrink-0 bg-primary text-zinc-900 rounded-full flex items-center justify-center shadow-xl shadow-primary/20 active:scale-95 transition-all"
-            >
-              <span className="material-symbols-outlined font-black text-2xl">shopping_bag</span>
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  </div>
- </main>
+  </main>
  );
 }

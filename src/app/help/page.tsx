@@ -52,7 +52,7 @@ export default function HelpPage() {
         </div>
       </header>
 
-      <div className="pt-28 px-4 max-w-2xl mx-auto uppercase">
+      <div className="pt-36 px-4 max-w-2xl mx-auto uppercase">
         {/* Bolt Styled Search Bar */}
         <div className="mb-8 uppercase">
           <div className="bg-zinc-100 rounded-2xl flex items-center px-4 py-3 gap-3 border border-zinc-200 shadow-inner group focus-within:bg-white focus-within:border-primary transition-all uppercase">

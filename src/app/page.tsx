@@ -440,11 +440,11 @@ export default function Home() {
               );
             })}
 
-            <section className="px-4 mb-16">
+            <section className="px-4 mb-8">
               <AdUnit slotId="home-mid-banner" className="m-0" />
             </section>
 
-            <footer className="mt-24 px-6 pb-32 text-center">
+            <footer className="mt-8 px-6 pb-20 text-center">
               <h2 className="font-headline font-black text-2xl text-zinc-900 tracking-tighter mb-4 opacity-40">Comfort in every cart</h2>
               <div className="flex items-center justify-center gap-6 mb-4">
                 <div className="h-[1px] w-12 bg-zinc-200 opacity-40" />
