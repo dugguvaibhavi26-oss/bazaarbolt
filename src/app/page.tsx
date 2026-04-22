@@ -315,7 +315,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className={`pt-[220px] pb-32 overflow-x-hidden min-h-[100dvh] transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : 'bg-white'}`}>
+      <main className={`pt-[260px] pb-32 overflow-x-hidden min-h-[100dvh] transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : 'bg-white'}`}>
         {settings && settings.storeOpen === false ? (
           <section className="px-6 py-20 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-700">
             <h2 className="text-5xl font-headline font-black text-zinc-900 tracking-tighter leading-[0.8] mb-8">Currently <br /><span className="text-primary">Unavailable</span></h2>
@@ -324,13 +324,13 @@ export default function Home() {
         ) : (
           <>
             <section className="mt-4 mb-8">
-              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-x-1 gap-y-8 px-2 justify-items-center">
+              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-x-1 gap-y-6 px-2 justify-items-center">
                 {filteredCategories.map(cat => (
                   <div key={cat.id} onClick={() => router.push(`/category/${cat.id}`)} className="flex flex-col items-center gap-2 cursor-pointer group w-full max-w-[85px]">
-                    <div className="w-[56px] h-[56px] rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center p-0 overflow-hidden flex-shrink-0 group-hover:border-primary transition-all shadow-sm">
+                    <div className="w-[60px] h-[60px] rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center p-0 overflow-hidden flex-shrink-0 group-hover:border-primary transition-all shadow-sm">
                       <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={cat.img} alt={cat.label} />
                     </div>
-                    <span className="text-[10px] font-black tracking-tight text-center text-zinc-900 group-hover:text-primary leading-[1.1] w-full break-words min-h-[2.2em] flex items-center justify-center px-1">{cat.label}</span>
+                    <span className="text-[10px] font-bold tracking-tight text-center text-zinc-900 group-hover:text-primary leading-tight w-full break-words min-h-[2.4em] flex items-center justify-center px-1">{cat.label}</span>
                   </div>
                 ))}
               </div>
