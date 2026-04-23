@@ -29,6 +29,12 @@ export interface AppSettings {
     code: string;
     discount: number;
   };
+  notificationTemplates?: {
+    [key: string]: {
+      title: string;
+      body: string;
+    }
+  };
 }
 
 export interface Address {
