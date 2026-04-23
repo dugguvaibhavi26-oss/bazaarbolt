@@ -135,8 +135,10 @@ export default function CartPage() {
                   <span className="tracking-widest">GST & Servicing</span>
                   <span className="text-zinc-900 font-black tracking-tight">₹{tax.toFixed(0)}</span>
                 </div>
-        </div>
-      )}
+              </div>
+            </div>
+          </div>
+        )}
 
       {cart.length > 0 && (
         <div className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-2xl border-t border-zinc-100 p-6 z-[60] pb-safe shadow-[0_-8px_30px_rgba(0,0,0,0.04)]">
