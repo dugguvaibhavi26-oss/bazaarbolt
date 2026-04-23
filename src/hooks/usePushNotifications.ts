@@ -78,11 +78,37 @@ export const usePushNotifications = () => {
 
       PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
         console.log('📩 Push Received (Foreground):', notification);
-        const message = notification.body || notification.title || 'New Notification';
-        toast.success(message, { 
-          duration: 4000,
-          position: 'top-center'
-        });
+        const title = notification.title || 'Notification';
+        const body = notification.body || '';
+        
+        // Custom prominent toast for in-app notifications
+        toast.custom((t) => (
+          <div className={`${t.visible ? 'animate-in fade-in slide-in-from-top-4' : 'animate-out fade-out slide-out-to-top-2'} max-w-md w-full bg-white shadow-2xl rounded-3xl pointer-events-auto flex flex-col border border-zinc-100 overflow-hidden`}>
+            <div className="p-5 flex items-start gap-4">
+              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary flex-shrink-0">
+                <span className="material-symbols-outlined text-xl">notifications_active</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-black text-zinc-900 tracking-tight">{title}</p>
+                <p className="text-[10px] font-bold text-zinc-500 mt-0.5 leading-relaxed">{body}</p>
+              </div>
+              <button onClick={() => toast.dismiss(t.id)} className="text-zinc-300 hover:text-zinc-500">
+                <span className="material-symbols-outlined text-sm">close</span>
+              </button>
+            </div>
+            {notification.data?.url && (
+              <button 
+                onClick={() => {
+                  router.push(notification.data.url);
+                  toast.dismiss(t.id);
+                }}
+                className="bg-zinc-50 border-t border-zinc-100 p-3 text-[9px] font-black tracking-widest text-primary uppercase hover:bg-zinc-100 transition-colors"
+              >
+                View Details
+              </button>
+            )}
+          </div>
+        ), { duration: 6000, position: 'top-center' });
       });
 
       PushNotifications.addListener('pushNotificationActionPerformed', (notification: ActionPerformed) => {
@@ -102,12 +128,9 @@ export const usePushNotifications = () => {
   useEffect(() => {
     initPushNotifications();
 
-    // Cleanup listeners on unmount
+    // Listeners are kept for the lifetime of the app as it sits in the root AuthProvider
     return () => {
-      if (Capacitor.isNativePlatform()) {
-        console.log('🧹 Cleaning up Push listeners');
-        PushNotifications.removeAllListeners();
-      }
+      console.log('🔔 Push listeners maintained');
     };
   }, [initPushNotifications]);
 

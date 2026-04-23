@@ -28,6 +28,8 @@ export default function AdminOrders() {
  return () => unsub();
  }, []);
 
+  const { settings } = useStore();
+
   const updateStatus = async (order: Order, newStatus: string) => {
     try {
       const { triggerNotification } = await import("@/lib/notificationClient");
@@ -38,16 +40,19 @@ export default function AdminOrders() {
       
       let title = `Order ${newStatus}`;
       let body = `Your order status has been updated to ${newStatus}.`;
-      
-      if (newStatus === 'CANCELLED') {
-        title = "Order Cancelled 🚫";
-        body = "Your order has been cancelled by the store. Any payment will be refunded.";
-      } else if (newStatus === 'PICKED') {
-        title = "Order Shipped 🚚";
-        body = "Your order has been picked up and is on its way.";
+
+      if (settings?.notificationTemplates?.[newStatus]) {
+        const template = settings.notificationTemplates[newStatus];
+        title = template.title;
+        body = template.body.replace("{{name}}", order.customerName || "Customer");
       }
       
-      triggerNotification({ userId: order.userId, title, body });
+      triggerNotification({ 
+        userId: order.userId, 
+        title, 
+        body,
+        data: { url: "/orders" }
+      });
     } catch (e: any) {
       toast.error(e.message || "Failed to update status");
     }

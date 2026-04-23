@@ -14,7 +14,6 @@ export async function sendToUser(token: string, title: string, body: string, dat
     android: {
       notification: {
         sound: "default",
-        clickAction: "FCM_PLUGIN_ACTIVITY",
       },
     },
   };
@@ -46,7 +45,6 @@ export async function sendToMultiple(tokens: string[], title: string, body: stri
     android: {
       notification: {
         sound: "default",
-        clickAction: "FCM_PLUGIN_ACTIVITY",
       },
     },
   };
@@ -84,7 +82,6 @@ export async function sendToTopic(topic: string, title: string, body: string, da
     android: {
       notification: {
         sound: "default",
-        clickAction: "FCM_PLUGIN_ACTIVITY",
       },
     },
   };

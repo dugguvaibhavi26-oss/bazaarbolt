@@ -24,7 +24,14 @@ export default function AdminSettings() {
     smallCartThreshold: 100,
     customCharges: [],
     codEnabled: true,
-    coupon: { code: "", discount: 0 }
+    coupon: { code: "", discount: 0 },
+    notificationTemplates: {
+      PLACED: { title: "Order confirmed ✅", body: "Hi {{name}}, your order has been placed successfully!" },
+      ACCEPTED: { title: "Order Accepted ✅", body: "Hi {{name}}, your order has been accepted by the store." },
+      PICKED: { title: "Order Shipped 🚚", body: "Hi {{name}}, your order has been picked up and is on its way." },
+      DELIVERED: { title: "Order Delivered 🏁", body: "Hi {{name}}, your order has been delivered. Enjoy!" },
+      CANCELLED: { title: "Order Cancelled 🚫", body: "Hi {{name}}, your order has been cancelled. Any payment will be refunded." },
+    }
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -295,6 +302,44 @@ export default function AdminSettings() {
                   <input type="number" value={settings.smallCartFee} onChange={e => setSettings({...settings, smallCartFee: parseFloat(e.target.value)})} className="w-full bg-zinc-50 p-3 rounded-xl font-bold text-xs"/>
                </div>
              </div>
+          </div>
+
+          <div className="bg-white rounded-[40px] p-8 border border-zinc-100 shadow-sm space-y-6">
+            <h4 className="font-headline font-black text-sm tracking-widest text-zinc-400 uppercase">Notification Templates</h4>
+            <p className="text-[8px] font-bold text-zinc-400 uppercase leading-relaxed">Use <code className="text-primary font-black">{"{{name}}"}</code> to inject customer name</p>
+            <div className="space-y-6">
+              {Object.keys(settings.notificationTemplates || {}).map((status) => (
+                <div key={status} className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100 space-y-3">
+                  <span className="text-[9px] font-black text-primary tracking-widest uppercase">{status}</span>
+                  <input 
+                    type="text" 
+                    placeholder="Notification Title"
+                    value={settings.notificationTemplates?.[status]?.title || ""}
+                    onChange={e => setSettings({
+                      ...settings, 
+                      notificationTemplates: {
+                        ...settings.notificationTemplates,
+                        [status]: { ...settings.notificationTemplates?.[status], title: e.target.value }
+                      }
+                    })}
+                    className="w-full bg-white border border-zinc-200 rounded-xl p-3 text-xs font-bold"
+                  />
+                  <textarea 
+                    placeholder="Notification Body"
+                    rows={2}
+                    value={settings.notificationTemplates?.[status]?.body || ""}
+                    onChange={e => setSettings({
+                      ...settings, 
+                      notificationTemplates: {
+                        ...settings.notificationTemplates,
+                        [status]: { ...settings.notificationTemplates?.[status], body: e.target.value }
+                      }
+                    })}
+                    className="w-full bg-white border border-zinc-200 rounded-xl p-3 text-xs font-bold"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </aside>
       </div>

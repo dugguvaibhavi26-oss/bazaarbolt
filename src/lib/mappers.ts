@@ -96,6 +96,7 @@ export const mapSettings = (doc: DocumentSnapshot<DocumentData>): AppSettings =>
     coupon: data.coupon ? {
       code: typeof data.coupon.code === "string" ? data.coupon.code : "",
       discount: typeof data.coupon.discount === "number" ? data.coupon.discount : 0,
-    } : { code: "", discount: 10 }
+    } : { code: "", discount: 10 },
+    notificationTemplates: data.notificationTemplates || {}
   };
 };

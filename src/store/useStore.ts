@@ -58,7 +58,6 @@ export const useStore = create<StoreState>()(
           set({
             cart: cart.map(c => c.id === item.id ? { ...c, quantity: c.quantity + 1 } : c)
           });
-          toast.success(`Increased ${item.name} quantity`);
         } else {
           if (item.stock < 1) {
             toast.error("Item is out of stock");
@@ -67,7 +66,6 @@ export const useStore = create<StoreState>()(
           set({
             cart: [...cart, { ...item, quantity: 1 }]
           });
-          toast.success(`Added ${item.name} to cart`);
         }
       },
 
@@ -75,7 +73,6 @@ export const useStore = create<StoreState>()(
         set({
           cart: get().cart.filter(c => c.id !== id)
         });
-        toast.success("Item removed");
       },
 
       updateQuantity: (id, delta) => {
@@ -91,7 +88,6 @@ export const useStore = create<StoreState>()(
 
         if (newQ <= 0) {
           set({ cart: cart.filter(c => c.id !== id) });
-          toast.success("Item removed");
           return;
         }
 
@@ -112,10 +108,8 @@ export const useStore = create<StoreState>()(
         
         if (settings && settings.coupon && settings.coupon.code && settings.coupon.code.toUpperCase() === code) {
           set({ activeCoupon: { code: settings.coupon.code, discount: settings.coupon.discount || 0 } });
-          toast.success(`Coupon applied! ${settings.coupon.discount}% max limits off`);
         } else if (code === "WELCOME50") {
           set({ activeCoupon: { code: "WELCOME50", discount: 50 } });
-          toast.success("Coupon applied! ₹50 Off");
         } else {
           toast.error("Invalid coupon code");
         }
@@ -123,7 +117,6 @@ export const useStore = create<StoreState>()(
 
       removeCoupon: () => {
         set({ activeCoupon: null });
-        toast.success("Coupon removed");
       },
 
       initSettings: async () => {

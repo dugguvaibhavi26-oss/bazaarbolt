@@ -168,7 +168,22 @@ export default function CheckoutPage() {
       });
 
       toast.success("Order placed successfully! ⚡️", { id: toastId });
-      triggerNotification({ userId: user.uid, title: "Order confirmed ✅", body: "Your order has been placed successfully!" });
+      
+      let title = "Order confirmed ✅";
+      let body = "Your order has been placed successfully!";
+
+      if (settings?.notificationTemplates?.PLACED) {
+        const template = settings.notificationTemplates.PLACED;
+        title = template.title;
+        body = template.body.replace("{{name}}", userData?.name || "Customer");
+      }
+
+      triggerNotification({ 
+        userId: user.uid, 
+        title, 
+        body,
+        data: { url: "/orders" } 
+      });
       triggerNotification({ topic: "riders", title: "New delivery 🚴", body: "New delivery task available!" });
       clearCart();
       router.push(`/orders`);
