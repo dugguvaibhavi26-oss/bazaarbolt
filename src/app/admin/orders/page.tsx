@@ -7,6 +7,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { Order } from "@/types";
 import { mapOrder, mapQuerySnapshot } from "@/lib/mappers";
+import { useStore } from "@/store/useStore";
 
 export default function AdminOrders() {
  const [orders, setOrders] = useState<Order[]>([]);
