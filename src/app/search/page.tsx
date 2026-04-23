@@ -121,7 +121,7 @@ function SearchContent() {
   return (
     <div className="bg-white min-h-screen relative overflow-x-hidden pb-44 text-zinc-900 font-body selection:bg-primary/30">
       
-      <header className="sticky top-0 z-50 bg-white pt-safe pt-8 pb-4 px-4 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border-b border-zinc-100">
+      <header className="sticky top-0 z-50 bg-white pt-safe pb-4 px-4 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border-b border-zinc-100">
         <div className="pt-4" />
          <div className="flex items-center gap-3 bg-zinc-100 rounded-2xl px-4 py-3 shadow-inner border border-zinc-200 focus-within:bg-white focus-within:border-primary transition-all">
            <button onClick={() => router.back()} className="text-zinc-600 hover:text-zinc-900 transition-colors flex items-center">
@@ -148,7 +148,7 @@ function SearchContent() {
          </div>
       </header>
 
-      <main className="px-4 mt-6">
+      <main className="px-4 mt-[calc(24px+env(safe-area-inset-top,0px))]">
         {searchStr === '' ? (
           <div className="animate-in fade-in duration-300">
             <div className="flex items-center justify-between mb-4">

@@ -15,9 +15,9 @@ export default function CartPage() {
 
   // Billing calculation
   const tax = settings?.taxPercent ? (subtotal * settings.taxPercent) / 100 : 0;
-  const deliveryCharge = (settings?.freeDeliveryThreshold && subtotal >= settings.freeDeliveryThreshold) ? 0 : (settings?.deliveryFee || 0);
-  const tinyOrderFee = (settings?.smallCartThreshold && subtotal < settings.smallCartThreshold) ? (settings?.smallCartFee || 0) : 0;
-  const handlingFee = settings?.handlingCharge || 0;
+  const deliveryCharge = (subtotal >= 499) ? 0 : (settings?.deliveryFee || 30);
+  const tinyOrderFee = (subtotal < 99) ? (settings?.smallCartFee || 15) : 0;
+  const handlingFee = settings?.handlingCharge || 5;
   
   const total = subtotal + tax + deliveryCharge + tinyOrderFee + handlingFee;
 
@@ -92,23 +92,36 @@ export default function CartPage() {
                   <span className="text-zinc-900 font-black">₹{subtotal.toFixed(0)}</span>
                 </div>
                 
-                <div className="flex justify-between items-center text-[11px] font-bold text-zinc-500">
-                  <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-lg">delivery_dining</span>
-                    <span className="tracking-widest">Delivery fee</span>
+                <div className="flex flex-col gap-1">
+                  <div className="flex justify-between items-center text-[11px] font-bold text-zinc-500">
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-lg">delivery_dining</span>
+                      <span className="tracking-widest">Delivery fee</span>
+                    </div>
+                    <span className="text-zinc-900 font-black">{deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`}</span>
                   </div>
-                  <span className="text-zinc-900 font-black">{deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`}</span>
+                  {deliveryCharge > 0 && (
+                    <p className="text-[9px] font-black text-red-500 tracking-tight ml-9">
+                      Add ₹{(499 - subtotal).toFixed(0)} more to get FREE delivery
+                    </p>
+                  )}
                 </div>
 
-                {tinyOrderFee > 0 && (
-                  <div className="flex justify-between items-center text-[11px] font-bold text-orange-500">
+                <div className="flex flex-col gap-1">
+                  <div className="flex justify-between items-center text-[11px] font-bold text-zinc-500">
                     <div className="flex items-center gap-3">
                       <span className="material-symbols-outlined text-lg">error_outline</span>
                       <span className="tracking-widest">Small cart charge</span>
                     </div>
-                    <span className="font-black">₹{tinyOrderFee}</span>
+                    <span className="text-zinc-900 font-black">{tinyOrderFee === 0 ? '₹0' : `₹${tinyOrderFee}`}</span>
                   </div>
-                )}
+                  {tinyOrderFee > 0 && (
+                    <div className="ml-9 space-y-0.5">
+                      <p className="text-[9px] font-black text-red-500 tracking-tight">Small cart fee added for orders under ₹99</p>
+                      <p className="text-[9px] font-black text-red-500 tracking-tight">Add ₹{(99 - subtotal).toFixed(0)} more to get rid of this</p>
+                    </div>
+                  )}
+                </div>
 
                 <div className="flex justify-between items-center text-[11px] font-bold text-zinc-500">
                   <div className="flex items-center gap-3">
@@ -122,20 +135,26 @@ export default function CartPage() {
                   <span className="tracking-widest">GST & Servicing</span>
                   <span className="text-zinc-900 font-black tracking-tight">₹{tax.toFixed(0)}</span>
                 </div>
-                <div className="pt-1 flex justify-between items-center">
-                  <div className="flex flex-col">
-                    <span className="font-black text-xl text-zinc-900 tracking-tighter leading-none inline-flex items-center gap-2">₹{total.toFixed(0)}</span>
-                    <span className="text-[7px] font-black text-primary tracking-[0.2em] mt-1">Total payable</span>
-                  </div>
-                  <button onClick={handleProceed} className="bg-zinc-900 text-white font-black text-[10px] tracking-widest px-6 py-3 rounded-xl shadow-lg active:scale-95 transition-transform flex items-center gap-2 font-headline">
-                    Next step
-                    <span className="material-symbols-outlined text-[14px] font-bold">arrow_forward</span>
-                  </button>
-                </div>
-              </div>
+        </div>
+      )}
+
+      {cart.length > 0 && (
+        <div className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-2xl border-t border-zinc-100 p-6 z-[60] pb-safe shadow-[0_-8px_30px_rgba(0,0,0,0.04)]">
+          <div className="max-w-3xl mx-auto flex items-center justify-between gap-6">
+            <div className="flex flex-col">
+              <span className="text-2xl font-headline font-black text-zinc-900 tracking-tighter leading-none">₹{total.toFixed(0)}</span>
+              <span className="text-[9px] font-black text-zinc-400 tracking-[0.2em] mt-1.5 uppercase">Total payable</span>
             </div>
+            <button 
+              onClick={handleProceed} 
+              className="flex-1 max-w-[200px] bg-primary text-zinc-900 font-headline font-black text-[12px] tracking-[0.1em] h-14 rounded-2xl shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2 uppercase"
+            >
+              Checkout
+              <span className="material-symbols-outlined text-[18px] font-bold">arrow_forward</span>
+            </button>
           </div>
-        )}
+        </div>
+      )}
       </div>
     </main>
   );

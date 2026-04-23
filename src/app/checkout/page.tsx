@@ -21,6 +21,14 @@ export default function CheckoutPage() {
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toLocaleDateString('en-CA')); // YYYY-MM-DD
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [addressForm, setAddressForm] = useState({
+    line1: "",
+    line2: "",
+    city: "",
+    pincode: "",
+    landmark: ""
+  });
 
   const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   let discountAmount = 0;
@@ -34,9 +42,9 @@ export default function CheckoutPage() {
   }
 
   const tax = settings?.taxPercent ? ((subtotal - discountAmount) * settings.taxPercent) / 100 : 0;
-  const deliveryCharge = (settings?.freeDeliveryThreshold && subtotal >= settings.freeDeliveryThreshold) ? 0 : (settings?.deliveryFee || 0);
-  const smallCartCharge = (settings?.smallCartThreshold && subtotal < settings.smallCartThreshold) ? (settings?.smallCartFee || 0) : 0;
-  const handlingFee = settings?.handlingCharge || 0;
+  const deliveryCharge = (subtotal >= 499) ? 0 : (settings?.deliveryFee || 30);
+  const smallCartCharge = (subtotal < 99) ? (settings?.smallCartFee || 15) : 0;
+  const handlingFee = settings?.handlingCharge || 5;
   const customChargesTotal = settings?.customCharges?.reduce((acc, c) => acc + c.amount, 0) || 0;
 
   const total = (subtotal - discountAmount) + tax + deliveryCharge + smallCartCharge + handlingFee + customChargesTotal;
@@ -101,8 +109,8 @@ export default function CheckoutPage() {
     }
     if (cart.length === 0) return;
     if (!selectedAddress) {
+      setIsAddressModalOpen(true);
       toast.error("Please set a delivery address");
-      router.push("/");
       return;
     }
     if (!selectedSlot) {
@@ -182,11 +190,11 @@ export default function CheckoutPage() {
         userId: user.uid, 
         title, 
         body,
-        data: { url: "/orders" } 
+        data: { url: `/orders/${orderRef.id}` } 
       });
       triggerNotification({ topic: "riders", title: "New delivery 🚴", body: "New delivery task available!" });
       clearCart();
-      router.push(`/orders`);
+      router.push(`/orders/${orderRef.id}`);
     } catch (error: any) {
       toast.error(error.message || "Checkout failed", { id: toastId });
     } finally {
@@ -215,6 +223,34 @@ export default function CheckoutPage() {
       label: i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })
     };
   });
+
+  const { updateDoc, arrayUnion } = require("firebase/firestore");
+  const handleSaveAddress = async () => {
+    if (!addressForm.line1 || !addressForm.city || !addressForm.pincode) {
+      toast.error("PLEASE FILL REQUIRED FIELDS");
+      return;
+    }
+
+    if (user && !userData?.addresses?.some((a: any) => a.line1 === addressForm.line1)) {
+      try {
+        const { setSelectedAddress } = useStore.getState();
+        await updateDoc(doc(db, "users", user.uid), {
+          addresses: arrayUnion(addressForm)
+        });
+        setSelectedAddress(addressForm);
+        toast.success("SAVED TO ADDRESS BOOK!");
+      } catch (e) {
+        console.error("FAILED TO SAVE ADDRESS", e);
+      }
+    } else {
+      useStore.getState().setSelectedAddress(addressForm);
+    }
+
+    setIsAddressModalOpen(false);
+    toast.success("DELIVERY ADDRESS UPDATED!");
+  };
+
+  const { Portal } = require("@/components/Portal");
 
   return (
     <main className="bg-zinc-50 min-h-screen pb-44">
@@ -282,21 +318,23 @@ export default function CheckoutPage() {
                     <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">delivery_dining</span><span className="tracking-widest capitalize">Delivery charge</span></div>
                     <span className="text-zinc-900 font-black text-[10px]">{deliveryCharge === 0 ? 'Free' : `₹${deliveryCharge}`}</span>
                   </div>
-                  {deliveryCharge > 0 && settings?.freeDeliveryThreshold && <p className="text-[7px] font-black text-orange-500 tracking-widest ml-7">Free on orders above ₹{settings.freeDeliveryThreshold}</p>}
+                  {deliveryCharge > 0 && (
+                    <p className="text-[8px] font-black text-red-500 tracking-tight ml-7">Add ₹{(499 - subtotal).toFixed(0)} more to get FREE delivery</p>
+                  )}
                 </div>
-                <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
-                  <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">shopping_basket</span><span className="tracking-widest capitalize">Handling fee</span></div>
-                  <span className="text-zinc-900 font-black">₹{handlingFee}</span>
-                </div>
-                {smallCartCharge > 0 && (
-                  <div className="flex flex-col gap-1">
-                    <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
-                      <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">shopping_cart_checkout</span><span className="tracking-widest capitalize">Small cart charge</span></div>
-                      <span className="text-zinc-900 font-black">₹{smallCartCharge}</span>
-                    </div>
-                    <p className="text-[7px] font-black text-orange-500 tracking-widest ml-7">Orders below ₹{settings?.smallCartThreshold || 100}</p>
+
+                <div className="flex flex-col gap-1">
+                  <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
+                    <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">shopping_cart_checkout</span><span className="tracking-widest capitalize">Small cart charge</span></div>
+                    <span className="text-zinc-900 font-black">₹{smallCartCharge}</span>
                   </div>
-                )}
+                  {smallCartCharge > 0 && (
+                    <div className="ml-7 space-y-0.5">
+                      <p className="text-[8px] font-black text-red-500 tracking-tight">Small cart fee added for orders under ₹99</p>
+                      <p className="text-[8px] font-black text-red-500 tracking-tight">Add ₹{(99 - subtotal).toFixed(0)} more to get rid of this</p>
+                    </div>
+                  )}
+                </div>
                 {settings?.customCharges?.map((c, i) => (
                   <div key={i} className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
                     <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">add_circle</span><span className="tracking-widest capitalize">{c.label}</span></div>
@@ -337,21 +375,89 @@ export default function CheckoutPage() {
             </section>
           </div>
 
-          <div className="fixed bottom-0 left-0 w-full bg-white border-t border-zinc-100 p-4 z-[60] shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-            <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
-              <div className="flex flex-col overflow-hidden">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-lg text-zinc-900" style={{fontVariationSettings: "'FILL'1"}}>home</span>
-                  <p className="text-[10px] font-black text-zinc-900 truncate">{selectedSlot || 'Set slot'}</p>
+          <div className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-2xl border-t border-zinc-100 p-6 z-[60] pb-safe shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+            <div className="max-w-3xl mx-auto flex items-center justify-between gap-6">
+              <div className="flex flex-col min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="material-symbols-outlined text-[14px] text-zinc-900" style={{fontVariationSettings: "'FILL'1"}}>schedule</span>
+                  <p className="text-[10px] font-black text-zinc-900 truncate tracking-tight">{selectedSlot || 'Select slot'}</p>
                 </div>
-                <p className="text-[8px] font-bold text-zinc-400 truncate max-w-[140px] ml-6">{displayAddress}</p>
+                <div className="flex items-center gap-1.5" onClick={() => setIsAddressModalOpen(true)}>
+                  <span className="material-symbols-outlined text-[14px] text-zinc-400">location_on</span>
+                  <p className="text-[9px] font-bold text-zinc-400 truncate tracking-tight underline decoration-zinc-200 underline-offset-2">{displayAddress}</p>
+                </div>
               </div>
-              <button onClick={handleCheckout} disabled={placingOrder} className="flex-1 bg-green-600 text-white h-14 rounded-xl flex items-center justify-between px-6 active:scale-[0.98] transition-all disabled:opacity-50">
-                <div className="flex flex-col items-start leading-none"><span className="text-[14px] font-black">₹{total.toFixed(0)}</span><span className="text-[8px] font-bold tracking-widest opacity-80">Total</span></div>
-                <div className="flex items-center gap-2"><span className="text-[14px] font-black tracking-widest">{placingOrder ? 'Wait...' : 'Place order'}</span><span className="material-symbols-outlined text-sm">arrow_right</span></div>
+              
+              <button 
+                onClick={handleCheckout} 
+                disabled={placingOrder} 
+                className="bg-green-600 text-white h-14 px-8 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-all disabled:opacity-50 shadow-xl shadow-green-600/20"
+              >
+                <div className="flex flex-col items-start leading-none pr-4 border-r border-white/20">
+                  <span className="text-[16px] font-black tracking-tighter">₹{total.toFixed(0)}</span>
+                  <span className="text-[8px] font-black tracking-widest uppercase opacity-70">Total</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[12px] font-black tracking-[0.1em] uppercase">{placingOrder ? 'Wait...' : 'Place Order'}</span>
+                  <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+                </div>
               </button>
             </div>
           </div>
+
+          {isAddressModalOpen && (
+            <Portal>
+              <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4">
+                <div className="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsAddressModalOpen(false)}></div>
+                <div className="bg-white w-full max-w-lg rounded-t-[40px] sm:rounded-[40px] p-8 md:p-12 shadow-2xl animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-500 relative z-10 max-h-[90vh] flex flex-col pointer-events-auto">
+                  <button onClick={() => setIsAddressModalOpen(false)} className="absolute top-6 right-6 w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-500 hover:bg-zinc-200 transition-colors z-20">
+                    <span className="material-symbols-outlined text-[18px]">close</span>
+                  </button>
+                  <div className="flex-shrink-0 mb-6">
+                    <h2 className="text-4xl font-headline font-black text-zinc-900 tracking-tighter leading-none">Select address</h2>
+                    <p className="text-[10px] font-bold text-zinc-400 tracking-widest mt-2 uppercase">Where should we deliver?</p>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 -mr-2 space-y-6">
+                    {userData?.addresses?.length > 0 && (
+                      <div className="space-y-3">
+                        <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block uppercase">Saved addresses</label>
+                        <div className="grid grid-cols-1 gap-2">
+                          {userData.addresses.map((addr: any, idx: number) => (
+                            <button
+                              key={idx}
+                              onClick={() => { useStore.getState().setSelectedAddress(addr); setIsAddressModalOpen(false); }}
+                              className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center gap-4 ${selectedAddress?.line1 === addr.line1 ? 'bg-primary/5 border-primary shadow-sm' : 'bg-zinc-50 border-zinc-100 hover:bg-zinc-100'}`}
+                            >
+                              <span className="material-symbols-outlined text-zinc-400">home</span>
+                              <div className="flex flex-col">
+                                <span className="text-[10px] font-black text-zinc-900">{addr.city}</span>
+                                <span className="text-[9px] font-bold text-zinc-400 truncate max-w-[200px]">{addr.line1}</span>
+                              </div>
+                              {selectedAddress?.line1 === addr.line1 && <span className="material-symbols-outlined ml-auto text-primary text-sm">check_circle</span>}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="pt-4 border-t border-zinc-100">
+                      <div className="grid grid-cols-1 gap-4">
+                        <input type="text" placeholder="Building / House No." className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm" value={addressForm.line1} onChange={e => setAddressForm({ ...addressForm, line1: e.target.value })} />
+                        <div className="grid grid-cols-2 gap-4">
+                          <input type="text" placeholder="City" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm" value={addressForm.city} onChange={e => setAddressForm({ ...addressForm, city: e.target.value })} />
+                          <input type="number" placeholder="Pincode" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm" value={addressForm.pincode} onChange={e => setAddressForm({ ...addressForm, pincode: e.target.value })} />
+                        </div>
+                      </div>
+                      <div className="flex gap-4 pt-6">
+                        <button onClick={handleSaveAddress} className="flex-1 bg-zinc-900 text-white py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-black shadow-xl uppercase">Save & Use</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Portal>
+          )}
         </>
       )}
     </main>

@@ -130,49 +130,30 @@ export default function RiderApp() {
           </div>
         ) : (
           filteredOrders.map((order) => (
-            <Link href={`/rider/orders/${order.id}`} key={order.id} className={`block bg-white rounded-[32px] p-7 shadow-sm border border-zinc-100 relative group transition-all hover:shadow-2xl hover:border-primary active:scale-[0.98] ${order.riderId === user?.uid ? 'ring-2 ring-primary ring-offset-2': ''}`}
+            <Link href={`/rider/orders/${order.id}`} key={order.id} className={`block bg-white rounded-2xl p-4 shadow-sm border border-zinc-100 group transition-all hover:shadow-md hover:border-primary active:scale-[0.98] ${order.riderId === user?.uid ? 'ring-2 ring-primary border-primary': ''}`}
             >
-              <div className="flex justify-between items-start">
-                <div className="flex flex-col gap-2 w-full">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className={`w-3 h-3 rounded-full animate-pulse ${order.status === 'PLACED'? 'bg-primary shadow-[0_0_10px_rgba(34,197,94,0.4)]': 'bg-blue-500'}`}></span>
-                      <span className="text-2xl font-headline font-black text-zinc-900 tracking-tighter">#{order.id?.slice(-8).toUpperCase()}</span>
-                    </div>
-                    {order.riderId === user?.uid && (
-                      <span className="bg-primary/20 text-zinc-900 text-[8px] font-black px-2 py-1 rounded-lg uppercase tracking-widest">My Task</span>
-                    )}
-                  </div>
-
-                  <div className="bg-zinc-50 rounded-2xl p-4 border border-zinc-100">
-                    <p className="text-[14px] font-black text-zinc-900 leading-tight mb-1">{order.customerName || 'Customer'}</p>
-                    <p className="text-[10px] font-bold text-zinc-600 truncate mb-3">{order.deliveryAddress?.line1}, {order.deliveryAddress?.city}</p>
-                    
-                    <div className="flex flex-wrap gap-2">
-                      {order.deliverySlot && (
-                        <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-zinc-200">
-                          <span className="material-symbols-outlined text-xs text-primary font-black">schedule</span>
-                          <span className="text-[11px] font-black text-zinc-900">{order.deliverySlot}</span>
-                        </div>
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                  <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${order.status === 'PLACED'? 'bg-primary shadow-[0_0_8px_rgba(34,197,94,0.4)]': 'bg-blue-500'}`}></div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-black text-zinc-900 truncate leading-none">{order.customerName || 'Customer'}</p>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest leading-none">#{order.id?.slice(-6).toUpperCase()}</p>
+                      {order.riderId === user?.uid && (
+                        <span className="text-[7px] font-black text-primary uppercase tracking-widest bg-primary/10 px-1.5 py-0.5 rounded">My Task</span>
                       )}
-                      <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-zinc-200">
-                        <span className="material-symbols-outlined text-xs text-zinc-400 font-black">calendar_today</span>
-                        <span className="text-[11px] font-black text-zinc-900">
-                          {order.deliveryDate === new Date().toLocaleDateString('en-CA') ? 'TODAY' : order.deliveryDate || 'N/A'}
-                        </span>
-                      </div>
                     </div>
                   </div>
+                </div>
 
-                  <div className="flex items-center justify-between mt-2 px-1">
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-sm text-zinc-400">info</span>
-                      <p className="text-[9px] font-black text-zinc-500 tracking-widest uppercase">
-                        {order.items.length} items • ₹{order.total.toFixed(0)}
-                      </p>
+                <div className="flex items-center gap-3 shrink-0">
+                  {order.deliverySlot && (
+                    <div className="flex items-center gap-1.5 bg-zinc-50 px-3 py-1.5 rounded-xl border border-zinc-100">
+                      <span className="material-symbols-outlined text-[14px] text-primary font-black">schedule</span>
+                      <span className="text-[10px] font-black text-zinc-700 whitespace-nowrap">{order.deliverySlot}</span>
                     </div>
-                    <span className="material-symbols-outlined text-zinc-300 group-hover:translate-x-1 group-hover:text-primary transition-all">arrow_forward_ios</span>
-                  </div>
+                  )}
+                  <span className="material-symbols-outlined text-zinc-300 group-hover:translate-x-1 group-hover:text-primary transition-all text-sm">arrow_forward_ios</span>
                 </div>
               </div>
             </Link>

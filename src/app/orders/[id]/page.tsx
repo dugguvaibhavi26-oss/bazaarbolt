@@ -125,8 +125,8 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
 
   return (
     <>
-      <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-2xl shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] border-b border-zinc-100">
-        <div className="flex items-center justify-between px-4 py-4 w-full max-w-2xl mx-auto">
+      <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-2xl shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)] border-b border-zinc-100 pt-safe">
+        <div className="flex items-center justify-between px-4 py-4 pt-2 w-full max-w-2xl mx-auto">
           <div className="flex items-center gap-4">
             <button onClick={() => router.push('/orders')} className="p-2 bg-zinc-100 rounded-full hover:bg-zinc-200 transition-colors">
               <span className="material-symbols-outlined text-zinc-900 font-bold">arrow_back</span>
@@ -140,7 +140,7 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
         </div>
       </header>
 
-      <main className="pt-24 pb-32 px-4 max-w-2xl mx-auto space-y-6 text-[#1A1A1A]">
+      <main className="pt-[calc(100px+env(safe-area-inset-top,0px))] pb-32 px-4 max-w-2xl mx-auto space-y-6 text-[#1A1A1A]">
         <div className="bg-white rounded-[32px] p-8 shadow-[0_8px_32px_-4px_rgba(0,0,0,0.08)] border border-zinc-100 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-[100px] pointer-events-none"></div>
           <div className="flex justify-between items-start mb-8">

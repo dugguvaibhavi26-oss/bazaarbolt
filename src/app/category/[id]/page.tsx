@@ -115,7 +115,7 @@ export default function CategoryPage() {
         </div>
       </header>
 
-      <main className="pt-64 pb-20 px-4">
+      <main className="pt-[calc(180px+env(safe-area-inset-top,0px))] pb-20 px-4">
         {catalogLoading ? (
           <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-2">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(n => <div key={n} className="aspect-[3/4] bg-zinc-50 rounded-xl animate-pulse" />)}
