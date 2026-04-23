@@ -95,70 +95,70 @@ export default function AdminSettings() {
   );
 
   return (
-    <div className="max-w-4xl space-y-8 pb-32">
-      <div className="flex items-center justify-between">
+    <div className="max-w-4xl space-y-6 lg:space-y-8 pb-32">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h3 className="text-2xl font-black text-zinc-900 tracking-tight">System Configuration</h3>
-          <p className="text-xs font-bold text-zinc-400 tracking-widest mt-1 uppercase">Control global store parameters</p>
+          <h3 className="text-xl lg:text-2xl font-black text-zinc-900 tracking-tight">System Configuration</h3>
+          <p className="text-[10px] lg:text-xs font-bold text-zinc-400 tracking-widest mt-1 uppercase">Control global store parameters</p>
         </div>
         <button onClick={handleSave} disabled={saving}
-          className="bg-zinc-900 text-white px-8 py-4 rounded-2xl font-black text-[10px] tracking-widest flex items-center gap-2 hover:bg-black shadow-xl active:scale-95 disabled:opacity-50 transition-all uppercase"
+          className="w-full lg:w-auto bg-zinc-900 text-white px-6 lg:px-8 py-3 lg:py-4 rounded-2xl font-black text-[9px] lg:text-[10px] tracking-widest flex items-center justify-center gap-2 hover:bg-black shadow-xl active:scale-95 disabled:opacity-50 transition-all uppercase"
         >
-          <span className="material-symbols-outlined text-sm">{saving ? 'sync': 'save_as'}</span>
-          {saving ? 'Syncing...': 'Propagate Changes'}
+          <span className="material-symbols-outlined text-sm">{saving ? 'sync' : 'save_as'}</span>
+          {saving ? 'Syncing...' : 'Propagate Changes'}
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-8 space-y-8">
-          <div className="bg-white rounded-[40px] p-10 shadow-sm border border-zinc-100 space-y-10">
-            <div className="flex items-center justify-between p-6 bg-zinc-50 rounded-3xl border border-zinc-100">
-              <div>
-                <p className="font-headline font-black text-zinc-900 tracking-tighter">Live Store Status</p>
-                <p className="text-[10px] font-bold text-zinc-500 tracking-widest uppercase">Enables/Disables all checkouts</p>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+        <div className="lg:col-span-8 space-y-6 lg:space-y-8">
+          <div className="bg-white rounded-[32px] lg:rounded-[40px] p-6 lg:p-10 shadow-sm border border-zinc-100 space-y-8 lg:space-y-10">
+            <div className="flex items-center justify-between p-4 lg:p-6 bg-zinc-50 rounded-2xl lg:rounded-3xl border border-zinc-100">
+              <div className="pr-4">
+                <p className="font-headline font-black text-zinc-900 tracking-tighter text-sm lg:text-base leading-tight">Live Store Status</p>
+                <p className="text-[9px] lg:text-[10px] font-bold text-zinc-500 tracking-widest uppercase mt-0.5">Global Checkout Switch</p>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
+              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
                 <input type="checkbox" className="sr-only peer" checked={settings.storeOpen} onChange={e => setSettings({...settings, storeOpen: e.target.checked})} />
-                <div className="w-14 h-7 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
+                <div className="w-12 h-6 lg:w-14 lg:h-7 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 lg:after:h-6 lg:after:w-6 after:transition-all peer-checked:bg-primary"></div>
               </label>
             </div>
 
             <div className="space-y-6">
               <div>
-                <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block uppercase">Announcement Bar</label>
+                <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 lg:mb-2 block uppercase">Announcement Bar</label>
                 <input type="text" value={settings.announcement}
                   onChange={e => setSettings({...settings, announcement: e.target.value})}
-                  className="w-full bg-zinc-50 border-none rounded-2xl p-5 font-bold text-sm focus:ring-2 ring-primary transition-all shadow-inner"
-                  placeholder="e.g. ⚡️ FLASH SALE: 50% OFF ON ALL DAIRY ⚡️"
+                  className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-4 lg:p-5 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all shadow-inner"
+                  placeholder="e.g. ⚡️ FLASH SALE: 50% OFF ⚡️"
                 />
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 uppercase">Carousel Banners</label>
-                  <div className="flex bg-zinc-100 p-1 rounded-xl">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 lg:mb-4">
+                  <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 uppercase">Carousel Banners</label>
+                  <div className="flex bg-zinc-100 p-1 rounded-xl w-full sm:w-auto">
                     <button 
                       onClick={() => { setActiveBannerTab("BB"); setNewBanner(prev => ({...prev, section: "BB"})); }} 
-                      className={`px-4 py-1.5 rounded-lg text-[8px] font-black tracking-widest uppercase transition-all ${activeBannerTab === "BB" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500"}`}
+                      className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[8px] font-black tracking-widest uppercase transition-all ${activeBannerTab === "BB" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500"}`}
                     >
                       Bazaarbolt
                     </button>
                     <button 
                       onClick={() => { setActiveBannerTab("CAFE"); setNewBanner(prev => ({...prev, section: "CAFE"})); }} 
-                      className={`px-4 py-1.5 rounded-lg text-[8px] font-black tracking-widest uppercase transition-all ${activeBannerTab === "CAFE" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500"}`}
+                      className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[8px] font-black tracking-widest uppercase transition-all ${activeBannerTab === "CAFE" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500"}`}
                     >
                       BB Cafe
                     </button>
                   </div>
                 </div>
-                <div className="space-y-4 mb-4 bg-zinc-50 p-6 rounded-[32px] border border-zinc-100 uppercase">
-                  <div className="grid grid-cols-2 gap-4 uppercase">
-                    <div className="space-y-1.5 uppercase">
-                      <label className="text-[10px] font-black text-zinc-400 ml-1 uppercase">Image URL</label>
-                      <input type="text" value={newBanner.url} onChange={e => setNewBanner({...newBanner, url: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-xs font-bold uppercase placeholder:uppercase" placeholder="URL..." />
+                <div className="space-y-4 mb-4 bg-zinc-50 p-4 lg:p-6 rounded-[24px] lg:rounded-[32px] border border-zinc-100 uppercase">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 uppercase">
+                    <div className="space-y-1 lg:space-y-1.5 uppercase">
+                      <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Image URL</label>
+                      <input type="text" value={newBanner.url} onChange={e => setNewBanner({...newBanner, url: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="URL..." />
                     </div>
-                    <div className="space-y-1.5 uppercase">
-                      <label className="text-[10px] font-black text-zinc-400 ml-1 uppercase">Section</label>
+                    <div className="space-y-1 lg:space-y-1.5 uppercase">
+                      <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Section</label>
                       <select 
                         value={newBanner.section} 
                         onChange={e => {
@@ -166,24 +166,24 @@ export default function AdminSettings() {
                           setNewBanner({...newBanner, section: val});
                           setActiveBannerTab(val);
                         }} 
-                        className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-xs font-bold uppercase"
+                        className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
                       >
                         <option value="BB">BAZAAR BOLT</option>
                         <option value="CAFE">BB CAFE</option>
                       </select>
                     </div>
-                    <div className="space-y-1.5 uppercase">
-                      <label className="text-[10px] font-black text-zinc-400 ml-1 uppercase">Main Title</label>
-                      <input type="text" value={newBanner.title} onChange={e => setNewBanner({...newBanner, title: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. FLASH SALE" />
+                    <div className="space-y-1 lg:space-y-1.5 uppercase">
+                      <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Title</label>
+                      <input type="text" value={newBanner.title} onChange={e => setNewBanner({...newBanner, title: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. FLASH SALE" />
                     </div>
-                    <div className="space-y-1.5 uppercase">
-                      <label className="text-[10px] font-black text-zinc-400 ml-1 uppercase">Subtitle</label>
-                      <input type="text" value={newBanner.subtitle} onChange={e => setNewBanner({...newBanner, subtitle: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. 50% OFF" />
+                    <div className="space-y-1 lg:space-y-1.5 uppercase">
+                      <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Subtitle</label>
+                      <input type="text" value={newBanner.subtitle} onChange={e => setNewBanner({...newBanner, subtitle: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. 50% OFF" />
                     </div>
                     
-                    <div className="col-span-2 space-y-1.5 mt-2 pt-4 border-t border-zinc-200">
-                      <label className="text-[10px] font-black text-zinc-400 ml-1 uppercase block">Redirect On Click</label>
-                      <div className="flex bg-zinc-200/50 p-1 rounded-xl mb-2">
+                    <div className="sm:col-span-2 space-y-2 mt-2 pt-4 border-t border-zinc-200">
+                      <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase block">Redirect On Click</label>
+                      <div className="flex bg-zinc-200/50 p-1 rounded-xl mb-2 overflow-x-auto hide-scrollbar">
                         {(["NONE", "CATEGORY", "PRODUCT", "CUSTOM"] as const).map(t => (
                           <button
                             key={t}
@@ -195,7 +195,7 @@ export default function AdminSettings() {
                               else if (t === "PRODUCT" && products.length > 0) setNewBanner(prev => ({...prev, redirectUrl: `/product/${products[0].id}`}));
                               else if (t === "CUSTOM") setNewBanner(prev => ({...prev, redirectUrl: "/search"}));
                             }}
-                            className={`flex-1 py-1.5 rounded-lg text-[8px] font-black tracking-widest uppercase transition-all ${bannerRedirectType === t ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-500'}`}
+                            className={`flex-1 py-2 rounded-lg text-[7px] lg:text-[8px] font-black tracking-widest uppercase transition-all whitespace-nowrap px-3 ${bannerRedirectType === t ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-500'}`}
                           >
                             {t}
                           </button>
@@ -206,7 +206,7 @@ export default function AdminSettings() {
                         <select 
                           value={newBanner.redirectUrl?.replace('/category/', '') || ''}
                           onChange={e => setNewBanner({...newBanner, redirectUrl: `/category/${e.target.value}`})}
-                          className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-xs font-bold uppercase"
+                          className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
                         >
                           {categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                         </select>
@@ -216,7 +216,7 @@ export default function AdminSettings() {
                         <select 
                           value={newBanner.redirectUrl?.replace('/product/', '') || ''}
                           onChange={e => setNewBanner({...newBanner, redirectUrl: `/product/${e.target.value}`})}
-                          className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-xs font-bold uppercase"
+                          className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
                         >
                           {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                         </select>
@@ -228,13 +228,13 @@ export default function AdminSettings() {
                           value={newBanner.redirectUrl}
                           onChange={(e) => setNewBanner({ ...newBanner, redirectUrl: e.target.value })}
                           placeholder="e.g. /search"
-                          className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-xs font-bold"
+                          className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold"
                         />
                       )}
                     </div>
                   </div>
-                  <button onClick={addBanner} className="w-full bg-primary text-zinc-900 py-4 rounded-xl font-black text-[10px] tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/10 uppercase">
-                    Add Banner to Carousel
+                  <button onClick={addBanner} className="w-full bg-primary text-zinc-900 py-3 lg:py-4 rounded-xl font-black text-[9px] lg:text-[10px] tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/10 uppercase">
+                    Add Banner
                   </button>
                 </div>
 
@@ -283,22 +283,22 @@ export default function AdminSettings() {
             </div>
           </div>
 
-          <div className="bg-white rounded-[40px] p-8 border border-zinc-100 shadow-sm space-y-6">
-            <h4 className="font-headline font-black text-sm tracking-widest text-zinc-400 uppercase">Payment & Fees</h4>
+          <div className="bg-white rounded-[32px] lg:rounded-[40px] p-6 lg:p-8 border border-zinc-100 shadow-sm space-y-6">
+            <h4 className="font-headline font-black text-xs lg:text-sm tracking-widest text-zinc-400 uppercase">Payment & Fees</h4>
             <div className="flex items-center justify-between">
-              <span className="font-bold text-zinc-700 text-sm">Allow COD</span>
+              <span className="font-bold text-zinc-700 text-xs lg:text-sm">Allow COD</span>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only peer" checked={settings.codEnabled} onChange={e => setSettings({...settings, codEnabled: e.target.checked})} />
-                <div className="w-12 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                <div className="w-10 h-5 lg:w-12 lg:h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 lg:after:h-5 lg:after:w-5 after:transition-all peer-checked:bg-green-500"></div>
               </label>
             </div>
              <div className="pt-4 border-t border-zinc-50 space-y-4">
                <div>
-                  <label className="text-[9px] font-black tracking-widest text-zinc-400 mb-2 block uppercase">Delivery Fee (₹)</label>
+                  <label className="text-[9px] font-black tracking-widest text-zinc-400 mb-1.5 lg:mb-2 block uppercase">Delivery Fee (₹)</label>
                   <input type="number" value={settings.deliveryFee} onChange={e => setSettings({...settings, deliveryFee: parseFloat(e.target.value)})} className="w-full bg-zinc-50 p-3 rounded-xl font-bold text-xs"/>
                </div>
                <div>
-                  <label className="text-[9px] font-black tracking-widest text-zinc-400 mb-2 block uppercase">Small Cart Fee (₹)</label>
+                  <label className="text-[9px] font-black tracking-widest text-zinc-400 mb-1.5 lg:mb-2 block uppercase">Small Cart Fee (₹)</label>
                   <input type="number" value={settings.smallCartFee} onChange={e => setSettings({...settings, smallCartFee: parseFloat(e.target.value)})} className="w-full bg-zinc-50 p-3 rounded-xl font-bold text-xs"/>
                </div>
              </div>

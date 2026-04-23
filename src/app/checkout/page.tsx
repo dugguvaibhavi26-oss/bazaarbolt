@@ -375,31 +375,31 @@ export default function CheckoutPage() {
             </section>
           </div>
 
-          <div className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-2xl border-t border-zinc-100 p-6 z-[60] pb-safe shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-            <div className="max-w-3xl mx-auto flex items-center justify-between gap-6">
+          <div className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-2xl border-t border-zinc-100 px-4 py-4 lg:p-6 z-[60] pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.08)]">
+            <div className="max-w-3xl mx-auto flex items-center justify-between gap-4 lg:gap-6">
               <div className="flex flex-col min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 mb-1">
+                <div className="flex items-center gap-1.5 mb-0.5">
                   <span className="material-symbols-outlined text-[14px] text-zinc-900" style={{fontVariationSettings: "'FILL'1"}}>schedule</span>
-                  <p className="text-[10px] font-black text-zinc-900 truncate tracking-tight">{selectedSlot || 'Select slot'}</p>
+                  <p className="text-[10px] lg:text-xs font-black text-zinc-900 truncate tracking-tight uppercase">{selectedSlot || 'Select slot'}</p>
                 </div>
-                <div className="flex items-center gap-1.5" onClick={() => setIsAddressModalOpen(true)}>
+                <div className="flex items-center gap-1.5 cursor-pointer active:opacity-60 transition-opacity" onClick={() => setIsAddressModalOpen(true)}>
                   <span className="material-symbols-outlined text-[14px] text-zinc-400">location_on</span>
-                  <p className="text-[9px] font-bold text-zinc-400 truncate tracking-tight underline decoration-zinc-200 underline-offset-2">{displayAddress}</p>
+                  <p className="text-[9px] lg:text-[11px] font-bold text-zinc-400 truncate tracking-tight underline decoration-zinc-200 underline-offset-2">{displayAddress}</p>
                 </div>
               </div>
               
               <button 
                 onClick={handleCheckout} 
                 disabled={placingOrder} 
-                className="bg-green-600 text-white h-14 px-8 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-all disabled:opacity-50 shadow-xl shadow-green-600/20"
+                className="bg-green-600 text-white h-12 lg:h-16 px-5 lg:px-10 rounded-[20px] lg:rounded-3xl flex items-center gap-3 lg:gap-4 active:scale-95 transition-all disabled:opacity-50 shadow-xl shadow-green-600/20 shrink-0"
               >
-                <div className="flex flex-col items-start leading-none pr-4 border-r border-white/20">
-                  <span className="text-[16px] font-black tracking-tighter">₹{total.toFixed(0)}</span>
-                  <span className="text-[8px] font-black tracking-widest uppercase opacity-70">Total</span>
+                <div className="flex flex-col items-start leading-none pr-3 lg:pr-5 border-r border-white/20">
+                  <span className="text-[14px] lg:text-xl font-black tracking-tighter">₹{total.toFixed(0)}</span>
+                  <span className="text-[7px] lg:text-[9px] font-black tracking-widest uppercase opacity-80">Total</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[12px] font-black tracking-[0.1em] uppercase">{placingOrder ? 'Wait...' : 'Place Order'}</span>
-                  <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+                <div className="flex items-center gap-1.5 lg:gap-2">
+                  <span className="text-[10px] lg:text-xs font-black tracking-[0.1em] uppercase">{placingOrder ? 'Wait' : 'Order'}</span>
+                  <span className="material-symbols-outlined text-[18px] lg:text-[24px]">arrow_forward</span>
                 </div>
               </button>
             </div>

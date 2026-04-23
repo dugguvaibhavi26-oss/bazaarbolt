@@ -69,17 +69,17 @@ export default function AdminOrders() {
  );
 
  return (
-    <div className="space-y-8 pb-32">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 lg:space-y-8 pb-32">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h3 className="text-2xl font-black text-zinc-900 tracking-tight">Active Orders</h3>
-          <p className="text-xs font-bold text-zinc-400 tracking-widest mt-1">Real-time order lifecycle management</p>
+          <h3 className="text-xl lg:text-2xl font-black text-zinc-900 tracking-tight">Active Orders</h3>
+          <p className="text-[10px] lg:text-xs font-bold text-zinc-400 tracking-widest mt-1 uppercase">Order lifecycle management</p>
         </div>
-        <div className="flex bg-white p-1 rounded-2xl border border-zinc-200 shadow-sm">
+        <div className="flex bg-white p-1 rounded-2xl border border-zinc-200 shadow-sm overflow-x-auto hide-scrollbar max-w-full">
           {["ALL", "PLACED", "ACCEPTED", "PICKED", "DELIVERED", "CANCELLED"].map(f => (
             <button key={f}
               onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-xl text-[9px] font-black tracking-widest transition-all ${filter === f ? 'bg-primary text-zinc-900 shadow-sm': 'text-zinc-500 hover:text-zinc-900'}`}
+              className={`px-4 py-2 rounded-xl text-[9px] font-black tracking-widest transition-all whitespace-nowrap ${filter === f ? 'bg-primary text-zinc-900 shadow-sm': 'text-zinc-500 hover:text-zinc-900'}`}
             >
               {f}
             </button>
@@ -87,7 +87,60 @@ export default function AdminOrders() {
         </div>
       </div>
 
-      <div className="bg-white rounded-[40px] shadow-sm border border-zinc-100 overflow-hidden">
+      {/* Mobile Card View */}
+      <div className="grid grid-cols-1 gap-4 lg:hidden">
+        {filteredOrders.map(o => (
+          <div key={o.id} className="bg-white rounded-[24px] p-5 border border-zinc-100 shadow-sm space-y-4">
+            <div className="flex justify-between items-start">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center text-zinc-400">
+                  <span className="material-symbols-outlined text-[20px]">person</span>
+                </div>
+                <div>
+                  <p className="font-headline font-black text-[11px] text-zinc-900 tracking-tight">#{o.id.slice(-8).toUpperCase()}</p>
+                  <p className="text-[10px] font-bold text-zinc-400">{o.customerName || "Customer"}</p>
+                </div>
+              </div>
+              <span className="font-headline font-black text-sm text-zinc-900">₹{o.total.toFixed(0)}</span>
+            </div>
+
+            <div className="flex items-center justify-between border-t border-zinc-50 pt-4">
+              <div className="flex -space-x-2">
+                {o.items.slice(0, 3).map((item: any, i: number) => (
+                  <div key={i} className="w-7 h-7 rounded-full border-2 border-white bg-zinc-100 p-1">
+                    <img src={item.image} alt="" className="w-full h-full object-contain" />
+                  </div>
+                ))}
+                {o.items.length > 3 && (
+                  <div className="w-7 h-7 rounded-full border-2 border-white bg-zinc-900 text-white text-[7px] font-black flex items-center justify-center">
+                    +{o.items.length - 3}
+                  </div>
+                )}
+              </div>
+              
+              <select 
+                value={o.status}
+                onChange={(e) => updateStatus(o, e.target.value)}
+                className={`px-3 py-1.5 rounded-lg text-[8px] font-black tracking-widest shadow-sm border-none cursor-pointer
+                ${o.status === 'DELIVERED'? 'bg-green-100 text-green-700': o.status === 'PICKED'? 'bg-orange-100 text-orange-700': o.status === 'CANCELLED'? 'bg-red-100 text-red-700':
+                'bg-blue-100 text-blue-700'}`}
+              >
+                {["PLACED", "ACCEPTED", "PICKED", "ON_THE_WAY", "DELIVERED", "CANCELLED"].map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        ))}
+        {filteredOrders.length === 0 && (
+          <div className="p-12 text-center bg-white rounded-[24px] border border-dashed border-zinc-200">
+            <span className="material-symbols-outlined text-4xl text-zinc-200 mb-2">inventory_2</span>
+            <p className="text-[9px] font-black tracking-widest text-zinc-400">No orders found</p>
+          </div>
+        )}
+      </div>
+
+      <div className="hidden lg:block bg-white rounded-[40px] shadow-sm border border-zinc-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -155,14 +208,14 @@ export default function AdminOrders() {
               ))}
             </tbody>
           </table>
- {filteredOrders.length === 0 && (
- <div className="p-20 text-center">
- <span className="material-symbols-outlined text-5xl text-zinc-200 mb-4">move_to_inbox</span>
- <p className="text-[10px] font-black tracking-widest text-zinc-400">No Orders in this queue</p>
- </div>
- )}
- </div>
- </div>
+          {filteredOrders.length === 0 && (
+            <div className="p-20 text-center">
+              <span className="material-symbols-outlined text-5xl text-zinc-200 mb-4">move_to_inbox</span>
+              <p className="text-[10px] font-black tracking-widest text-zinc-400">No Orders in this queue</p>
+            </div>
+          )}
+        </div>
+      </div>
  </div>
  );
 }

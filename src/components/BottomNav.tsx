@@ -69,7 +69,7 @@ export const BottomNav = () => {
         <div className="w-full max-w-md">
           <button 
             onClick={() => router.push('/cart')} 
-            className="pointer-events-auto w-full bg-[#318b18] text-white shadow-2xl rounded-full p-2 flex items-center justify-between active:scale-95 transition-transform"
+            className="pointer-events-auto w-full bg-[#318b18] text-white shadow-2xl rounded-[24px] lg:rounded-full p-2.5 lg:p-3 flex items-center justify-between active:scale-95 transition-transform"
           >
             {/* Left: Overlapping product images */}
             <div className="flex items-center -space-x-4 pl-1">
@@ -102,12 +102,14 @@ export const BottomNav = () => {
         >
           {/* The Sliding Oval Indicator */}
           <div 
-            className={`absolute h-12 bg-primary/10 rounded-2xl transition-all duration-[600ms] ${
+            className={`absolute h-10 lg:h-12 bg-primary/10 rounded-xl lg:rounded-2xl transition-all duration-[600ms] ${
               isMoving ? "ease-[cubic-bezier(0.68,-0.6,0.32,1.6)] scale-y-[0.9] scale-x-[1.05]" : "ease-[cubic-bezier(0.4,0,0.2,1)] scale-100"
             }`}
             style={{
               left: `${indicatorStyle.left}px`,
               width: `${indicatorStyle.width}px`,
+              top: '50%',
+              transform: `translateY(-50%) ${isMoving ? 'scale-y-[0.9] scale-x-[1.05]' : 'scale-100'}`
             }}
           />
 
@@ -119,14 +121,14 @@ export const BottomNav = () => {
                 key={item.href}
                 data-active={isActive}
                 onClick={() => router.push(item.href)}
-                className={`relative z-10 flex items-center justify-center h-12 rounded-2xl group outline-none transition-all duration-[600ms] ease-[cubic-bezier(0.4,0,0.2,1)] ${
-                  isActive ? "flex-grow-[2.8]" : "flex-grow-[1]"
+                className={`relative z-10 flex items-center justify-center h-10 lg:h-12 rounded-xl lg:rounded-2xl group outline-none transition-all duration-[600ms] ease-[cubic-bezier(0.4,0,0.2,1)] ${
+                  isActive ? "flex-[2.5]" : "flex-[1]"
                 }`}
               >
-                <div className="flex items-center gap-2 pointer-events-none">
+                <div className="flex items-center gap-1 lg:gap-2 pointer-events-none">
                   <div className="relative">
                     <span 
-                      className={`material-symbols-outlined text-[24px] transition-all duration-500 ${
+                      className={`material-symbols-outlined text-[20px] lg:text-[24px] transition-all duration-500 ${
                         isActive ? "text-primary scale-110" : "text-zinc-400 group-hover:text-zinc-600 scale-100"
                       }`}
                       style={{ fontVariationSettings: isActive ? "'FILL'1" : "'FILL'0" }}
@@ -135,18 +137,18 @@ export const BottomNav = () => {
                     </span>
                     
                     {item.label === "Cart" && cartCount > 0 && !isActive && (
-                      <div className="absolute -top-1.5 -right-2 bg-primary text-zinc-900 text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-sm border border-white">
+                      <div className="absolute -top-1.5 -right-2 bg-primary text-zinc-900 text-[7px] lg:text-[8px] font-black w-3.5 h-3.5 lg:w-4 lg:h-4 rounded-full flex items-center justify-center shadow-sm border border-white">
                         {cartCount}
                       </div>
                     )}
                   </div>
-
+  
                   <div 
                     className={`flex items-center overflow-hidden transition-all duration-[600ms] ease-[cubic-bezier(0.4,0,0.2,1)] ${
-                      isActive ? "max-w-[100px] opacity-100 ml-1" : "max-w-0 opacity-0"
+                      isActive ? "max-w-[80px] lg:max-w-[100px] opacity-100 ml-0.5 lg:ml-1" : "max-w-0 opacity-0"
                     }`}
                   >
-                    <span className="font-headline font-black text-xs text-primary whitespace-nowrap">
+                    <span className="font-headline font-black text-[10px] lg:text-xs text-primary whitespace-nowrap">
                       {item.label}
                     </span>
                   </div>

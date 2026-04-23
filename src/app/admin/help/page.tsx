@@ -56,14 +56,14 @@ export default function AdminHelp() {
   if (loading) return <div className="p-10 animate-pulse bg-white rounded-3xl h-96" />;
 
   return (
-    <div className="space-y-10 pb-32">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 lg:space-y-10 pb-32">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h3 className="text-2xl font-black text-zinc-900 tracking-tight">Help Desk FAQs</h3>
-          <p className="text-xs font-bold text-zinc-400 tracking-widest mt-1">Manage common support questions</p>
+          <h3 className="text-xl lg:text-2xl font-black text-zinc-900 tracking-tight">Help Desk FAQs</h3>
+          <p className="text-[10px] lg:text-xs font-bold text-zinc-400 tracking-widest mt-1 uppercase">Manage common support questions</p>
         </div>
         <button onClick={() => { setEditingFaq(null); setFormData({ q: "", a: "", order: 0 }); setIsAdding(true); }} 
-          className="bg-zinc-900 text-white px-8 py-4 rounded-2xl font-black text-[10px] tracking-widest flex items-center gap-2 hover:bg-black shadow-xl transition-all">
+          className="w-full lg:w-auto bg-zinc-900 text-white px-6 lg:px-8 py-3 lg:py-4 rounded-2xl font-black text-[9px] lg:text-[10px] tracking-widest flex items-center justify-center gap-2 hover:bg-black shadow-xl transition-all uppercase">
           <span className="material-symbols-outlined text-sm">add_circle</span>
           Add new FAQ
         </button>
@@ -107,46 +107,46 @@ export default function AdminHelp() {
       </div>
 
       {isAdding && (
-        <div className="fixed inset-0 z-[100] bg-zinc-900/40 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-[40px] p-10 shadow-2xl relative">
-            <h2 className="text-2xl font-headline font-black text-zinc-900 tracking-tight mb-8">
+  <div className="fixed inset-0 z-[100] bg-zinc-900/40 backdrop-blur-md flex items-center justify-center p-4 lg:p-12 overflow-y-auto">
+    <div className="bg-white w-full max-w-lg rounded-[32px] lg:rounded-[40px] p-6 lg:p-10 shadow-2xl relative">
+            <h2 className="text-xl lg:text-2xl font-headline font-black text-zinc-900 tracking-tight mb-6 lg:mb-8 uppercase">
               {editingFaq ? 'Edit FAQ' : 'New FAQ'}
             </h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6">
               <div>
-                <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Question</label>
+                <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 lg:mb-2 block uppercase">Question</label>
                 <input 
                   type="text" 
                   value={formData.q} 
                   onChange={e => setFormData({...formData, q: e.target.value})}
-                  className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all outline-none"
-                  placeholder="e.g. How to track my order?"
+                  className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-4 lg:p-5 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all outline-none"
+                  placeholder="e.g. How to track?"
                   required
                 />
               </div>
               <div>
-                <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Answer</label>
+                <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 lg:mb-2 block uppercase">Answer</label>
                 <textarea 
                   rows={4}
                   value={formData.a} 
                   onChange={e => setFormData({...formData, a: e.target.value})}
-                  className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all outline-none resize-none"
-                  placeholder="Enter detailed answer here..."
+                  className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-4 lg:p-5 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all outline-none resize-none"
+                  placeholder="Enter detailed answer..."
                   required
                 />
               </div>
               <div>
-                <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Display Order (optional)</label>
+                <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 lg:mb-2 block uppercase">Display Order</label>
                 <input 
                   type="number" 
                   value={formData.order} 
                   onChange={e => setFormData({...formData, order: parseInt(e.target.value)})}
-                  className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all outline-none"
+                  className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-4 lg:p-5 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all outline-none"
                 />
               </div>
-              <div className="flex gap-4 pt-6">
-                <button type="button" onClick={() => setIsAdding(false)} className="flex-1 bg-zinc-100 text-zinc-500 py-4 rounded-2xl font-black tracking-widest text-[10px] transition-all">Cancel</button>
-                <button type="submit" className="flex-1 bg-zinc-900 text-white py-4 rounded-2xl font-black tracking-widest text-[10px] transition-all hover:bg-black shadow-xl">{editingFaq ? 'Update' : 'Add'}</button>
+              <div className="flex gap-3 lg:gap-4 pt-4 lg:pt-6">
+                <button type="button" onClick={() => setIsAdding(false)} className="flex-1 bg-zinc-100 text-zinc-500 py-3 lg:py-4 rounded-xl lg:rounded-2xl font-black tracking-widest text-[9px] lg:text-[10px] transition-all uppercase">Cancel</button>
+                <button type="submit" className="flex-1 bg-zinc-900 text-white py-3 lg:py-4 rounded-xl lg:rounded-2xl font-black tracking-widest text-[9px] lg:text-[10px] transition-all hover:bg-black shadow-xl uppercase">{editingFaq ? 'Update' : 'Add'}</button>
               </div>
             </form>
           </div>

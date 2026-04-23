@@ -104,6 +104,7 @@ export default function HelpPage() {
         </div>
       </div>
 
+      <BottomNav />
     </main>
   );
 }

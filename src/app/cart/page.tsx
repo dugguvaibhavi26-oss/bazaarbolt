@@ -141,18 +141,18 @@ export default function CartPage() {
         )}
 
       {cart.length > 0 && (
-        <div className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-2xl border-t border-zinc-100 p-6 z-[60] pb-safe shadow-[0_-8px_30px_rgba(0,0,0,0.04)]">
-          <div className="max-w-3xl mx-auto flex items-center justify-between gap-6">
-            <div className="flex flex-col">
-              <span className="text-2xl font-headline font-black text-zinc-900 tracking-tighter leading-none">₹{total.toFixed(0)}</span>
-              <span className="text-[9px] font-black text-zinc-400 tracking-[0.2em] mt-1.5 uppercase">Total payable</span>
+        <div className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-2xl border-t border-zinc-100 px-4 py-4 lg:p-6 z-[60] pb-safe shadow-[0_-8px_40px_rgba(0,0,0,0.06)]">
+          <div className="max-w-3xl mx-auto flex items-center justify-between gap-4 lg:gap-6">
+            <div className="flex flex-col min-w-0">
+              <span className="text-xl lg:text-3xl font-headline font-black text-zinc-900 tracking-tighter leading-none">₹{total.toFixed(0)}</span>
+              <span className="text-[8px] lg:text-[10px] font-black text-zinc-400 tracking-[0.2em] mt-1 lg:mt-2 uppercase">Total payable</span>
             </div>
             <button 
               onClick={handleProceed} 
-              className="flex-1 max-w-[200px] bg-primary text-zinc-900 font-headline font-black text-[12px] tracking-[0.1em] h-14 rounded-2xl shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2 uppercase"
+              className="flex-1 max-w-[180px] lg:max-w-[240px] bg-primary text-zinc-900 font-headline font-black text-[10px] lg:text-xs tracking-[0.1em] h-12 lg:h-16 rounded-[20px] lg:rounded-[24px] shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2 uppercase shrink-0"
             >
               Checkout
-              <span className="material-symbols-outlined text-[18px] font-bold">arrow_forward</span>
+              <span className="material-symbols-outlined text-[16px] lg:text-[20px] font-bold">arrow_forward</span>
             </button>
           </div>
         </div>

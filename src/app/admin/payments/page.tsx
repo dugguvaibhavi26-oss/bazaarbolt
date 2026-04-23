@@ -68,93 +68,93 @@ export default function AdminPaymentsPage() {
  };
 
  return (
- <div className="p-6 max-w-4xl mx-auto pb-40">
- <div className="mb-10">
- <h1 className="text-3xl font-black text-zinc-900 tracking-tight">Payment Control</h1>
- <p className="text-zinc-500 font-bold text-sm">Configure fees, taxes, and thresholds</p>
- </div>
+ <div className="p-4 lg:p-6 max-w-4xl mx-auto pb-40">
+  <div className="mb-6 lg:mb-10">
+   <h1 className="text-2xl lg:text-3xl font-black text-zinc-900 tracking-tight">Payment Control</h1>
+   <p className="text-zinc-500 font-bold text-[10px] lg:text-sm uppercase tracking-wider">Fees, Taxes & Thresholds</p>
+  </div>
 
- <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
- {/* Core Charges */}
- <div className="space-y-6">
- <div className="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm space-y-4">
- <h2 className="text-xs font-black text-zinc-400 tracking-widest flex items-center gap-2">
- <span className="material-symbols-outlined text-sm">receipt_long</span>
- Standard Taxes & Base Fees
- </h2>
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+   {/* Core Charges */}
+   <div className="space-y-6">
+    <div className="bg-white p-5 lg:p-6 rounded-3xl border border-zinc-100 shadow-sm space-y-4">
+     <h2 className="text-[10px] lg:text-xs font-black text-zinc-400 tracking-widest flex items-center gap-2 uppercase">
+      <span className="material-symbols-outlined text-sm">receipt_long</span>
+      Standard Taxes & Base Fees
+     </h2>
 
- <div className="space-y-4">
- <div>
- <label className="text-[10px] font-black text-zinc-500 mb-1 block">Taxes (GST %)</label>
- <input
- type="number"
- value={form.taxPercent}
- onChange={(e) => setForm({ ...form, taxPercent: Number(e.target.value) })}
- className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 font-black text-zinc-900 focus:ring-2 ring-primary/20 outline-none"
- />
- </div>
- <div>
- <label className="text-[10px] font-black text-zinc-500 mb-1 block">Platform Handling Fee (₹)</label>
- <input
- type="number"
- value={form.handlingCharge}
- onChange={(e) => setForm({ ...form, handlingCharge: Number(e.target.value) })}
- className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 font-black text-zinc-900 focus:ring-2 ring-primary/20 outline-none"
- />
- </div>
- </div>
- </div>
+     <div className="space-y-4">
+      <div>
+       <label className="text-[9px] lg:text-[10px] font-black text-zinc-500 mb-1.5 block uppercase">Taxes (GST %)</label>
+       <input
+        type="number"
+        value={form.taxPercent}
+        onChange={(e) => setForm({ ...form, taxPercent: Number(e.target.value) })}
+        className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 font-black text-zinc-900 focus:ring-2 ring-primary/20 outline-none text-xs"
+       />
+      </div>
+      <div>
+       <label className="text-[9px] lg:text-[10px] font-black text-zinc-500 mb-1.5 block uppercase">Handling Fee (₹)</label>
+       <input
+        type="number"
+        value={form.handlingCharge}
+        onChange={(e) => setForm({ ...form, handlingCharge: Number(e.target.value) })}
+        className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 font-black text-zinc-900 focus:ring-2 ring-primary/20 outline-none text-xs"
+       />
+      </div>
+     </div>
+    </div>
 
- <div className="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm space-y-4">
- <h2 className="text-xs font-black text-zinc-400 tracking-widest flex items-center gap-2">
- <span className="material-symbols-outlined text-sm">delivery_dining</span>
- Delivery Configuration
- </h2>
+    <div className="bg-white p-5 lg:p-6 rounded-3xl border border-zinc-100 shadow-sm space-y-4">
+     <h2 className="text-[10px] lg:text-xs font-black text-zinc-400 tracking-widest flex items-center gap-2 uppercase">
+      <span className="material-symbols-outlined text-sm">delivery_dining</span>
+      Delivery Metrics
+     </h2>
 
- <div className="space-y-4">
- <div className="grid grid-cols-2 gap-4">
- <div>
- <label className="text-[10px] font-black text-zinc-500 mb-1 block">Delivery Fee (₹)</label>
- <input
- type="number"
- value={form.deliveryFee}
- onChange={(e) => setForm({ ...form, deliveryFee: Number(e.target.value) })}
- className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 font-black text-zinc-900 outline-none"
- />
- </div>
- <div>
- <label className="text-[10px] font-black text-zinc-500 mb-1 block">Threshold for FREE (₹)</label>
- <input
- type="number"
- value={form.freeDeliveryThreshold}
- onChange={(e) => setForm({ ...form, freeDeliveryThreshold: Number(e.target.value) })}
- className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 font-black text-zinc-900 outline-none"
- />
- </div>
- </div>
- <div className="grid grid-cols-2 gap-4">
- <div>
- <label className="text-[10px] font-black text-zinc-500 mb-1 block">Small Cart Fee (₹)</label>
- <input
- type="number"
- value={form.smallCartFee}
- onChange={(e) => setForm({ ...form, smallCartFee: Number(e.target.value) })}
- className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 font-black text-zinc-900 outline-none"
- />
- </div>
- <div>
- <label className="text-[10px] font-black text-zinc-500 mb-1 block">Threshold for Small Fee (₹)</label>
- <input
- type="number"
- value={form.smallCartThreshold}
- onChange={(e) => setForm({ ...form, smallCartThreshold: Number(e.target.value) })}
- className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 font-black text-zinc-900 outline-none"
- />
- </div>
- </div>
- </div>
- </div>
- </div>
+     <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+       <div>
+        <label className="text-[9px] lg:text-[10px] font-black text-zinc-500 mb-1.5 block uppercase">Delivery Fee (₹)</label>
+        <input
+         type="number"
+         value={form.deliveryFee}
+         onChange={(e) => setForm({ ...form, deliveryFee: Number(e.target.value) })}
+         className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 font-black text-zinc-900 outline-none text-xs"
+        />
+       </div>
+       <div>
+        <label className="text-[9px] lg:text-[10px] font-black text-zinc-500 mb-1.5 block uppercase">Threshold for FREE (₹)</label>
+        <input
+         type="number"
+         value={form.freeDeliveryThreshold}
+         onChange={(e) => setForm({ ...form, freeDeliveryThreshold: Number(e.target.value) })}
+         className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 font-black text-zinc-900 outline-none text-xs"
+        />
+       </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+       <div>
+        <label className="text-[9px] lg:text-[10px] font-black text-zinc-500 mb-1.5 block uppercase">Small Cart Fee (₹)</label>
+        <input
+         type="number"
+         value={form.smallCartFee}
+         onChange={(e) => setForm({ ...form, smallCartFee: Number(e.target.value) })}
+         className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 font-black text-zinc-900 outline-none text-xs"
+        />
+       </div>
+       <div>
+        <label className="text-[9px] lg:text-[10px] font-black text-zinc-500 mb-1.5 block uppercase">Threshold (Small) (₹)</label>
+        <input
+         type="number"
+         value={form.smallCartThreshold}
+         onChange={(e) => setForm({ ...form, smallCartThreshold: Number(e.target.value) })}
+         className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 font-black text-zinc-900 outline-none text-xs"
+        />
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
 
  {/* Custom Charges Dynamic Section */}
  <div className="space-y-6">
@@ -203,16 +203,18 @@ export default function AdminPaymentsPage() {
  </div>
  </div>
 
- <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-full max-w-sm px-6">
- <button
- onClick={handleUpdate}
- disabled={loading}
- className="w-full bg-zinc-900 text-white h-16 rounded-3xl font-black tracking-widest text-xs shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
- >
- {loading ? 'Saving Changes...': 'Save Payment Config'}
- <span className="material-symbols-outlined">payments</span>
- </button>
- </div>
+  <div className="fixed bottom-6 lg:bottom-10 left-0 w-full px-4 lg:px-6 z-20">
+   <div className="max-w-sm mx-auto">
+    <button
+     onClick={handleUpdate}
+     disabled={loading}
+     className="w-full bg-zinc-900 text-white h-14 lg:h-16 rounded-2xl lg:rounded-3xl font-black tracking-widest text-[9px] lg:text-[10px] shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 uppercase"
+    >
+     {loading ? 'Propagating...' : 'Save Configuration'}
+     <span className="material-symbols-outlined text-sm lg:text-base">payments</span>
+    </button>
+   </div>
+  </div>
  </div>
  );
 }

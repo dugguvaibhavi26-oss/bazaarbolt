@@ -36,47 +36,47 @@ export default function AdminSubscriptions() {
  const currentPlans = plans.length > 0 ? plans : defaultPlans;
 
  return (
- <div className="space-y-8">
- <div className="flex items-center justify-between">
- <div>
- <h3 className="text-2xl font-black text-zinc-900 tracking-tight">Memberships & Plans</h3>
- <p className="text-xs font-bold text-zinc-400 tracking-widest mt-1">Configure premium tiers and pricing</p>
- </div>
- <button onClick={() => toast("Feature coming soon: Plan Creator")} className="bg-zinc-900 text-white px-6 py-3 rounded-2xl font-black text-[10px] tracking-widest flex items-center gap-2 hover:bg-black shadow-lg">
- <span className="material-symbols-outlined text-sm">add</span>
- Create Plan
- </button>
- </div>
+  <div className="space-y-6 lg:space-y-8 pb-32">
+  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+   <div>
+    <h3 className="text-xl lg:text-2xl font-black text-zinc-900 tracking-tight">Memberships & Plans</h3>
+    <p className="text-[10px] lg:text-xs font-bold text-zinc-400 tracking-widest mt-1 uppercase">Configure premium tiers and pricing</p>
+   </div>
+   <button onClick={() => toast("Feature coming soon: Plan Creator")} className="w-full lg:w-auto bg-zinc-900 text-white px-6 lg:px-8 py-3 lg:py-4 rounded-2xl font-black text-[9px] lg:text-[10px] tracking-widest flex items-center justify-center gap-2 hover:bg-black shadow-lg uppercase">
+    <span className="material-symbols-outlined text-sm">add</span>
+    Create Plan
+   </button>
+  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
  {currentPlans.map((plan) => {
  const isGold = plan.name.toLowerCase().includes('gold') || plan.color === 'yellow';
  return (
- <div key={plan.id} className={`p-1 rounded-[40px] ${isGold ? 'bg-gradient-to-br from-yellow-100 to-yellow-500': 'bg-gradient-to-br from-blue-100 to-blue-500'} shadow-lg`}>
- <div className="bg-white rounded-[39px] p-8 h-full relative overflow-hidden">
- <div className="absolute top-0 right-0 p-8 opacity-5">
- <span className="material-symbols-outlined text-[100px]">{isGold ? 'workspace_premium': 'verified'}</span>
- </div>
- <div className="flex justify-between items-start mb-8 relative z-10">
- <div>
- <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black tracking-widest mb-3 ${isGold ? 'bg-yellow-100 text-yellow-700': 'bg-blue-100 text-blue-700'}`}>
- {plan.id.toUpperCase()} PLAN
- </span>
- <h4 className="text-3xl font-headline font-black text-zinc-900 tracking-tighter">{plan.name}</h4>
- </div>
- <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isGold ? 'bg-yellow-50 text-yellow-600': 'bg-blue-50 text-blue-600'}`}>
- <span className="material-symbols-outlined font-bold"style={{fontVariationSettings: "'FILL'1"}}>
- {isGold ? 'workspace_premium': 'verified'}
- </span>
- </div>
- </div>
+      <div className={`p-1 rounded-[32px] lg:rounded-[40px] ${isGold ? 'bg-gradient-to-br from-yellow-100 to-yellow-500': 'bg-gradient-to-br from-blue-100 to-blue-500'} shadow-lg`}>
+       <div className="bg-white rounded-[31px] lg:rounded-[39px] p-6 lg:p-8 h-full relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-6 lg:p-8 opacity-5">
+         <span className="material-symbols-outlined text-[80px] lg:text-[100px]">{isGold ? 'workspace_premium': 'verified'}</span>
+        </div>
+        <div className="flex justify-between items-start mb-6 lg:mb-8 relative z-10">
+         <div>
+          <span className={`inline-block px-3 py-1 rounded-full text-[9px] lg:text-[10px] font-black tracking-widest mb-2 lg:mb-3 ${isGold ? 'bg-yellow-100 text-yellow-700': 'bg-blue-100 text-blue-700'}`}>
+           {plan.id.toUpperCase()} PLAN
+          </span>
+          <h4 className="text-2xl lg:text-3xl font-headline font-black text-zinc-900 tracking-tighter">{plan.name}</h4>
+         </div>
+         <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl flex items-center justify-center ${isGold ? 'bg-yellow-50 text-yellow-600': 'bg-blue-50 text-blue-600'}`}>
+          <span className="material-symbols-outlined font-bold text-xl lg:text-2xl" style={{fontVariationSettings: "'FILL' 1"}}>
+           {isGold ? 'workspace_premium': 'verified'}
+          </span>
+         </div>
+        </div>
 
- <div className="mb-8">
- <div className="flex items-baseline gap-1">
- <span className="text-4xl font-headline font-black text-zinc-900 tracking-tighter">₹{plan.price}</span>
- <span className="text-[10px] font-black text-zinc-400 tracking-widest">/ Month</span>
- </div>
- </div>
+        <div className="mb-6 lg:mb-8">
+         <div className="flex items-baseline gap-1">
+          <span className="text-3xl lg:text-4xl font-headline font-black text-zinc-900 tracking-tighter">₹{plan.price}</span>
+          <span className="text-[9px] lg:text-[10px] font-black text-zinc-400 tracking-widest uppercase">/ Month</span>
+         </div>
+        </div>
 
  <div className="space-y-4 mb-10 text-zinc-500 font-bold text-sm">
  <div className="flex items-center gap-3">
@@ -93,20 +93,20 @@ export default function AdminSubscriptions() {
  </div>
  </div>
 
- <div className="flex items-center justify-between pt-6 border-t border-zinc-100">
- <div className="flex items-center gap-2">
- <span className={`w-2 h-2 rounded-full ${plan.active ? 'bg-green-500': 'bg-red-500'}`}></span>
- <span className="text-[10px] font-black tracking-widest text-zinc-400">{plan.active ? 'Visible To Users': 'Hidden'}</span>
- </div>
- <div className="flex gap-2">
- <button className="p-3 bg-zinc-50 text-zinc-400 hover:text-zinc-900 rounded-xl transition-all"><span className="material-symbols-outlined text-sm">edit</span></button>
- <button onClick={() => toggleStatus(plan)}
- className={`px-5 py-3 rounded-2xl text-[10px] font-black tracking-widest transition-all ${plan.active ? 'bg-red-50 text-red-600': 'bg-green-50 text-green-600'}`}
- >
- {plan.active ? 'Deactivate': 'Activate'}
- </button>
- </div>
- </div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-zinc-100">
+         <div className="flex items-center gap-2">
+          <span className={`w-2 h-2 rounded-full ${plan.active ? 'bg-green-500': 'bg-red-500'}`}></span>
+          <span className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 uppercase">{plan.active ? 'Visible To Users': 'Hidden'}</span>
+         </div>
+         <div className="flex gap-2 w-full sm:w-auto">
+          <button className="flex-1 sm:flex-none p-3 bg-zinc-50 text-zinc-400 hover:text-zinc-900 rounded-xl transition-all"><span className="material-symbols-outlined text-sm">edit</span></button>
+          <button onClick={() => toggleStatus(plan)}
+           className={`flex-2 sm:flex-none px-5 py-3 rounded-xl lg:rounded-2xl text-[9px] lg:text-[10px] font-black tracking-widest transition-all uppercase ${plan.active ? 'bg-red-50 text-red-600': 'bg-green-50 text-green-600'}`}
+          >
+           {plan.active ? 'Deactivate': 'Activate'}
+          </button>
+         </div>
+        </div>
  </div>
  </div>
  )

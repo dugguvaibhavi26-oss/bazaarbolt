@@ -115,6 +115,7 @@ export default function OrdersPage() {
           </div>
         )}
       </div>
+      <BottomNav />
     </main>
   );
 }

@@ -44,17 +44,17 @@ export default function AdminCoupons() {
  };
 
  return (
- <div className="space-y-8">
- <div className="flex items-center justify-between">
- <div>
- <h3 className="text-2xl font-black text-zinc-900 tracking-tight">Promos & Coupons</h3>
- <p className="text-xs font-bold text-zinc-400 tracking-widest mt-1">Drive growth with strategic discounts</p>
- </div>
- <button onClick={() => setIsAdding(true)} className="bg-zinc-900 text-white px-6 py-3 rounded-2xl font-black text-[10px] tracking-widest flex items-center gap-2 hover:bg-black shadow-lg">
- <span className="material-symbols-outlined text-sm">add</span>
- Add Coupon
- </button>
- </div>
+ <div className="space-y-6 lg:space-y-8">
+  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+   <div>
+    <h3 className="text-xl lg:text-2xl font-black text-zinc-900 tracking-tight">Promos & Coupons</h3>
+    <p className="text-[10px] lg:text-xs font-bold text-zinc-400 tracking-widest mt-1 uppercase">Drive growth with strategic discounts</p>
+   </div>
+   <button onClick={() => setIsAdding(true)} className="w-full lg:w-auto bg-zinc-900 text-white px-6 lg:px-8 py-3 lg:py-4 rounded-2xl font-black text-[9px] lg:text-[10px] tracking-widest flex items-center justify-center gap-2 hover:bg-black shadow-lg">
+    <span className="material-symbols-outlined text-sm">add</span>
+    Add Coupon
+   </button>
+  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
  {coupons.map((cp) => (
@@ -94,31 +94,31 @@ export default function AdminCoupons() {
  )}
  </div>
 
- {isAdding && (
- <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
- <div className="bg-white w-full max-w-lg rounded-[40px] p-10 shadow-2xl">
- <h2 className="text-3xl font-headline font-black text-zinc-900 mb-8 tracking-tight">Create Coupon</h2>
- <div className="space-y-6">
- <div>
- <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Coupon Code</label>
- <input type="text"placeholder="e.g. SAVE20"value={newCoupon.code}
- onChange={(e) => setNewCoupon({...newCoupon, code: e.target.value.toUpperCase()})}
- className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all tracking-widest"/>
- </div>
- <div>
- <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Discount Percentage</label>
- <input type="number"placeholder="20"value={newCoupon.discount || ""}
- onChange={(e) => setNewCoupon({...newCoupon, discount: parseInt(e.target.value)})}
- className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all"/>
- </div>
- <div className="flex gap-4 pt-4">
- <button onClick={() => setIsAdding(false)} className="flex-1 bg-zinc-100 text-zinc-500 py-4 rounded-2xl font-black tracking-widest text-[10px]">Discard</button>
- <button onClick={handleAddCoupon} className="flex-1 bg-zinc-900 text-white py-4 rounded-2xl font-black tracking-widest text-[10px]">Release Coupon</button>
- </div>
- </div>
- </div>
- </div>
- )}
+  {isAdding && (
+   <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 lg:p-12 overflow-y-auto">
+    <div className="bg-white w-full max-w-lg rounded-[32px] lg:rounded-[40px] p-6 lg:p-10 shadow-2xl">
+     <h2 className="text-2xl lg:text-3xl font-headline font-black text-zinc-900 mb-6 lg:mb-8 tracking-tight uppercase">Create Coupon</h2>
+     <div className="space-y-6">
+      <div>
+       <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 lg:mb-2 block uppercase">Coupon Code</label>
+       <input type="text" placeholder="e.g. SAVE20" value={newCoupon.code}
+        onChange={(e) => setNewCoupon({...newCoupon, code: e.target.value.toUpperCase()})}
+        className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-4 lg:p-5 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all tracking-widest uppercase" />
+      </div>
+      <div>
+       <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 lg:mb-2 block uppercase">Discount (%)</label>
+       <input type="number" placeholder="20" value={newCoupon.discount || ""}
+        onChange={(e) => setNewCoupon({...newCoupon, discount: parseInt(e.target.value)})}
+        className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-4 lg:p-5 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all" />
+      </div>
+      <div className="flex gap-3 lg:gap-4 pt-4 lg:pt-6">
+       <button onClick={() => setIsAdding(false)} className="flex-1 bg-zinc-100 text-zinc-500 py-3 lg:py-4 rounded-xl lg:rounded-2xl font-black tracking-widest text-[9px] lg:text-[10px] uppercase">Discard</button>
+       <button onClick={handleAddCoupon} className="flex-1 bg-zinc-900 text-white py-3 lg:py-4 rounded-xl lg:rounded-2xl font-black tracking-widest text-[9px] lg:text-[10px] uppercase shadow-lg shadow-zinc-900/10">Release</button>
+      </div>
+     </div>
+    </div>
+   </div>
+  )}
  </div>
  );
 }

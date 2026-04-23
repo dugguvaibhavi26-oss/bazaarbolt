@@ -56,24 +56,26 @@ export default function AdminNotifications() {
   };
 
   return (
-    <div className="space-y-8 pb-32">
-      <div>
-        <h3 className="text-2xl font-black text-zinc-900 tracking-tight">Push Communications</h3>
-        <p className="text-xs font-bold text-zinc-400 tracking-widest mt-1">Send real-time alerts to users</p>
+    <div className="space-y-6 lg:space-y-8 pb-32">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <h3 className="text-xl lg:text-2xl font-black text-zinc-900 tracking-tight">Push Communications</h3>
+          <p className="text-[10px] lg:text-xs font-bold text-zinc-400 tracking-widest mt-1 uppercase">Send real-time alerts to users</p>
+        </div>
       </div>
 
-      <div className="bg-white rounded-[40px] shadow-sm border border-zinc-100 p-8 max-w-2xl">
+      <div className="bg-white rounded-[32px] lg:rounded-[40px] shadow-sm border border-zinc-100 p-6 lg:p-8 max-w-2xl">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
+          <div className="space-y-4 lg:space-y-5">
             <div>
-              <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Target Audience</label>
-              <div className="flex bg-zinc-50 p-1.5 rounded-2xl gap-2">
+              <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 lg:mb-2 block uppercase">Target Audience</label>
+              <div className="flex bg-zinc-50 p-1 lg:p-1.5 rounded-xl lg:rounded-2xl gap-1 lg:gap-2 overflow-x-auto hide-scrollbar">
                 {(["ALL", "CUSTOMERS", "RIDERS"] as const).map((t) => (
                   <button
                     key={t}
                     type="button"
                     onClick={() => setFormData({ ...formData, target: t })}
-                    className={`flex-1 py-3 rounded-xl text-[10px] font-black tracking-widest transition-all ${
+                    className={`flex-1 py-2.5 lg:py-3 px-4 rounded-lg lg:rounded-xl text-[8px] lg:text-[10px] font-black tracking-widest transition-all whitespace-nowrap ${
                       formData.target === t ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400"
                     }`}
                   >
@@ -84,32 +86,32 @@ export default function AdminNotifications() {
             </div>
 
             <div>
-              <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Notification Title</label>
+              <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 lg:mb-2 block uppercase">Title</label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Announcement"
-                className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all"
+                className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-4 lg:p-5 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all"
                 required
               />
             </div>
 
             <div>
-              <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Message Content</label>
+              <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 lg:mb-2 block uppercase">Message Content</label>
               <textarea
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 placeholder="Check out our new products!"
                 rows={4}
-                className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all resize-none"
+                className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-4 lg:p-5 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all resize-none"
                 required
               />
             </div>
             
-            <div className="pt-4 border-t border-zinc-100">
-              <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Redirection (On Click)</label>
-              <div className="flex bg-zinc-50 p-1.5 rounded-2xl gap-2 mb-3">
+            <div className="pt-4 lg:pt-6 border-t border-zinc-100">
+              <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 lg:mb-2 block uppercase">Redirection (On Click)</label>
+              <div className="flex bg-zinc-50 p-1 lg:p-1.5 rounded-xl lg:rounded-2xl gap-1 lg:gap-2 mb-3 overflow-x-auto hide-scrollbar">
                 {(["NONE", "CATEGORY", "PRODUCT", "CUSTOM"] as const).map((t) => (
                   <button
                     key={t}
@@ -121,7 +123,7 @@ export default function AdminNotifications() {
                       else if (t === "PRODUCT" && products.length > 0) setFormData(prev => ({...prev, url: `/product/${products[0].id}`}));
                       else if (t === "CUSTOM") setFormData(prev => ({...prev, url: "/orders"}));
                     }}
-                    className={`flex-1 py-3 rounded-xl text-[10px] font-black tracking-widest transition-all ${
+                    className={`flex-1 py-2.5 lg:py-3 px-3 rounded-lg lg:rounded-xl text-[8px] lg:text-[10px] font-black tracking-widest transition-all whitespace-nowrap ${
                       redirectType === t ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400"
                     }`}
                   >
@@ -134,7 +136,7 @@ export default function AdminNotifications() {
                 <select 
                   value={formData.url.replace('/category/', '')}
                   onChange={e => setFormData({...formData, url: `/category/${e.target.value}`})}
-                  className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all"
+                  className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-4 lg:p-5 font-bold text-[10px] lg:text-sm focus:ring-2 ring-primary transition-all uppercase"
                 >
                   {categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                 </select>
@@ -144,7 +146,7 @@ export default function AdminNotifications() {
                 <select 
                   value={formData.url.replace('/product/', '')}
                   onChange={e => setFormData({...formData, url: `/product/${e.target.value}`})}
-                  className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all"
+                  className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-4 lg:p-5 font-bold text-[10px] lg:text-sm focus:ring-2 ring-primary transition-all uppercase"
                 >
                   {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
@@ -156,29 +158,29 @@ export default function AdminNotifications() {
                   value={formData.url}
                   onChange={(e) => setFormData({ ...formData, url: e.target.value })}
                   placeholder="e.g. /orders or /search"
-                  className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all"
+                  className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-4 lg:p-5 font-bold text-[10px] lg:text-sm focus:ring-2 ring-primary transition-all"
                 />
               )}
             </div>
           </div>
 
- <button
- type="submit"
- disabled={loading}
- className="w-full bg-zinc-900 text-white py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-black shadow-xl shadow-zinc-900/10 flex items-center justify-center gap-2"
- >
- {loading ? (
- <>
- <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
- Sending...
- </>
- ) : (
- <>
- <span className="material-symbols-outlined text-[16px]">send</span>
- Dispatch Notification
- </>
- )}
- </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-zinc-900 text-white h-14 lg:h-16 rounded-2xl lg:rounded-3xl font-black tracking-widest text-[9px] lg:text-[10px] transition-all hover:bg-black shadow-xl shadow-zinc-900/10 flex items-center justify-center gap-2 uppercase"
+          >
+            {loading ? (
+              <>
+                <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                Dispatching...
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined text-[16px]">send</span>
+                Dispatch Notification
+              </>
+            )}
+          </button>
  </form>
  </div>
 

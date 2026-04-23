@@ -218,63 +218,53 @@ export default function AdminProducts() {
   });
 
   return (
-    <div className="space-y-10 pb-32">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 lg:space-y-10 pb-32">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h3 className="text-2xl font-black text-zinc-900 tracking-tight">Inventory Control</h3>
-          <p className="text-xs font-bold text-zinc-400 tracking-widest mt-1">Total SKU Count: {products.length}</p>
+          <h3 className="text-xl lg:text-2xl font-black text-zinc-900 tracking-tight">Inventory Control</h3>
+          <p className="text-[10px] lg:text-xs font-bold text-zinc-400 tracking-widest mt-1 uppercase">Total SKU Count: {products.length}</p>
         </div>
-        <button onClick={startAdd} className="bg-zinc-900 text-white px-8 py-4 rounded-2xl font-black text-[10px] tracking-widest flex items-center gap-2 hover:bg-black shadow-xl active:scale-95 transition-all">
+        <button onClick={startAdd} className="bg-zinc-900 text-white px-6 lg:px-8 py-3 lg:py-4 rounded-2xl font-black text-[10px] tracking-widest flex items-center gap-2 hover:bg-black shadow-xl active:scale-95 transition-all w-full lg:w-auto justify-center">
           <span className="material-symbols-outlined text-sm">inventory</span>
           Add New SKU
         </button>
       </div>
 
-      <div className="flex gap-2 border-b border-zinc-100 pb-2">
+      <div className="flex bg-white p-1 rounded-2xl border border-zinc-100 shadow-sm overflow-x-auto hide-scrollbar">
         <button 
           onClick={() => setActiveTab("BB")}
-          className={`px-6 py-3 rounded-2xl text-[10px] font-black tracking-widest transition-all uppercase ${activeTab === "BB" ? "bg-zinc-900 text-white shadow-md scale-100" : "bg-zinc-50 text-zinc-500 hover:bg-zinc-100 scale-95"}`}
+          className={`flex-1 lg:flex-none px-4 lg:px-6 py-2 lg:py-3 rounded-xl text-[9px] lg:text-[10px] font-black tracking-widest transition-all uppercase whitespace-nowrap ${activeTab === "BB" ? "bg-zinc-900 text-white shadow-md" : "bg-transparent text-zinc-500 hover:bg-zinc-50"}`}
         >
           BAZAARBOLT ({products.filter(p => ((p as any).section || 'BB') === 'BB').length})
         </button>
         <button 
           onClick={() => setActiveTab("CAFE")}
-          className={`px-6 py-3 rounded-2xl text-[10px] font-black tracking-widest transition-all uppercase ${activeTab === "CAFE" ? "bg-zinc-900 text-white shadow-md scale-100" : "bg-zinc-50 text-zinc-500 hover:bg-zinc-100 scale-95"}`}
+          className={`flex-1 lg:flex-none px-4 lg:px-6 py-2 lg:py-3 rounded-xl text-[9px] lg:text-[10px] font-black tracking-widest transition-all uppercase whitespace-nowrap ${activeTab === "CAFE" ? "bg-zinc-900 text-white shadow-md" : "bg-transparent text-zinc-500 hover:bg-zinc-50"}`}
         >
           BB CAFE ({products.filter(p => (p as any).section === 'CAFE').length})
         </button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:gap-4">
         {filteredProducts.map(p => (
           <div key={p.id} className={`bg-white rounded-2xl p-3 shadow-sm border transition-all group ${p.isBestseller ? 'border-orange-400 ring-2 ring-orange-400/10 shadow-orange-100' : 'border-zinc-100'}`}>
             <div className="aspect-square bg-zinc-50 rounded-xl mb-2 p-2 flex items-center justify-center border border-zinc-50 relative overflow-hidden">
-              <img src={p.image} alt={p.name} className="w-20 h-20 object-contain group-hover:scale-110 transition-transform" />
+              <img src={p.image} alt={p.name} className="w-16 h-16 lg:w-20 lg:h-20 object-contain group-hover:scale-110 transition-transform" />
               <div className="absolute top-1 right-1 flex flex-col gap-1 items-end">
-                <span className={`px-1.5 py-0.5 rounded-md text-[7px] font-black tracking-widest border ${p.active ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
+                <span className={`px-1.5 py-0.5 rounded-md text-[6px] lg:text-[7px] font-black tracking-widest border ${p.active ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
                   {p.active ? 'LIVE' : 'HIDDEN'}
-                </span>
-                <span className={`px-1.5 py-0.5 rounded-md text-[7px] font-black tracking-widest border border-zinc-100 bg-white text-zinc-600`}>
-                  {(p as any).section || 'BB'}
                 </span>
               </div>
             </div>
-            <h4 className="font-headline font-black text-[10px] text-zinc-900 truncate mb-0.5 leading-tight">{p.name}</h4>
-            <p className="text-[7px] font-black text-zinc-400 tracking-[0.1em] mb-3">{p.category}</p>
-            <div className="flex items-center justify-between pt-2 border-t border-zinc-50">
-              <span className="font-headline font-black text-xs text-zinc-900 tracking-tighter">₹{p.price.toFixed(0)}</span>
-              <div className="flex gap-1.5">
-                <button onClick={() => startEdit(p)} className="w-6 h-6 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-400 hover:text-primary transition-colors">
-                  <span className="material-symbols-outlined text-[14px]">edit</span>
+            <h4 className="font-headline font-black text-[9px] lg:text-[10px] text-zinc-900 truncate mb-0.5 leading-tight">{p.name}</h4>
+            <div className="flex items-center justify-between pt-2 border-t border-zinc-50 mt-1">
+              <span className="font-headline font-black text-[10px] lg:text-xs text-zinc-900 tracking-tighter">₹{p.price.toFixed(0)}</span>
+              <div className="flex gap-1 lg:gap-1.5">
+                <button onClick={() => startEdit(p)} className="w-5 h-5 lg:w-6 lg:h-6 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-400 hover:text-primary transition-colors">
+                  <span className="material-symbols-outlined text-[12px] lg:text-[14px]">edit</span>
                 </button>
-                <button onClick={() => toggleActive(p.id, p.active)} className="w-6 h-6 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-400 hover:text-zinc-900 transition-colors">
-                  <span className="material-symbols-outlined text-[14px]">{p.active ? 'visibility_off' : 'visibility'}</span>
-                </button>
-                <button onClick={() => toggleBestseller(p.id, !!p.isBestseller)} className={`w-6 h-6 flex items-center justify-center rounded-lg bg-zinc-50 transition-colors ${p.isBestseller ? 'text-orange-500 hover:text-zinc-400' : 'text-zinc-400 hover:text-orange-500'}`}>
-                  <span className="material-symbols-outlined text-[14px]" style={{fontVariationSettings: p.isBestseller ? "'FILL'1" : "'FILL'0"}}>local_fire_department</span>
-                </button>
-                <button onClick={() => removeProduct(p.id)} className="w-6 h-6 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-400 hover:text-red-500 transition-colors">
-                  <span className="material-symbols-outlined text-[14px]">delete</span>
+                <button onClick={() => removeProduct(p.id)} className="w-5 h-5 lg:w-6 lg:h-6 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-400 hover:text-red-500 transition-colors">
+                  <span className="material-symbols-outlined text-[12px] lg:text-[14px]">delete</span>
                 </button>
               </div>
             </div>
@@ -283,40 +273,43 @@ export default function AdminProducts() {
       </div>
 
       {isAdding && (
-        <div className="fixed inset-0 z-[60] bg-zinc-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-2xl rounded-[40px] p-10 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-10 opacity-5 -z-10">
+        <div className="fixed inset-0 z-[60] bg-zinc-900/60 backdrop-blur-sm flex items-center justify-center p-4 lg:p-6 overflow-y-auto">
+          <div className="bg-white w-full max-w-2xl rounded-[32px] lg:rounded-[40px] p-6 lg:p-10 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-10 opacity-5 -z-10 hidden lg:block">
               <span className="material-symbols-outlined text-[140px]">inventory</span>
             </div>
-            <div className="flex justify-between items-start mb-10">
+            <div className="flex justify-between items-start mb-6 lg:mb-10">
               <div>
-                <h2 className="text-3xl font-headline font-black text-zinc-900 tracking-tight">{editingProduct ? 'Edit Inventory Item' : 'New Inventory Item'}</h2>
+                <h2 className="text-xl lg:text-3xl font-headline font-black text-zinc-900 tracking-tight">{editingProduct ? 'Edit SKU' : 'New SKU'}</h2>
                 {!editingProduct && (
                   <div className="flex gap-1 mt-2">
                     <button onClick={() => setUploadMode("manual")}
                       className={`px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all ${uploadMode === 'manual' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-400'}`}
                     >
-                      Manual Entry
+                      Manual
                     </button>
                     <button onClick={() => setUploadMode("bulk")}
                       className={`px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all ${uploadMode === 'bulk' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-400'}`}
                     >
-                      Bulk Upload
+                      Bulk
                     </button>
                   </div>
                 )}
               </div>
+              <button onClick={() => { setIsAdding(false); setEditingProduct(null); }} className="p-2 text-zinc-400 hover:text-zinc-900 transition-colors">
+                <span className="material-symbols-outlined">close</span>
+              </button>
             </div>
 
             {uploadMode === "manual" || editingProduct ? (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="col-span-2">
-                    <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Product Name</label>
-                    <input type="text" required value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all" />
+              <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6 max-h-[70vh] lg:max-h-none overflow-y-auto lg:overflow-visible px-1 custom-scrollbar">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+                  <div className="md:col-span-2">
+                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Product Name</label>
+                    <input type="text" required value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all" />
                   </div>
                   <div>
-                    <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Category</label>
+                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Category</label>
                     <select 
                       value={newProduct.category} 
                       onChange={e => {
@@ -328,51 +321,33 @@ export default function AdminProducts() {
                           section: cat?.section || "BB"
                         });
                       }} 
-                      className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all"
+                      className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all"
                     >
                       {categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Price (₹)</label>
-                    <input type="number" required value={newProduct.price || ""} onChange={e => setNewProduct({ ...newProduct, price: parseFloat(e.target.value) })} className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all" />
+                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Price (₹)</label>
+                    <input type="number" required value={newProduct.price || ""} onChange={e => setNewProduct({ ...newProduct, price: parseFloat(e.target.value) })} className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all" />
                   </div>
-                  <div>
-                    <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Opening Stock</label>
-                    <input type="number" required value={newProduct.stock || ""} onChange={e => setNewProduct({ ...newProduct, stock: parseInt(e.target.value) })} className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all" />
+                  <div className="md:col-span-2">
+                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Image URL</label>
+                    <input type="text" required value={newProduct.image} onChange={e => setNewProduct({ ...newProduct, image: e.target.value })} className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all" />
                   </div>
-                  <div>
-                    <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Store Section</label>
-                    <select value={newProduct.section} onChange={e => setNewProduct({ ...newProduct, section: e.target.value as any })} className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all">
-                      <option value="BB">BAZAAR BOLT (MAIN)</option>
-                      <option value="CAFE">BB CAFE</option>
-                    </select>
-                  </div>
-                  <div className="col-span-2">
-                    <label className="text-[10px) font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Image URL</label>
-                    <input type="text" required value={newProduct.image} onChange={e => setNewProduct({ ...newProduct, image: e.target.value })} className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all" />
-                  </div>
-                  <div className="col-span-2 flex items-center gap-2 bg-zinc-50 p-4 rounded-2xl">
+                  <div className="md:col-span-2 flex items-center gap-2 bg-zinc-50 p-3 lg:p-4 rounded-xl lg:rounded-2xl">
                     <input type="checkbox" id="isBestseller" checked={newProduct.isBestseller} onChange={e => setNewProduct({ ...newProduct, isBestseller: e.target.checked })} className="w-4 h-4 text-primary focus:ring-primary border-zinc-300 rounded" />
-                    <label htmlFor="isBestseller" className="text-sm font-bold text-zinc-700 cursor-pointer">Mark as Bestseller (Manual Override)</label>
-                  </div>
-                  <div className="col-span-2">
-                    <label className="text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-2 block">Product Description</label>
-                    <textarea value={newProduct.description} onChange={e => setNewProduct({ ...newProduct, description: e.target.value })} rows={3}
-                      className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-2 ring-primary transition-all resize-none"
-                      placeholder="Enter product highlights, usage, etc."
-                    />
+                    <label htmlFor="isBestseller" className="text-[11px] lg:text-sm font-bold text-zinc-700 cursor-pointer">Mark as Bestseller</label>
                   </div>
                 </div>
-                <div className="flex gap-4 pt-6">
-                  <button type="button" onClick={() => { setIsAdding(false); setEditingProduct(null); }} className="flex-1 bg-zinc-100 text-zinc-500 py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-zinc-200">Cancel</button>
-                  <button type="submit" className="flex-1 bg-zinc-900 text-white py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-black shadow-xl shadow-zinc-900/10">
-                    {editingProduct ? 'Update SKU' : 'Add SKU'}
+                <div className="flex gap-3 lg:gap-4 pt-4 lg:pt-6">
+                  <button type="button" onClick={() => { setIsAdding(false); setEditingProduct(null); }} className="flex-1 bg-zinc-100 text-zinc-500 py-3 lg:py-5 rounded-2xl lg:rounded-3xl font-black tracking-widest text-[9px] lg:text-[10px] transition-all hover:bg-zinc-200">Cancel</button>
+                  <button type="submit" className="flex-1 bg-zinc-900 text-white py-3 lg:py-5 rounded-2xl lg:rounded-3xl font-black tracking-widest text-[9px] lg:text-[10px] transition-all hover:bg-black shadow-xl">
+                    {editingProduct ? 'Save' : 'Add'}
                   </button>
                 </div>
               </form>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-4 lg:space-y-6 max-h-[70vh] lg:max-h-none overflow-y-auto lg:overflow-visible px-1 custom-scrollbar">
                 <div className="p-8 border-2 border-dashed border-zinc-200 rounded-[32px] bg-zinc-50 flex flex-col items-center justify-center text-center group hover:border-primary transition-all relative cursor-pointer">
                   <input type="file" accept=".csv, .xlsx, .xls" onChange={onFileChange}
                     className="absolute inset-0 opacity-0 cursor-pointer"
