@@ -85,7 +85,22 @@ export default function AdminProducts() {
         toast.success("Added to inventory", { id: toastId });
       }
 
-      setNewProduct({ name: "", price: 0, image: "", category: categories[0]?.id || "", description: "", stock: 100, active: true, section: "BB", isBestseller: false, subcategory: "" });
+      setNewProduct({ 
+        name: "", 
+        price: 0, 
+        image: "", 
+        category: categories[0]?.id || "", 
+        description: "", 
+        stock: 100, 
+        active: true, 
+        adminActive: true,
+        vendorAvailable: true,
+        vendorId: "",
+        mrp: 0,
+        section: "BB", 
+        isBestseller: false, 
+        subcategory: "" 
+      });
       setIsAdding(false);
       setEditingProduct(null);
     } catch (err) {
