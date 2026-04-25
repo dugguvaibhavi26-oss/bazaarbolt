@@ -31,17 +31,17 @@ export default function VendorOrders() {
   }, [user]);
 
   const filteredOrders = orders.filter(o => {
-    if (activeTab === "incoming") return o.status === "pending";
-    if (activeTab === "active") return ["accepted", "preparing", "ready_for_pickup"].includes(o.status);
-    if (activeTab === "completed") return ["DELIVERED", "cancelled"].includes(o.status);
+    if (activeTab === "incoming") return o.status === "PLACED";
+    if (activeTab === "active") return ["ACCEPTED", "PREPARING", "READY_FOR_PICKUP"].includes(o.status);
+    if (activeTab === "completed") return ["DELIVERED", "CANCELLED"].includes(o.status);
     return false;
   });
 
-  const updateOrderStatus = async (order: Order, newStatus: string) => {
+  const updateOrderStatus = async (order: Order, newStatus: OrderStatus) => {
     if (!order.id) return;
     const toastId = toast.loading("Updating status...");
     try {
-      if (newStatus === "accepted") {
+      if (newStatus === "ACCEPTED") {
         // Run transaction for stock handling
         await runTransaction(db, async (transaction) => {
           const orderRef = doc(db, "orders", order.id!);
@@ -101,11 +101,11 @@ export default function VendorOrders() {
     const toastId = toast.loading("Cancelling order...");
     try {
       await updateDoc(doc(db, "orders", cancelModal.orderId), {
-        status: "cancelled",
+        status: "CANCELLED",
         cancelReason: cancelModal.reason,
         cancelledBy: "vendor",
         logs: arrayUnion({
-          status: "cancelled",
+          status: "CANCELLED",
           timestamp: new Date().toISOString(),
           user: "vendor",
           reason: cancelModal.reason
@@ -127,9 +127,9 @@ export default function VendorOrders() {
           <p className="text-[10px] font-bold text-zinc-400 mt-0.5">{order.userPhone}</p>
         </div>
         <div className={`px-3 py-1 rounded-full text-[8px] font-black tracking-widest uppercase ${
-          order.status === 'pending' ? 'bg-orange-100 text-orange-600 animate-pulse' :
-          order.status === 'accepted' ? 'bg-blue-100 text-blue-600' :
-          order.status === 'ready_for_pickup' ? 'bg-green-100 text-green-600' :
+          order.status === 'PLACED' ? 'bg-orange-100 text-orange-600 animate-pulse' :
+          order.status === 'ACCEPTED' ? 'bg-blue-100 text-blue-600' :
+          order.status === 'READY_FOR_PICKUP' ? 'bg-green-100 text-green-600' :
           'bg-zinc-100 text-zinc-500'
         }`}>
           {order.status.replace(/_/g, ' ')}
@@ -151,7 +151,7 @@ export default function VendorOrders() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 pt-2">
-        {order.status === 'pending' && (
+        {order.status === 'PLACED' && (
           <>
             <button 
               onClick={() => setCancelModal({ isOpen: true, orderId: order.id!, reason: "" })}
@@ -160,7 +160,7 @@ export default function VendorOrders() {
               REJECT
             </button>
             <button 
-              onClick={() => updateOrderStatus(order, "accepted")}
+              onClick={() => updateOrderStatus(order, "ACCEPTED")}
               className="px-4 py-4 rounded-2xl bg-primary text-zinc-900 font-black text-[10px] tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all"
             >
               ACCEPT
@@ -168,7 +168,7 @@ export default function VendorOrders() {
           </>
         )}
         
-        {order.status === 'accepted' && (
+        {order.status === 'ACCEPTED' && (
           <>
             <button 
               onClick={() => setCancelModal({ isOpen: true, orderId: order.id!, reason: "" })}
@@ -177,7 +177,7 @@ export default function VendorOrders() {
               CANCEL
             </button>
             <button 
-              onClick={() => updateOrderStatus(order, "preparing")}
+              onClick={() => updateOrderStatus(order, "PREPARING")}
               className="px-4 py-4 rounded-2xl bg-zinc-900 text-white font-black text-[10px] tracking-widest active:scale-95 transition-all"
             >
               START PREPARING
@@ -185,16 +185,16 @@ export default function VendorOrders() {
           </>
         )}
 
-        {order.status === 'preparing' && (
+        {order.status === 'PREPARING' && (
           <button 
-            onClick={() => updateOrderStatus(order, "ready_for_pickup")}
+            onClick={() => updateOrderStatus(order, "READY_FOR_PICKUP")}
             className="col-span-2 px-4 py-4 rounded-2xl bg-green-600 text-white font-black text-[10px] tracking-widest active:scale-95 transition-all"
           >
             READY FOR PICKUP
           </button>
         )}
 
-        {order.status === 'ready_for_pickup' && (
+        {order.status === 'READY_FOR_PICKUP' && (
           <div className="col-span-2 p-4 bg-zinc-50 rounded-2xl text-center">
             <p className="text-[10px] font-black text-zinc-400 tracking-widest">AWAITING RIDER PICKUP</p>
           </div>
@@ -212,9 +212,9 @@ export default function VendorOrders() {
           className={`flex-1 py-3.5 rounded-[18px] text-[10px] font-black tracking-widest transition-all ${activeTab === 'incoming' ? 'bg-primary text-zinc-900 shadow-md' : 'text-zinc-400'}`}
         >
           INCOMING
-          {orders.filter(o => o.status === 'pending').length > 0 && (
+          {orders.filter(o => o.status === 'PLACED').length > 0 && (
             <span className="ml-2 bg-zinc-900 text-white px-2 py-0.5 rounded-full text-[8px] animate-pulse">
-              {orders.filter(o => o.status === 'pending').length}
+              {orders.filter(o => o.status === 'PLACED').length}
             </span>
           )}
         </button>

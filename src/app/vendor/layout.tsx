@@ -25,7 +25,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
     const q = query(
       collection(db, "orders"),
       where("vendorId", "==", user.uid),
-      where("status", "==", "pending")
+      where("status", "==", "PLACED")
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {

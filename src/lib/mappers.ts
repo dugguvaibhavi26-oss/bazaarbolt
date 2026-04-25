@@ -67,7 +67,7 @@ export const mapOrder = (doc: DocumentSnapshot<DocumentData>): Order => {
     subtotal: typeof data.subtotal === "number" ? data.subtotal : 0,
     tax: typeof data.tax === "number" ? data.tax : 0,
     total: typeof data.total === "number" ? data.total : 0,
-    status: (["PLACED", "ACCEPTED", "PICKED", "ON_THE_WAY", "DELIVERED", "CANCELLED"].includes(data.status) ? data.status : "PLACED") as OrderStatus,
+    status: (["PLACED", "ACCEPTED", "PREPARING", "READY_FOR_PICKUP", "PICKED", "ON_THE_WAY", "DELIVERED", "CANCELLED"].includes(data.status) ? data.status : "PLACED") as OrderStatus,
     paymentMethod: typeof data.paymentMethod === "string" ? data.paymentMethod : "COD",
     riderId: typeof data.riderId === "string" ? data.riderId : null,
     deliveryCode: typeof data.deliveryCode === "string" ? data.deliveryCode : "",

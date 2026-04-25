@@ -43,7 +43,7 @@ export default function VendorDashboard() {
       const orders = snapshot.docs.map(mapOrder);
       setRecentOrders(orders);
       
-      const pending = orders.filter(o => o.status === "pending").length;
+      const pending = orders.filter(o => o.status === "PLACED").length;
       setStats(prev => ({ ...prev, pendingOrders: pending }));
     });
 
@@ -169,8 +169,8 @@ export default function VendorDashboard() {
                   <p className="text-[9px] font-bold text-zinc-400 mt-0.5">{order.items.length} Items • ₹{order.total}</p>
                 </div>
                 <div className={`px-3 py-1 rounded-full text-[8px] font-black tracking-widest uppercase ${
-                  order.status === 'pending' ? 'bg-orange-100 text-orange-600' :
-                  order.status === 'accepted' ? 'bg-blue-100 text-blue-600' :
+                  order.status === 'PLACED' ? 'bg-orange-100 text-orange-600' :
+                  order.status === 'ACCEPTED' ? 'bg-blue-100 text-blue-600' :
                   'bg-zinc-100 text-zinc-500'
                 }`}>
                   {order.status}
