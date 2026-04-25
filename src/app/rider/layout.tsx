@@ -28,9 +28,9 @@ export default function RiderLayout({ children }: { children: React.ReactNode })
  );
  }
 
- if (!user || role !== 'rider') {
- return null;
- }
+  if (role !== 'rider') {
+    return null;
+  }
 
  return (
  <div className="min-h-screen bg-zinc-50 flex flex-col">

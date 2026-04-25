@@ -1,68 +1,77 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
     
-    // Check if user is an admin
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
     function isAdmin() {
-      return request.auth != null && 
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return isSignedIn() && getUserData().role == 'admin';
     }
-
-    // Check if user is a rider
+    
     function isRider() {
-      return request.auth != null && 
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'rider';
+      return isSignedIn() && getUserData().role == 'rider';
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
     }
 
-    // Settings Collection
-    match /settings/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // Categories Collection
-    match /categories/{catId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // Products Collection
-    match /products/{prodId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // Orders Collection
-    match /orders/{orderId} {
-      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin() || isRider());
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin() || isRider());
-      allow delete: if isAdmin();
-    }
-
-    // Users Collection
+    // User profiles
     match /users/{userId} {
-      allow read: if true;
-      allow write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId) || isAdmin();
     }
 
-    // FAQs Collection
-    match /faqs/{faqId} {
+    // Categories (Public read, Admin write)
+    match /categories/{categoryId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Coupons Collection
+    // Products (Public read, Admin write)
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Orders (Customer read/create, Admin/Rider read/update)
+    match /orders/{orderId} {
+      allow read: if isSignedIn() && (request.auth.uid == resource.data.userId || isAdmin() || isRider());
+      allow create: if isSignedIn();
+      allow update: if isAdmin() || (isRider() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'riderId', 'deliveredAt', 'pickedUpAt']));
+    }
+
+    // Delivery Slots
+    match /delivery_slots/{slotId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Coupons
     match /coupons/{couponId} {
-      allow read: if request.auth != null;
+      allow read: if isSignedIn();
       allow write: if isAdmin();
     }
 
-    // Subscriptions Collection (If used)
-    match /subscriptions/{subId} {
-      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
+    // Settings
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Notifications (Tokens)
+    match /fcm_tokens/{tokenId} {
+      allow read, write: if isSignedIn() && (request.auth.uid == resource.data.userId || !exists(/databases/$(database)/documents/fcm_tokens/$(tokenId)));
+    }
+    
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && (request.auth.uid == resource.data.userId || isAdmin());
       allow write: if isAdmin();
     }
   }

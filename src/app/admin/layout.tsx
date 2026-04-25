@@ -62,10 +62,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
  return <>{children}</>;
  }
 
- // If not admin and not at login page, redirecting anyway but return null to avoid flicker
- if (role !== 'admin') {
- return null;
- }
+  if (role !== 'admin') {
+    return null;
+  }
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-zinc-900 shadow-2xl">
