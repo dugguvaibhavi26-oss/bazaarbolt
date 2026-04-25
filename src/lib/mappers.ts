@@ -51,10 +51,13 @@ export const mapOrder = (doc: DocumentSnapshot<DocumentData>): Order => {
       id: typeof item.id === "string" ? item.id : `item-${idx}`,
       name: typeof item.name === "string" ? item.name : "Item",
       price: typeof item.price === "number" ? item.price : 0,
+      mrp: typeof item.mrp === "number" ? item.mrp : (typeof item.price === "number" ? item.price : 0),
       image: typeof item.image === "string" ? item.image : "",
       category: typeof item.category === "string" ? item.category : "",
       quantity: typeof item.quantity === "number" ? item.quantity : 1,
       stock: typeof item.stock === "number" ? item.stock : 0,
+      adminActive: typeof item.adminActive === "boolean" ? item.adminActive : true,
+      vendorAvailable: typeof item.vendorAvailable === "boolean" ? item.vendorAvailable : true,
       unavailable: typeof item.unavailable === "boolean" ? item.unavailable : false,
     };
   }) : [];
