@@ -7,10 +7,10 @@ interface LogoProps {
 
 export const Logo = ({ className = "", size = "md" }: LogoProps) => {
   const sizeMap = {
-    sm: "w-10 h-10",
-    md: "w-16 h-16",
-    lg: "w-32 h-32",
-    xl: "w-48 h-48",
+    sm: "h-8 w-auto",
+    md: "h-12 w-auto",
+    lg: "h-20 w-auto",
+    xl: "h-32 w-auto",
   };
 
   return (
@@ -18,7 +18,7 @@ export const Logo = ({ className = "", size = "md" }: LogoProps) => {
       <img 
         src="/logo.png" 
         alt="BazaarBolt Logo" 
-        className="w-full h-full object-cover scale-[1.2] transition-transform duration-500 group-hover:scale-[1.3]"
+        className="h-full w-auto object-contain transition-transform duration-500 group-hover:scale-105"
         onError={(e) => {
           // Fallback to stylized SVG if image is not yet uploaded to public/logo.png
           e.currentTarget.style.display = 'none';
@@ -26,9 +26,10 @@ export const Logo = ({ className = "", size = "md" }: LogoProps) => {
           if (parent) parent.setAttribute('data-fallback', 'true');
         }}
       />
-      <div className="hidden data-[fallback=true]:block absolute inset-0">
-        <svg viewBox="0 0 500 500" fill="none" className="w-full h-full">
-           <text x="50" y="250" fill="#22C55E" style={{ font: 'bold 120px sans-serif' }}>BB</text>
+      <div className="hidden data-[fallback=true]:block h-full w-auto">
+        <svg viewBox="0 0 400 100" fill="none" className="h-full w-auto">
+           <text x="0" y="70" fill="#22C55E" style={{ font: 'bold 80px sans-serif' }}>BAZAAR</text>
+           <text x="310" y="70" fill="#4B5563" style={{ font: '400 80px sans-serif' }}>bolt</text>
         </svg>
       </div>
     </div>
