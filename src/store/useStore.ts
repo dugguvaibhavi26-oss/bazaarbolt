@@ -167,7 +167,7 @@ export const useStore = create<StoreState>()(
         // 2. Products Listener
         const prodQuery = query(
           collection(db, "products"), 
-          where("active", "==", true), 
+          where("adminActive", "==", true), 
           limit(1000)
         );
         const unsubProds = onSnapshot(prodQuery, (prodSnap) => {
@@ -175,7 +175,11 @@ export const useStore = create<StoreState>()(
           const prods: Product[] = [];
           prodSnap.forEach(docSnap => {
             const data = docSnap.data();
-            if (!data.isDeleted) prods.push(mapProduct(docSnap));
+            const p = mapProduct(docSnap);
+            // Visibility logic: adminActive && vendorAvailable && stock > 0
+            if (!data.isDeleted && p.adminActive && p.vendorAvailable && p.stock > 0) {
+              prods.push(p);
+            }
           });
           set({ products: prods, catalogLoading: false });
         }, (err) => {
@@ -197,9 +201,7 @@ export const useStore = create<StoreState>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ 
         cart: state.cart, 
-        selectedAddress: state.selectedAddress,
-        products: state.products,
-        categories: state.categories
+        selectedAddress: state.selectedAddress
       }),
     }
   )

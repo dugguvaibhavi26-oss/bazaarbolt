@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { collection, onSnapshot, query, doc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { Portal } from "@/components/Portal";
 
 interface SubCategory {
   id: string;
@@ -137,8 +138,9 @@ export default function AdminCategories() {
  return (
     <div className="space-y-6 lg:space-y-8 animate-in fade-in duration-500">
       {isModalOpen && (
-        <div className="fixed top-0 left-0 right-0 bottom-0 z-[9999] bg-zinc-950/60 backdrop-blur-md flex items-center justify-center p-4 lg:p-12">
-          <div className="bg-white w-full max-w-lg rounded-[32px] lg:rounded-[48px] p-6 lg:p-12 shadow-2xl animate-in zoom-in-95 duration-300">
+        <Portal>
+          <div className="fixed top-0 left-0 right-0 bottom-0 z-[9999] bg-zinc-950/60 backdrop-blur-md flex items-center justify-center p-4 lg:p-12">
+            <div className="bg-white w-full max-w-lg rounded-[32px] lg:rounded-[48px] p-6 lg:p-12 shadow-2xl animate-in zoom-in-95 duration-300">
             <div className="flex justify-between items-start mb-6 lg:mb-8">
               <div>
                 <h2 className="text-2xl lg:text-4xl font-headline font-black text-zinc-900 tracking-tighter ">{editingCategory?.id ? 'Edit Category': 'New Category'}</h2>
@@ -263,7 +265,8 @@ export default function AdminCategories() {
             </form>
           </div>
         </div>
-      )}
+      </Portal>
+    )}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h3 className="text-xl lg:text-3xl font-headline font-black text-zinc-900 tracking-tight">Product Categories</h3>

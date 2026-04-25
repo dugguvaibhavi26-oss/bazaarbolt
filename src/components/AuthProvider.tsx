@@ -10,11 +10,12 @@ import {
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { Role } from "@/types";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  role: "customer" | "admin" | "rider";
+  role: Role;
   userData: any | null;
   signInAsGuest: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -35,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   usePushNotifications();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [role, setRole] = useState<"customer" | "admin" | "rider">("customer");
+  const [role, setRole] = useState<Role>("customer");
   const [userData, setUserData] = useState<any | null>(null);
 
   useEffect(() => {

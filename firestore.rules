@@ -17,6 +17,10 @@ service cloud.firestore {
     function isRider() {
       return isSignedIn() && getUserData().role == 'rider';
     }
+
+    function isVendor() {
+      return isSignedIn() && getUserData().role == 'vendor';
+    }
     
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
@@ -34,17 +38,21 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Products (Public read, Admin write)
+    // Products (Public read, Admin/Vendor write)
     match /products/{productId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow update: if isAdmin() || (isVendor() && resource.data.vendorId == request.auth.uid && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mrp', 'price', 'stock', 'vendorAvailable', 'lastUpdatedBy', 'updatedAt']));
+      allow create, delete: if isAdmin();
     }
 
-    // Orders (Customer read/create, Admin/Rider read/update)
+    // Orders (Customer read/create, Admin/Rider/Vendor read/update)
     match /orders/{orderId} {
-      allow read: if isSignedIn() && (request.auth.uid == resource.data.userId || isAdmin() || isRider());
+      allow read: if isSignedIn() && (request.auth.uid == resource.data.userId || isAdmin() || isRider() || (isVendor() && resource.data.vendorId == request.auth.uid));
       allow create: if isSignedIn();
-      allow update: if isAdmin() || (isRider() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'riderId', 'deliveredAt', 'pickedUpAt']));
+      allow update: if isAdmin() || 
+        (isRider() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'riderId', 'deliveredAt', 'pickedUpAt'])) ||
+        (isVendor() && resource.data.vendorId == request.auth.uid);
     }
 
     // Delivery Slots

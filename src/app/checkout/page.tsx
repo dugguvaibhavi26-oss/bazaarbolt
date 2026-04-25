@@ -135,10 +135,28 @@ export default function CheckoutPage() {
       await runTransaction(db, async (transaction) => {
         const productRefs = cart.map(item => doc(db, "products", item.id));
         const snapshots: any[] = [];
+        const vendorIds = new Set<string>();
+        
         for (const ref of productRefs) {
           const snap = await transaction.get(ref);
           if (!snap.exists()) throw new Error("Some items are out of stock.");
+          const pData = snap.data();
+          if (pData.vendorId) vendorIds.add(pData.vendorId);
           snapshots.push(snap);
+        }
+
+        // Check Vendor Availability
+        if (vendorIds.size > 0) {
+          for (const vId of Array.from(vendorIds)) {
+            const vendorRef = doc(db, "users", vId);
+            const vendorSnap = await transaction.get(vendorRef);
+            if (vendorSnap.exists()) {
+              const vData = vendorSnap.data();
+              if (vData.vendorStatus === "offline") {
+                throw new Error("One of the items is from a store that is currently offline.");
+              }
+            }
+          }
         }
 
         cart.forEach((item, index) => {
@@ -169,6 +187,7 @@ export default function CheckoutPage() {
           deliverySlot: selectedSlot,
           deliveryAddress: selectedAddress,
           createdAt: new Date().toISOString(),
+          vendorId: cart[0]?.vendorId || null, // Primary vendor for this order
           phoneNumber: userData?.phoneNumber || user.phoneNumber || "+91 00000 00000",
           breakdown: { deliveryCharge, smallCartCharge, handlingFee, tax, customCharges: settings?.customCharges || [] }
         };

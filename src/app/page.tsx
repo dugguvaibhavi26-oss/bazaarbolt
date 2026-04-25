@@ -116,6 +116,7 @@ export default function Home() {
     if (!authLoading && user) {
       if (role === 'admin') router.replace("/admin");
       else if (role === 'rider') router.replace("/rider");
+      else if (role === 'vendor') router.replace("/vendor");
     }
   }, [user, role, authLoading, router]);
 

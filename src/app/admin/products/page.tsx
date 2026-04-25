@@ -6,8 +6,9 @@ import { db, auth } from "@/lib/firebase";
 import { Product } from "@/types";
 import { mapProduct, mapQuerySnapshot } from "@/lib/mappers";
 import toast from "react-hot-toast";
-import { downloadTemplate, parseFile, validateProducts } from "@/lib/bulkUploadUtils";
+import { validateProducts, parseFile, downloadTemplate } from "@/lib/bulkUploadUtils";
 import { triggerNotification } from "@/lib/notificationClient";
+import { Portal } from "@/components/Portal";
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -24,6 +25,10 @@ export default function AdminProducts() {
     description: "",
     stock: 100,
     active: true,
+    adminActive: true,
+    vendorAvailable: true,
+    vendorId: "",
+    mrp: 0,
     section: "BB" as "BB" | "CAFE",
     isBestseller: false,
     subcategory: ""
@@ -34,6 +39,8 @@ export default function AdminProducts() {
   const [previewData, setPreviewData] = useState<Partial<Product>[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStats, setUploadStats] = useState({ total: 0, valid: 0, failed: 0 });
+
+  const [displayCount, setDisplayCount] = useState(24);
 
   useEffect(() => {
     async function loadData() {
@@ -98,6 +105,10 @@ export default function AdminProducts() {
       description: product.description || "",
       stock: product.stock,
       active: product.active,
+      adminActive: product.adminActive ?? true,
+      vendorAvailable: product.vendorAvailable ?? true,
+      vendorId: product.vendorId || "",
+      mrp: product.mrp || product.price,
       section: (product as any).section || "BB",
       isBestseller: product.isBestseller || false,
       subcategory: product.subcategory || ""
@@ -218,11 +229,14 @@ export default function AdminProducts() {
     return section === activeTab;
   });
 
+  const paginatedProducts = filteredProducts.slice(0, displayCount);
+
   return (
     <div className="space-y-6 lg:space-y-10 pb-32">
       {isAdding && (
-        <div className="fixed inset-0 z-[9999] bg-zinc-950/60 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-2xl rounded-[32px] lg:rounded-[40px] p-6 lg:p-10 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300">
+        <Portal>
+          <div className="fixed inset-0 z-[9999] bg-zinc-950/60 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-2xl rounded-[32px] lg:rounded-[40px] p-6 lg:p-10 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300">
             <div className="absolute top-0 right-0 p-10 opacity-5 -z-10 hidden lg:block">
               <span className="material-symbols-outlined text-[140px]">inventory</span>
             </div>
@@ -295,9 +309,27 @@ export default function AdminProducts() {
                     <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Image URL</label>
                     <input type="text" required value={newProduct.image} onChange={e => setNewProduct({ ...newProduct, image: e.target.value })} className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all" />
                   </div>
-                  <div className="md:col-span-2 flex items-center gap-2 bg-zinc-50 p-3 lg:p-4 rounded-xl lg:rounded-2xl">
-                    <input type="checkbox" id="isBestseller" checked={newProduct.isBestseller} onChange={e => setNewProduct({ ...newProduct, isBestseller: e.target.checked })} className="w-4 h-4 text-primary focus:ring-primary border-zinc-300 rounded" />
-                    <label htmlFor="isBestseller" className="text-[11px] lg:text-sm font-bold text-zinc-700 cursor-pointer">Mark as Bestseller</label>
+                  <div>
+                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">MRP (₹)</label>
+                    <input type="number" required value={newProduct.mrp || ""} onChange={e => setNewProduct({ ...newProduct, mrp: parseFloat(e.target.value) })} className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all" />
+                  </div>
+                  <div>
+                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Stock</label>
+                    <input type="number" required value={newProduct.stock} onChange={e => setNewProduct({ ...newProduct, stock: parseInt(e.target.value) })} className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all" />
+                  </div>
+                  <div>
+                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Vendor ID</label>
+                    <input type="text" value={newProduct.vendorId} onChange={e => setNewProduct({ ...newProduct, vendorId: e.target.value })} placeholder="Vendor UID" className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all" />
+                  </div>
+                  <div className="md:col-span-2 flex items-center gap-4 bg-zinc-50 p-3 lg:p-4 rounded-xl lg:rounded-2xl">
+                    <div className="flex items-center gap-2">
+                      <input type="checkbox" id="adminActive" checked={newProduct.adminActive} onChange={e => setNewProduct({ ...newProduct, adminActive: e.target.checked })} className="w-4 h-4 text-primary focus:ring-primary border-zinc-300 rounded" />
+                      <label htmlFor="adminActive" className="text-[11px] lg:text-sm font-bold text-zinc-700 cursor-pointer">Admin Active</label>
+                    </div>
+                    <div className="flex items-center gap-2 border-l border-zinc-200 pl-4">
+                      <input type="checkbox" id="isBestseller" checked={newProduct.isBestseller} onChange={e => setNewProduct({ ...newProduct, isBestseller: e.target.checked })} className="w-4 h-4 text-primary focus:ring-primary border-zinc-300 rounded" />
+                      <label htmlFor="isBestseller" className="text-[11px] lg:text-sm font-bold text-zinc-700 cursor-pointer">Bestseller</label>
+                    </div>
                   </div>
                 </div>
                 <div className="flex gap-3 lg:gap-4 pt-4 lg:pt-6">
@@ -420,7 +452,7 @@ export default function AdminProducts() {
               </div>
             )}
           </div>
-        </div>
+        </Portal>
       )}
 
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -450,7 +482,7 @@ export default function AdminProducts() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:gap-4">
-        {filteredProducts.map(p => (
+        {paginatedProducts.map(p => (
           <div key={p.id} className={`bg-white rounded-2xl p-3 shadow-sm border transition-all group ${p.isBestseller ? 'border-orange-400 ring-2 ring-orange-400/10 shadow-orange-100' : 'border-zinc-100'}`}>
             <div className="aspect-square bg-zinc-50 rounded-xl mb-2 p-2 flex items-center justify-center border border-zinc-50 relative overflow-hidden">
               <img src={p.image} alt={p.name} className="w-16 h-16 lg:w-20 lg:h-20 object-contain group-hover:scale-110 transition-transform" />
@@ -461,6 +493,10 @@ export default function AdminProducts() {
               </div>
             </div>
             <h4 className="font-headline font-black text-[9px] lg:text-[10px] text-zinc-900 truncate mb-0.5 leading-tight">{p.name}</h4>
+            <div className="flex flex-col gap-1 mb-1">
+              <p className="text-[7px] lg:text-[8px] font-black text-zinc-400 tracking-widest uppercase">STOCK: {p.stock} • VENDOR: {p.vendorId ? 'ASSIGNED' : 'NONE'}</p>
+              {p.lastUpdatedBy && <p className="text-[6px] lg:text-[7px] font-bold text-primary tracking-tighter italic">Last updated by {p.lastUpdatedBy}</p>}
+            </div>
             <div className="flex items-center justify-between pt-2 border-t border-zinc-50 mt-1">
               <span className="font-headline font-black text-[10px] lg:text-xs text-zinc-900 tracking-tighter">₹{p.price.toFixed(0)}</span>
               <div className="flex gap-1 lg:gap-1.5">
@@ -475,6 +511,17 @@ export default function AdminProducts() {
           </div>
         ))}
       </div>
+
+      {displayCount < filteredProducts.length && (
+        <div className="flex justify-center pt-10">
+          <button 
+            onClick={() => setDisplayCount(prev => prev + 24)}
+            className="bg-white border-2 border-zinc-900 text-zinc-900 px-10 py-4 rounded-3xl font-black text-[10px] tracking-widest hover:bg-zinc-900 hover:text-white transition-all shadow-xl active:scale-95 uppercase"
+          >
+            Load More Products ({filteredProducts.length - displayCount} remaining)
+          </button>
+        </div>
+      )}
     </div>
   );
 }

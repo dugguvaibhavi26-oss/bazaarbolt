@@ -29,6 +29,7 @@ function LoginContent() {
     if (!authLoading && user && !showProfileCompletion && !showServicePopup) {
       if (role === "admin") router.push("/admin");
       else if (role === "rider") router.push("/rider");
+      else if (role === "vendor") router.push("/vendor");
       else router.push(redirectPath);
     }
   }, [user, role, authLoading, showProfileCompletion, showServicePopup, router, redirectPath]);

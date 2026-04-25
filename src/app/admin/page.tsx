@@ -8,9 +8,11 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { OrderService } from "@/services/orderService";
 import { mapOrder, mapQuerySnapshot } from "@/lib/mappers";
+import { query, where } from "firebase/firestore";
 
 export default function AdminDashboard() {
  const [orders, setOrders] = useState<Order[]>([]);
+ const [vendors, setVendors] = useState<any[]>([]);
  const [loading, setLoading] = useState(true);
 
  useEffect(() => {
@@ -32,8 +34,13 @@ export default function AdminDashboard() {
  OrderService.cleanupExpiredOrders();
  }, 30000);
 
+ const unsubVendors = onSnapshot(query(collection(db, "users"), where("role", "==", "vendor")), (snap) => {
+   setVendors(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+ });
+
  return () => {
  unsub();
+ unsubVendors();
  clearInterval(interval);
  };
  }, []);
@@ -48,7 +55,7 @@ export default function AdminDashboard() {
  { label: "Today's Volume", value: todayOrders.length, icon: "analytics", color: "bg-blue-50 text-blue-600", trend: "+12%"},
  { label: "Active Queue", value: pendingOrders.length, icon: "assignment_late", color: "bg-orange-50 text-orange-600", trend: "Live"},
  { label: "Daily Revenue", value:`₹${revenueToday.toFixed(0)}`, icon: "payments", color: "bg-emerald-50 text-emerald-600", trend: "COD"},
- { label: "Success Rate", value: "98.4%", icon: "verified", color: "bg-purple-50 text-purple-600", trend: "+0.2%"},
+ { label: "Live Vendors", value: vendors.filter(v => v.vendorStatus === 'online').length, icon: "storefront", color: "bg-purple-50 text-purple-600", trend: `${vendors.length} Total`},
  ];
 
  if (loading) return (

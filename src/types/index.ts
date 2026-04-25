@@ -1,7 +1,7 @@
 export * from "./product";
 export * from "./order";
 
-export type Role = "customer" | "admin" | "rider";
+export type Role = "customer" | "admin" | "rider" | "vendor";
 
 export interface HeroBanner {
   url: string;
