@@ -40,6 +40,7 @@ export default function AdminProducts() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStats, setUploadStats] = useState({ total: 0, valid: 0, failed: 0 });
 
+  const [searchTerm, setSearchTerm] = useState("");
   const [displayCount, setDisplayCount] = useState(24);
 
   useEffect(() => {
@@ -241,245 +242,40 @@ export default function AdminProducts() {
 
   const filteredProducts = products.filter(p => {
     const section = (p as any).section || 'BB';
-    return section === activeTab;
+    const matchesSection = section === activeTab;
+    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          p.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          p.vendorId?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesSection && matchesSearch;
   });
 
   const paginatedProducts = filteredProducts.slice(0, displayCount);
 
   return (
     <div className="space-y-6 lg:space-y-10 pb-32">
-      {isAdding && (
-        <Portal>
-          <div className="fixed inset-0 z-[9999] bg-zinc-950/60 backdrop-blur-md flex items-center justify-center p-4">
-            <div className="bg-white w-full max-w-2xl rounded-[32px] lg:rounded-[40px] p-6 lg:p-10 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="absolute top-0 right-0 p-10 opacity-5 -z-10 hidden lg:block">
-              <span className="material-symbols-outlined text-[140px]">inventory</span>
-            </div>
-            <div className="flex justify-between items-start mb-6 lg:mb-10">
-              <div>
-                <h2 className="text-xl lg:text-3xl font-headline font-black text-zinc-900 tracking-tight">{editingProduct ? 'Edit SKU' : 'New SKU'}</h2>
-                {!editingProduct && (
-                  <div className="flex gap-1 mt-2">
-                    <button onClick={() => setUploadMode("manual")}
-                      className={`px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all ${uploadMode === 'manual' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-400'}`}
-                    >
-                      Manual
-                    </button>
-                    <button onClick={() => setUploadMode("bulk")}
-                      className={`px-3 py-1 rounded-full text-[8px] font-black tracking-widest transition-all ${uploadMode === 'bulk' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-400'}`}
-                    >
-                      Bulk
-                    </button>
-                  </div>
-                )}
-              </div>
-              <button onClick={() => { setIsAdding(false); setEditingProduct(null); }} className="p-2 text-zinc-400 hover:text-zinc-900 transition-colors">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-
-            {uploadMode === "manual" || editingProduct ? (
-              <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6 max-h-[70vh] lg:max-h-none overflow-y-auto lg:overflow-visible px-1 custom-scrollbar">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
-                  <div className="md:col-span-2">
-                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Product Name</label>
-                    <input type="text" required value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all" />
-                  </div>
-                  <div>
-                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Category</label>
-                    <select 
-                      value={newProduct.category} 
-                      onChange={e => {
-                        const catId = e.target.value;
-                        const cat = categories.find(c => c.id === catId);
-                        setNewProduct({ 
-                          ...newProduct, 
-                          category: catId,
-                          section: cat?.section || "BB"
-                        });
-                      }} 
-                      className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all"
-                    >
-                      {categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Subcategory</label>
-                    <select 
-                      value={newProduct.subcategory} 
-                      onChange={e => setNewProduct({ ...newProduct, subcategory: e.target.value })} 
-                      className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all"
-                    >
-                      <option value="">None</option>
-                      {categories.find(c => c.id === newProduct.category)?.subcategories?.map((sub: any) => (
-                        <option key={sub.id || sub} value={sub.label || sub}>{sub.label || sub}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Price (₹)</label>
-                    <input type="number" required value={newProduct.price || ""} onChange={e => setNewProduct({ ...newProduct, price: parseFloat(e.target.value) })} className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all" />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Image URL</label>
-                    <input type="text" required value={newProduct.image} onChange={e => setNewProduct({ ...newProduct, image: e.target.value })} className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all" />
-                  </div>
-                  <div>
-                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">MRP (₹)</label>
-                    <input type="number" required value={newProduct.mrp || ""} onChange={e => setNewProduct({ ...newProduct, mrp: parseFloat(e.target.value) })} className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all" />
-                  </div>
-                  <div>
-                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Stock</label>
-                    <input type="number" required value={newProduct.stock} onChange={e => setNewProduct({ ...newProduct, stock: parseInt(e.target.value) })} className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all" />
-                  </div>
-                  <div>
-                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Vendor ID</label>
-                    <input type="text" value={newProduct.vendorId} onChange={e => setNewProduct({ ...newProduct, vendorId: e.target.value })} placeholder="Vendor UID" className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all" />
-                  </div>
-                  <div className="md:col-span-2 flex items-center gap-4 bg-zinc-50 p-3 lg:p-4 rounded-xl lg:rounded-2xl">
-                    <div className="flex items-center gap-2">
-                      <input type="checkbox" id="adminActive" checked={newProduct.adminActive} onChange={e => setNewProduct({ ...newProduct, adminActive: e.target.checked })} className="w-4 h-4 text-primary focus:ring-primary border-zinc-300 rounded" />
-                      <label htmlFor="adminActive" className="text-[11px] lg:text-sm font-bold text-zinc-700 cursor-pointer">Admin Active</label>
-                    </div>
-                    <div className="flex items-center gap-2 border-l border-zinc-200 pl-4">
-                      <input type="checkbox" id="isBestseller" checked={newProduct.isBestseller} onChange={e => setNewProduct({ ...newProduct, isBestseller: e.target.checked })} className="w-4 h-4 text-primary focus:ring-primary border-zinc-300 rounded" />
-                      <label htmlFor="isBestseller" className="text-[11px] lg:text-sm font-bold text-zinc-700 cursor-pointer">Bestseller</label>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex gap-3 lg:gap-4 pt-4 lg:pt-6">
-                  <button type="button" onClick={() => { setIsAdding(false); setEditingProduct(null); }} className="flex-1 bg-zinc-100 text-zinc-500 py-3 lg:py-5 rounded-2xl lg:rounded-3xl font-black tracking-widest text-[9px] lg:text-[10px] transition-all hover:bg-zinc-200">Cancel</button>
-                  <button type="submit" className="flex-1 bg-zinc-900 text-white py-3 lg:py-5 rounded-2xl lg:rounded-3xl font-black tracking-widest text-[9px] lg:text-[10px] transition-all hover:bg-black shadow-xl">
-                    {editingProduct ? 'Save' : 'Add'}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <div className="space-y-4 lg:space-y-6 max-h-[70vh] lg:max-h-none overflow-y-auto lg:overflow-visible px-1 custom-scrollbar">
-                <div className="p-8 border-2 border-dashed border-zinc-200 rounded-[32px] bg-zinc-50 flex flex-col items-center justify-center text-center group hover:border-primary transition-all relative cursor-pointer">
-                  <input type="file" accept=".csv, .xlsx, .xls" onChange={onFileChange}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                  />
-                  <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform mb-4">
-                    <span className="material-symbols-outlined text-zinc-400 text-3xl group-hover:text-primary transition-colors">upload_file</span>
-                  </div>
-                  <h4 className="text-sm font-black text-zinc-900 mb-1">
-                    {uploadFile ? uploadFile.name : "Drop your file here or click to upload"}
-                  </h4>
-                  <p className="text-[10px] font-black text-zinc-400 tracking-widest">Supports CSV and Excel files</p>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
-                      <span className="material-symbols-outlined text-sm">description</span>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black text-zinc-900 ">Need a template?</p>
-                      <p className="text-[8px] font-bold text-zinc-400">Download our formatted CSV template</p>
-                    </div>
-                  </div>
-                  <button type="button"
-                    onClick={downloadTemplate}
-                    className="bg-white border border-zinc-200 px-4 py-2 rounded-xl text-[8px] font-black tracking-widest hover:bg-zinc-50 transition-all flex items-center gap-2"
-                  >
-                    <span className="material-symbols-outlined text-[10px]">download</span>
-                    Download
-                  </button>
-                </div>
-
-                {previewData.length > 0 && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between px-1">
-                      <span className="text-[10px] font-black tracking-widest text-zinc-400">Preview ({previewData.length} valid rows)</span>
-                      {uploadStats.failed > 0 && (
-                        <span className="text-[10px] font-black tracking-widest text-red-500">{uploadStats.failed} invalid rows skipped</span>
-                      )}
-                    </div>
-                    <div className="bg-zinc-50 rounded-2xl overflow-hidden border border-zinc-100 max-h-[180px] overflow-y-auto">
-                      <table className="w-full text-left border-collapse">
-                        <thead className="bg-zinc-100 sticky top-0">
-                          <tr>
-                            <th className="p-3 text-[8px] font-black tracking-widest text-zinc-500">Product</th>
-                            <th className="p-3 text-[8px] font-black tracking-widest text-zinc-500">Category</th>
-                            <th className="p-3 text-[8px] font-black tracking-widest text-zinc-500 text-right">Price</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-zinc-100">
-                          {previewData.slice(0, 5).map((p, i) => (
-                            <tr key={i} className="hover:bg-zinc-100/50">
-                              <td className="p-3">
-                                <div className="flex items-center gap-2">
-                                  <img src={p.image} className="w-6 h-6 rounded bg-white object-contain border border-zinc-100" />
-                                  <span className="text-[10px] font-bold text-zinc-900 truncate max-w-[120px]">{p.name}</span>
-                                </div>
-                              </td>
-                              <td className="p-3">
-                                <span className="text-[8px] font-black text-zinc-500 ">{p.category}</span>
-                              </td>
-                              <td className="p-3 text-right">
-                                <span className="text-[10px] font-black text-zinc-900 tracking-tighter">₹{p.price}</span>
-                              </td>
-                            </tr>
-                          ))}
-                          {previewData.length > 5 && (
-                            <tr>
-                              <td colSpan={3} className="p-2 text-center text-[8px] font-black text-zinc-400 tracking-widest">
-                                + {previewData.length - 5} more products
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-4 pt-6">
-                  <button type="button" onClick={() => {
-                    setIsAdding(false);
-                    setUploadFile(null);
-                    setPreviewData([]);
-                  }} className="flex-1 bg-zinc-100 text-zinc-500 py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-zinc-200"
-                  >
-                    Cancel
-                  </button>
-                  <button type="button"
-                    onClick={handleBulkUpload}
-                    disabled={previewData.length === 0 || isUploading}
-                    className={`flex-1 py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all shadow-xl shadow-zinc-900/10 flex items-center justify-center gap-2
-                    ${previewData.length === 0 || isUploading ? 'bg-zinc-200 text-zinc-400 cursor-not-allowed' : 'bg-zinc-900 text-white hover:bg-black'}
-                  `}
-                  >
-                    {isUploading ? (
-                      <>
-                        <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
-                        Uploading...
-                      </>
-                    ) : (
-                      <>
-                        <span className="material-symbols-outlined text-[14px]">cloud_upload</span>
-                        Upload {previewData.length} Products
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
-            </div>
-          </div>
-        </Portal>
-      )}
-
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
-          <h3 className="text-xl lg:text-2xl font-black text-zinc-900 tracking-tight">Inventory Control</h3>
-          <p className="text-[10px] lg:text-xs font-bold text-zinc-400 tracking-widest mt-1 uppercase">Total SKU Count: {products.length}</p>
+      {/* Search and Header Section */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div className="flex-1">
+          <h3 className="text-xl lg:text-2xl font-black text-zinc-900 tracking-tight leading-none mb-2">Inventory Control</h3>
+          <p className="text-[10px] lg:text-xs font-bold text-zinc-400 tracking-widest uppercase">Total SKU Count: {filteredProducts.length}</p>
         </div>
-        <button onClick={startAdd} className="bg-zinc-900 text-white px-6 lg:px-8 py-3 lg:py-4 rounded-2xl font-black text-[10px] tracking-widest flex items-center gap-2 hover:bg-black shadow-xl active:scale-95 transition-all w-full lg:w-auto justify-center">
-          <span className="material-symbols-outlined text-sm">inventory</span>
-          Add New SKU
-        </button>
+        
+        <div className="flex flex-col sm:flex-row items-center gap-4 flex-1 max-w-2xl">
+          <div className="relative w-full">
+            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">search</span>
+            <input 
+              type="text"
+              placeholder="Search by name, category or vendor..."
+              className="w-full bg-white border border-zinc-100 rounded-2xl py-3 pl-12 pr-4 text-xs font-bold shadow-sm focus:ring-2 ring-primary transition-all"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <button onClick={startAdd} className="bg-zinc-900 text-white px-8 py-3.5 rounded-2xl font-black text-[10px] tracking-widest flex items-center gap-2 hover:bg-black shadow-xl active:scale-95 transition-all w-full sm:w-auto justify-center whitespace-nowrap">
+            <span className="material-symbols-outlined text-sm">add_circle</span>
+            ADD NEW SKU
+          </button>
+        </div>
       </div>
 
       <div className="flex bg-white p-1 rounded-2xl border border-zinc-100 shadow-sm overflow-x-auto hide-scrollbar">
