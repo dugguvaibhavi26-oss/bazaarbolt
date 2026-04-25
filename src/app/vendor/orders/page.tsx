@@ -4,7 +4,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot, orderBy, doc, updateDoc, arrayUnion, runTransaction, getDoc } from "firebase/firestore";
 import { useState, useEffect } from "react";
-import { Order, Product } from "@/types";
+import { Order, Product, OrderStatus } from "@/types";
 import { mapOrder } from "@/lib/mappers";
 import toast from "react-hot-toast";
 
