@@ -5,20 +5,51 @@ import toast from "react-hot-toast";
 import { collection, onSnapshot, query, doc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
-interface Category {
- id: string;
- label: string;
- img: string;
- active: boolean;
- order?: number;
- section?: "BB" | "CAFE";
+interface SubCategory {
+  id: string;
+  label: string;
+  img: string;
 }
 
-const DEFAULTS = [
- { id: "Vegetables", label: "Vegetables", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuA1pm_sqQ0qiiz-0usKkww7tzfuE_2w5YQ4xrZDn05NXFNpBAnOmHJx-ZRNWXz8g6IS0bIzUgc6x1lv_4MpxJv5JEeUPUAGpZPcVObQcN2L-5j1Cn7YHj3qhb-7rWampdIBsvVhEtcHKYJK1BTuSbQQDMV6PyHqc0XbrUqi8vgTiE9AhWz-vnz0o8aJvcC_S0AiGuyJF3oE6qO6HXiFEPAedxQ1BDhQ_IGyI8i99gXP-ZPxIx-fzJiZXooV_TA3Di2WOWPkmOBNwu3l", active: true, order: 0 },
- { id: "Dairy", label: "Dairy & Eggs", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuA4HUAio5IxKiRkz2BPFOdq5RSda7eP-Up4srmVnb6-yzKn1_TxLNNpZFLvMIpr3F0Y53wDiVwEFCFpfv_xFh5JCHBXnBOcd-T3IwzD7tKQQTwGjnOXCW4eSr2Yj8w3xccNgMXef47LAGvh6tKKGHvBjhe0ua8Nj1IZh6RVmyIW5XpSuwOrM2JBuOQcQbeS7-rbVZ4YGmZRrVlkfbrKQvlGedCm-x6MixxoMpkOGY1Jk_wfHX14uuxJZX-cYdSdYJtTbzqrnGuhKHjL", active: true, order: 1 },
- { id: "Munchies", label: "Snacks & Munchies", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuAEuxZomF5R1zlep_9fSSha0FOwl6UhU8XWOxlvg6p0w0xwsW3UXaRW24uDvjiW09bu_I-wyNMcCrjcLvg_347YBerqqSjHtlJ4O6IHlnbzewJY9UY2z_wM4VlJDQyuP6jK-fmnRTh7cBsfz8l9pGIc-rkCKDmgIhMTnigc-UQbbqqAT7ropeW0NOJZc9EKoMda3PqLyF7ux50ofRHNeQbCKTsotARx-RzQeq2BLPzglYUc_aLd_TKZtm7XMA3vWuLwz5ccubXV_O7b", active: true, order: 2 },
- { id: "Beverages", label: "Cold Drinks", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuACno2RBAW4V2OXESXUoPYdI8X_6Pocrfk2UNba5-X-bxLW20TumbjJBBM_H6WwnIjKo8C-DEyWRGlfmC5itzrvAg7b7qfEn6wnJjK9Lm3f_CWANjRqrBRcH6Tgl5viyFcIE0USY9H1Nd0BP3oyTOpy8ofAIELTxAZOj9JjcNIT5mzTVMmwQYwWv1l7Pcd0QIloPRc4kk0iEEOs4lPAK_pY1mapp13ObXv2rhJ9cbbzdQ5OWdZRUWbyqR5zJLLDKrol1B-Na6yQ6_s7", active: true, order: 3 },
+interface Category {
+  id: string;
+  label: string;
+  img: string;
+  active: boolean;
+  order?: number;
+  section?: "BB" | "CAFE";
+  subcategories?: SubCategory[];
+}
+
+const DEFAULTS: Partial<Category>[] = [
+  { id: "Vegetables", label: "Vegetables", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuA1pm_sqQ0qiiz-0usKw...", active: true, order: 0, 
+    subcategories: [
+      { id: "fresh", label: "Fresh", img: "https://cdn-icons-png.flaticon.com/128/2329/2329895.png" },
+      { id: "organic", label: "Organic", img: "https://cdn-icons-png.flaticon.com/128/2917/2917633.png" },
+      { id: "leafy", label: "Leafy Greens", img: "https://cdn-icons-png.flaticon.com/128/2153/2153788.png" }
+    ] 
+  },
+  { id: "Dairy", label: "Dairy & Eggs", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuA4HUAio5IxKiRkz2BP...", active: true, order: 1, 
+    subcategories: [
+      { id: "milk", label: "Milk", img: "https://cdn-icons-png.flaticon.com/128/372/372971.png" },
+      { id: "eggs", label: "Eggs", img: "https://cdn-icons-png.flaticon.com/128/837/837165.png" },
+      { id: "cheese", label: "Cheese", img: "https://cdn-icons-png.flaticon.com/128/2153/2153777.png" }
+    ] 
+  },
+  { id: "Munchies", label: "Snacks & Munchies", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuAEuxZomF5R1zlep_9f...", active: true, order: 2, 
+    subcategories: [
+      { id: "chips", label: "Chips", img: "https://cdn-icons-png.flaticon.com/128/2553/2553691.png" },
+      { id: "biscuits", label: "Biscuits", img: "https://cdn-icons-png.flaticon.com/128/992/992717.png" },
+      { id: "chocolates", label: "Chocolates", img: "https://cdn-icons-png.flaticon.com/128/2553/2553642.png" }
+    ] 
+  },
+  { id: "Beverages", label: "Cold Drinks", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuACno2RBAW4V2OXESXU...", active: true, order: 3, 
+    subcategories: [
+      { id: "soft-drinks", label: "Soft Drinks", img: "https://cdn-icons-png.flaticon.com/128/2722/2722527.png" },
+      { id: "juices", label: "Juices", img: "https://cdn-icons-png.flaticon.com/128/2442/2442019.png" },
+      { id: "energy", label: "Energy Drinks", img: "https://cdn-icons-png.flaticon.com/128/2722/2722511.png" }
+    ] 
+  },
 ];
 
 export default function AdminCategories() {
@@ -46,24 +77,25 @@ export default function AdminCategories() {
  return;
  }
 
- const id = editingCategory.id || editingCategory.label.toLowerCase().replace(/\s+/g, '-');
- const categoryData = {
- label: editingCategory.label,
- img: editingCategory.img,
- active: editingCategory.active ?? true,
- order: editingCategory.order ?? categories.length,
- section: editingCategory.section || "BB",
- };
+  const id = editingCategory.id || editingCategory.label.toLowerCase().replace(/\s+/g, '-');
+  const categoryData = {
+    label: editingCategory.label,
+    img: editingCategory.img,
+    active: editingCategory.active ?? true,
+    order: editingCategory.order ?? categories.length,
+    section: editingCategory.section || "BB",
+    subcategories: editingCategory.subcategories || [],
+  };
 
- try {
- await setDoc(doc(db, "categories", id), categoryData, { merge: true });
- toast.success(editingCategory.id ? "Category Updated": "Category Created");
- setIsModalOpen(false);
- setEditingCategory(null);
- } catch (error) {
- toast.error("Failed to save category");
- }
- };
+  try {
+    await setDoc(doc(db, "categories", id), categoryData, { merge: true });
+    toast.success(editingCategory.id ? "Category Updated": "Category Created");
+    setIsModalOpen(false);
+    setEditingCategory(null);
+  } catch (error) {
+    toast.error("Failed to save category");
+  }
+};
 
  const toggleStatus = async (cat: Category) => {
  try {
@@ -104,6 +136,134 @@ export default function AdminCategories() {
 
  return (
     <div className="space-y-6 lg:space-y-8 animate-in fade-in duration-500">
+      {isModalOpen && (
+        <div className="fixed top-0 left-0 right-0 bottom-0 z-[9999] bg-zinc-950/60 backdrop-blur-md flex items-center justify-center p-4 lg:p-12">
+          <div className="bg-white w-full max-w-lg rounded-[32px] lg:rounded-[48px] p-6 lg:p-12 shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="flex justify-between items-start mb-6 lg:mb-8">
+              <div>
+                <h2 className="text-2xl lg:text-4xl font-headline font-black text-zinc-900 tracking-tighter ">{editingCategory?.id ? 'Edit Category': 'New Category'}</h2>
+                <p className="text-[10px] font-black text-zinc-400 tracking-widest mt-1 uppercase">Configure display properties</p>
+              </div>
+              <button onClick={() => setIsModalOpen(false)} className="p-2 text-zinc-400 hover:text-zinc-900 transition-colors">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleSave} className="space-y-6 lg:space-y-8">
+              <div className="grid grid-cols-1 gap-4 lg:gap-6">
+                <div className="space-y-2">
+                  <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 block uppercase">Full Label</label>
+                  <input type="text" placeholder="e.g. Dairy & Eggs" className="w-full bg-zinc-50 border-none rounded-2xl lg:rounded-3xl p-4 lg:p-5 font-black text-sm focus:ring-4 ring-primary/20 transition-all"
+                    value={editingCategory?.label || ""}
+                    onChange={e => setEditingCategory(prev => ({...prev, label: e.target.value}))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 block uppercase">Icon URL</label>
+                  <input type="text" placeholder="https://..." className="w-full bg-zinc-50 border-none rounded-2xl lg:rounded-3xl p-4 lg:p-5 font-black text-[10px] lg:text-[11px] focus:ring-4 ring-primary/20 transition-all text-zinc-500"
+                    value={editingCategory?.img || ""}
+                    onChange={e => setEditingCategory(prev => ({...prev, img: e.target.value}))}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 block uppercase">Order</label>
+                    <input type="number" className="w-full bg-zinc-50 border-none rounded-2xl lg:rounded-3xl p-4 lg:p-5 font-black text-sm focus:ring-4 ring-primary/20 transition-all"
+                      value={editingCategory?.order ?? 0}
+                      onChange={e => setEditingCategory(prev => ({...prev, order: parseInt(e.target.value)}))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 block uppercase">Status</label>
+                    <button type="button"
+                      onClick={() => setEditingCategory(prev => ({...prev, active: !prev?.active}))}
+                      className={`w-full h-[54px] lg:h-[60px] rounded-2xl lg:rounded-3xl font-black text-[9px] lg:text-[10px] tracking-widest transition-all ${editingCategory?.active !== false ? 'bg-green-50 text-green-600 border-2 border-green-100': 'bg-red-50 text-red-600 border-2 border-red-100'}`}
+                    >
+                      {editingCategory?.active !== false ? 'Active': 'Hidden'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t border-zinc-100">
+                  <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 block uppercase">Subcategories</label>
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        id="new-subcategory-label"
+                        placeholder="Label (e.g. Fresh)" 
+                        className="flex-1 bg-zinc-50 border-none rounded-2xl p-4 font-black text-xs focus:ring-4 ring-primary/20 transition-all"
+                      />
+                      <input 
+                        type="text" 
+                        id="new-subcategory-img"
+                        placeholder="Icon URL" 
+                        className="flex-[1.5] bg-zinc-50 border-none rounded-2xl p-4 font-black text-[10px] focus:ring-4 ring-primary/20 transition-all text-zinc-500"
+                      />
+                    </div>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        const labelEl = document.getElementById('new-subcategory-label') as HTMLInputElement;
+                        const imgEl = document.getElementById('new-subcategory-img') as HTMLInputElement;
+                        const label = labelEl.value.trim();
+                        const img = imgEl.value.trim();
+                        if (label && img) {
+                          setEditingCategory(prev => ({
+                            ...prev,
+                            subcategories: [...(prev?.subcategories || []), { id: label.toLowerCase().replace(/\s+/g, '-'), label, img }]
+                          }));
+                          labelEl.value = '';
+                          imgEl.value = '';
+                        } else {
+                          toast.error("Label and Icon URL required");
+                        }
+                      }}
+                      className="w-full bg-zinc-900 text-white h-12 rounded-2xl font-black text-[10px] tracking-widest"
+                    >
+                      ADD SUBCATEGORY
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {(editingCategory?.subcategories || []).map((sub, idx) => (
+                      <div key={idx} className="bg-zinc-50 p-3 rounded-2xl border border-zinc-100 flex items-center gap-3 relative group">
+                        <div className="w-10 h-10 rounded-full bg-white border border-zinc-100 p-1.5 flex items-center justify-center shrink-0">
+                          <img src={sub.img} alt={sub.label} className="w-full h-full object-contain" />
+                        </div>
+                        <span className="text-[10px] font-black text-zinc-700 truncate">{sub.label}</span>
+                        <button 
+                          type="button"
+                          onClick={() => setEditingCategory(prev => ({
+                            ...prev,
+                            subcategories: prev?.subcategories?.filter((_, i) => i !== idx)
+                          }))}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-white border border-zinc-200 rounded-full flex items-center justify-center text-zinc-400 hover:text-red-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">close</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 pt-4 lg:pt-6">
+                <button type="submit"
+                  className="w-full bg-zinc-900 text-white h-14 lg:h-16 rounded-2xl lg:rounded-[24px] font-black tracking-widest text-xs hover:bg-black transition-all shadow-xl"
+                >
+                  {editingCategory?.id ? 'Update Records': 'Save Category'}
+                </button>
+                <button type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="w-full h-10 lg:h-16 rounded-2xl lg:rounded-[24px] font-black tracking-widest text-[9px] lg:text-[10px] text-zinc-400 hover:text-zinc-900 transition-all uppercase"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h3 className="text-xl lg:text-3xl font-headline font-black text-zinc-900 tracking-tight">Product Categories</h3>
@@ -176,73 +336,6 @@ export default function AdminCategories() {
           </div>
         ))}
       </div>
-
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] bg-zinc-950/40 backdrop-blur-md flex items-center justify-center p-4 lg:p-12 overflow-y-auto">
-          <div className="bg-white w-full max-w-lg rounded-[32px] lg:rounded-[48px] p-6 lg:p-12 shadow-2xl animate-in zoom-in-95 duration-300">
-            <div className="flex justify-between items-start mb-6 lg:mb-8">
-              <div>
-                <h2 className="text-2xl lg:text-4xl font-headline font-black text-zinc-900 tracking-tighter ">{editingCategory?.id ? 'Edit Category': 'New Category'}</h2>
-                <p className="text-[10px] font-black text-zinc-400 tracking-widest mt-1 uppercase">Configure display properties</p>
-              </div>
-              <button onClick={() => setIsModalOpen(false)} className="p-2 text-zinc-400 hover:text-zinc-900 transition-colors">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-
-            <form onSubmit={handleSave} className="space-y-6 lg:space-y-8">
-              <div className="grid grid-cols-1 gap-4 lg:gap-6">
-                <div className="space-y-2">
-                  <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 block uppercase">Full Label</label>
-                  <input type="text" placeholder="e.g. Dairy & Eggs" className="w-full bg-zinc-50 border-none rounded-2xl lg:rounded-3xl p-4 lg:p-5 font-black text-sm focus:ring-4 ring-primary/20 transition-all"
-                    value={editingCategory?.label || ""}
-                    onChange={e => setEditingCategory(prev => ({...prev, label: e.target.value}))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 block uppercase">Icon URL</label>
-                  <input type="text" placeholder="https://..." className="w-full bg-zinc-50 border-none rounded-2xl lg:rounded-3xl p-4 lg:p-5 font-black text-[10px] lg:text-[11px] focus:ring-4 ring-primary/20 transition-all text-zinc-500"
-                    value={editingCategory?.img || ""}
-                    onChange={e => setEditingCategory(prev => ({...prev, img: e.target.value}))}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 block uppercase">Order</label>
-                    <input type="number" className="w-full bg-zinc-50 border-none rounded-2xl lg:rounded-3xl p-4 lg:p-5 font-black text-sm focus:ring-4 ring-primary/20 transition-all"
-                      value={editingCategory?.order ?? 0}
-                      onChange={e => setEditingCategory(prev => ({...prev, order: parseInt(e.target.value)}))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 block uppercase">Status</label>
-                    <button type="button"
-                      onClick={() => setEditingCategory(prev => ({...prev, active: !prev?.active}))}
-                      className={`w-full h-[54px] lg:h-[60px] rounded-2xl lg:rounded-3xl font-black text-[9px] lg:text-[10px] tracking-widest transition-all ${editingCategory?.active !== false ? 'bg-green-50 text-green-600 border-2 border-green-100': 'bg-red-50 text-red-600 border-2 border-red-100'}`}
-                    >
-                      {editingCategory?.active !== false ? 'Active': 'Hidden'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3 pt-4 lg:pt-6">
-                <button type="submit"
-                  className="w-full bg-zinc-900 text-white h-14 lg:h-16 rounded-2xl lg:rounded-[24px] font-black tracking-widest text-xs hover:bg-black transition-all shadow-xl"
-                >
-                  {editingCategory?.id ? 'Update Records': 'Save Category'}
-                </button>
-                <button type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="w-full h-10 lg:h-16 rounded-2xl lg:rounded-[24px] font-black tracking-widest text-[9px] lg:text-[10px] text-zinc-400 hover:text-zinc-900 transition-all uppercase"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
- </div>
- );
+    </div>
+  );
 }

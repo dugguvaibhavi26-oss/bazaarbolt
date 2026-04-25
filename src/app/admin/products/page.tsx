@@ -25,7 +25,8 @@ export default function AdminProducts() {
     stock: 100,
     active: true,
     section: "BB" as "BB" | "CAFE",
-    isBestseller: false
+    isBestseller: false,
+    subcategory: ""
   });
 
   const [uploadMode, setUploadMode] = useState<"manual" | "bulk">("manual");
@@ -45,9 +46,6 @@ export default function AdminProducts() {
         const catSnap = await getDocs(collection(db, "categories"));
         const cats = catSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setCategories(cats);
-        if (cats.length > 0 && !newProduct.category) {
-          setNewProduct(prev => ({ ...prev, category: cats[0].id }));
-        }
       } catch (e) {
         console.error("mapping error:", e);
         toast.error("Error loading inventory");
@@ -80,7 +78,7 @@ export default function AdminProducts() {
         toast.success("Added to inventory", { id: toastId });
       }
 
-      setNewProduct({ name: "", price: 0, image: "", category: categories[0]?.id || "", description: "", stock: 100, active: true, section: "BB", isBestseller: false });
+      setNewProduct({ name: "", price: 0, image: "", category: categories[0]?.id || "", description: "", stock: 100, active: true, section: "BB", isBestseller: false, subcategory: "" });
       setIsAdding(false);
       setEditingProduct(null);
     } catch (err) {
@@ -90,16 +88,19 @@ export default function AdminProducts() {
 
   const startEdit = (product: Product) => {
     setEditingProduct(product);
+    const categoryId = categories.find(c => c.id === product.category || c.label === product.category)?.id || product.category;
+
     setNewProduct({
       name: product.name,
       price: product.price,
       image: product.image,
-      category: product.category,
+      category: categoryId,
       description: product.description || "",
       stock: product.stock,
       active: product.active,
       section: (product as any).section || "BB",
-      isBestseller: product.isBestseller || false
+      isBestseller: product.isBestseller || false,
+      subcategory: product.subcategory || ""
     });
     setIsAdding(true);
   };
@@ -219,62 +220,9 @@ export default function AdminProducts() {
 
   return (
     <div className="space-y-6 lg:space-y-10 pb-32">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
-          <h3 className="text-xl lg:text-2xl font-black text-zinc-900 tracking-tight">Inventory Control</h3>
-          <p className="text-[10px] lg:text-xs font-bold text-zinc-400 tracking-widest mt-1 uppercase">Total SKU Count: {products.length}</p>
-        </div>
-        <button onClick={startAdd} className="bg-zinc-900 text-white px-6 lg:px-8 py-3 lg:py-4 rounded-2xl font-black text-[10px] tracking-widest flex items-center gap-2 hover:bg-black shadow-xl active:scale-95 transition-all w-full lg:w-auto justify-center">
-          <span className="material-symbols-outlined text-sm">inventory</span>
-          Add New SKU
-        </button>
-      </div>
-
-      <div className="flex bg-white p-1 rounded-2xl border border-zinc-100 shadow-sm overflow-x-auto hide-scrollbar">
-        <button 
-          onClick={() => setActiveTab("BB")}
-          className={`flex-1 lg:flex-none px-4 lg:px-6 py-2 lg:py-3 rounded-xl text-[9px] lg:text-[10px] font-black tracking-widest transition-all uppercase whitespace-nowrap ${activeTab === "BB" ? "bg-zinc-900 text-white shadow-md" : "bg-transparent text-zinc-500 hover:bg-zinc-50"}`}
-        >
-          BAZAARBOLT ({products.filter(p => ((p as any).section || 'BB') === 'BB').length})
-        </button>
-        <button 
-          onClick={() => setActiveTab("CAFE")}
-          className={`flex-1 lg:flex-none px-4 lg:px-6 py-2 lg:py-3 rounded-xl text-[9px] lg:text-[10px] font-black tracking-widest transition-all uppercase whitespace-nowrap ${activeTab === "CAFE" ? "bg-zinc-900 text-white shadow-md" : "bg-transparent text-zinc-500 hover:bg-zinc-50"}`}
-        >
-          BB CAFE ({products.filter(p => (p as any).section === 'CAFE').length})
-        </button>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:gap-4">
-        {filteredProducts.map(p => (
-          <div key={p.id} className={`bg-white rounded-2xl p-3 shadow-sm border transition-all group ${p.isBestseller ? 'border-orange-400 ring-2 ring-orange-400/10 shadow-orange-100' : 'border-zinc-100'}`}>
-            <div className="aspect-square bg-zinc-50 rounded-xl mb-2 p-2 flex items-center justify-center border border-zinc-50 relative overflow-hidden">
-              <img src={p.image} alt={p.name} className="w-16 h-16 lg:w-20 lg:h-20 object-contain group-hover:scale-110 transition-transform" />
-              <div className="absolute top-1 right-1 flex flex-col gap-1 items-end">
-                <span className={`px-1.5 py-0.5 rounded-md text-[6px] lg:text-[7px] font-black tracking-widest border ${p.active ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
-                  {p.active ? 'LIVE' : 'HIDDEN'}
-                </span>
-              </div>
-            </div>
-            <h4 className="font-headline font-black text-[9px] lg:text-[10px] text-zinc-900 truncate mb-0.5 leading-tight">{p.name}</h4>
-            <div className="flex items-center justify-between pt-2 border-t border-zinc-50 mt-1">
-              <span className="font-headline font-black text-[10px] lg:text-xs text-zinc-900 tracking-tighter">₹{p.price.toFixed(0)}</span>
-              <div className="flex gap-1 lg:gap-1.5">
-                <button onClick={() => startEdit(p)} className="w-5 h-5 lg:w-6 lg:h-6 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-400 hover:text-primary transition-colors">
-                  <span className="material-symbols-outlined text-[12px] lg:text-[14px]">edit</span>
-                </button>
-                <button onClick={() => removeProduct(p.id)} className="w-5 h-5 lg:w-6 lg:h-6 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-400 hover:text-red-500 transition-colors">
-                  <span className="material-symbols-outlined text-[12px] lg:text-[14px]">delete</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
       {isAdding && (
-        <div className="fixed inset-0 z-[60] bg-zinc-900/60 backdrop-blur-sm flex items-center justify-center p-4 lg:p-6 overflow-y-auto">
-          <div className="bg-white w-full max-w-2xl rounded-[32px] lg:rounded-[40px] p-6 lg:p-10 shadow-2xl relative overflow-hidden">
+        <div className="fixed inset-0 z-[9999] bg-zinc-950/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-2xl rounded-[32px] lg:rounded-[40px] p-6 lg:p-10 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300">
             <div className="absolute top-0 right-0 p-10 opacity-5 -z-10 hidden lg:block">
               <span className="material-symbols-outlined text-[140px]">inventory</span>
             </div>
@@ -324,6 +272,19 @@ export default function AdminProducts() {
                       className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all"
                     >
                       {categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Subcategory</label>
+                    <select 
+                      value={newProduct.subcategory} 
+                      onChange={e => setNewProduct({ ...newProduct, subcategory: e.target.value })} 
+                      className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all"
+                    >
+                      <option value="">None</option>
+                      {categories.find(c => c.id === newProduct.category)?.subcategories?.map((sub: any) => (
+                        <option key={sub.id || sub} value={sub.label || sub}>{sub.label || sub}</option>
+                      ))}
                     </select>
                   </div>
                   <div>
@@ -461,6 +422,59 @@ export default function AdminProducts() {
           </div>
         </div>
       )}
+
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <h3 className="text-xl lg:text-2xl font-black text-zinc-900 tracking-tight">Inventory Control</h3>
+          <p className="text-[10px] lg:text-xs font-bold text-zinc-400 tracking-widest mt-1 uppercase">Total SKU Count: {products.length}</p>
+        </div>
+        <button onClick={startAdd} className="bg-zinc-900 text-white px-6 lg:px-8 py-3 lg:py-4 rounded-2xl font-black text-[10px] tracking-widest flex items-center gap-2 hover:bg-black shadow-xl active:scale-95 transition-all w-full lg:w-auto justify-center">
+          <span className="material-symbols-outlined text-sm">inventory</span>
+          Add New SKU
+        </button>
+      </div>
+
+      <div className="flex bg-white p-1 rounded-2xl border border-zinc-100 shadow-sm overflow-x-auto hide-scrollbar">
+        <button 
+          onClick={() => setActiveTab("BB")}
+          className={`flex-1 lg:flex-none px-4 lg:px-6 py-2 lg:py-3 rounded-xl text-[9px] lg:text-[10px] font-black tracking-widest transition-all uppercase whitespace-nowrap ${activeTab === "BB" ? "bg-zinc-900 text-white shadow-md" : "bg-transparent text-zinc-500 hover:bg-zinc-50"}`}
+        >
+          BAZAARBOLT ({products.filter(p => ((p as any).section || 'BB') === 'BB').length})
+        </button>
+        <button 
+          onClick={() => setActiveTab("CAFE")}
+          className={`flex-1 lg:flex-none px-4 lg:px-6 py-2 lg:py-3 rounded-xl text-[9px] lg:text-[10px] font-black tracking-widest transition-all uppercase whitespace-nowrap ${activeTab === "CAFE" ? "bg-zinc-900 text-white shadow-md" : "bg-transparent text-zinc-500 hover:bg-zinc-50"}`}
+        >
+          BB CAFE ({products.filter(p => (p as any).section === 'CAFE').length})
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:gap-4">
+        {filteredProducts.map(p => (
+          <div key={p.id} className={`bg-white rounded-2xl p-3 shadow-sm border transition-all group ${p.isBestseller ? 'border-orange-400 ring-2 ring-orange-400/10 shadow-orange-100' : 'border-zinc-100'}`}>
+            <div className="aspect-square bg-zinc-50 rounded-xl mb-2 p-2 flex items-center justify-center border border-zinc-50 relative overflow-hidden">
+              <img src={p.image} alt={p.name} className="w-16 h-16 lg:w-20 lg:h-20 object-contain group-hover:scale-110 transition-transform" />
+              <div className="absolute top-1 right-1 flex flex-col gap-1 items-end">
+                <span className={`px-1.5 py-0.5 rounded-md text-[6px] lg:text-[7px] font-black tracking-widest border ${p.active ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
+                  {p.active ? 'LIVE' : 'HIDDEN'}
+                </span>
+              </div>
+            </div>
+            <h4 className="font-headline font-black text-[9px] lg:text-[10px] text-zinc-900 truncate mb-0.5 leading-tight">{p.name}</h4>
+            <div className="flex items-center justify-between pt-2 border-t border-zinc-50 mt-1">
+              <span className="font-headline font-black text-[10px] lg:text-xs text-zinc-900 tracking-tighter">₹{p.price.toFixed(0)}</span>
+              <div className="flex gap-1 lg:gap-1.5">
+                <button onClick={() => startEdit(p)} className="w-5 h-5 lg:w-6 lg:h-6 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-400 hover:text-primary transition-colors">
+                  <span className="material-symbols-outlined text-[12px] lg:text-[14px]">edit</span>
+                </button>
+                <button onClick={() => removeProduct(p.id)} className="w-5 h-5 lg:w-6 lg:h-6 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-400 hover:text-red-500 transition-colors">
+                  <span className="material-symbols-outlined text-[12px] lg:text-[14px]">delete</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -10,6 +10,7 @@ export interface Product {
   isDeleted?: boolean;
   createdAt?: string;
   section?: "BB" | "CAFE";
+  subcategory?: string;
   rating?: number;
   ratingCount?: number;
   isBestseller?: boolean;
