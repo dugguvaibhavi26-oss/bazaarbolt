@@ -123,8 +123,8 @@ export default function VendorOrders() {
       <div className="flex justify-between items-start">
         <div>
           <h4 className="text-[10px] font-black text-zinc-400 tracking-[0.2em] uppercase mb-1">Order #{order.id?.slice(-6).toUpperCase()}</h4>
-          <p className="text-sm font-black text-zinc-900 tracking-tight">{order.userName}</p>
-          <p className="text-[10px] font-bold text-zinc-400 mt-0.5">{order.userPhone}</p>
+          <p className="text-sm font-black text-zinc-900 tracking-tight">{order.customerName}</p>
+          <p className="text-[10px] font-bold text-zinc-400 mt-0.5">{order.phoneNumber}</p>
         </div>
         <div className={`px-3 py-1 rounded-full text-[8px] font-black tracking-widest uppercase ${
           order.status === 'PLACED' ? 'bg-orange-100 text-orange-600 animate-pulse' :
