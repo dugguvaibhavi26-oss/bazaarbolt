@@ -12,6 +12,8 @@ export default function VendorProducts() {
   const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!user) return;
