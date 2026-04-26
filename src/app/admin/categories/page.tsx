@@ -71,12 +71,14 @@ export default function AdminCategories() {
  return () => unsub();
  }, []);
 
- const handleSave = async (e: React.FormEvent) => {
- e.preventDefault();
- if (!editingCategory?.label || !editingCategory?.img) {
- toast.error("Please fill all fields");
- return;
- }
+  const [selectedSubIdx, setSelectedSubIdx] = useState<number | null>(null);
+
+  const handleSave = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!editingCategory?.label || !editingCategory?.img) {
+  toast.error("Please fill all fields");
+  return;
+  }
 
   const id = editingCategory.id || editingCategory.label.toLowerCase().replace(/\s+/g, '-');
   const categoryData = {
@@ -93,6 +95,7 @@ export default function AdminCategories() {
     toast.success(editingCategory.id ? "Category Updated": "Category Created");
     setIsModalOpen(false);
     setEditingCategory(null);
+    setSelectedSubIdx(null);
   } catch (error) {
     toast.error("Failed to save category");
   }
@@ -211,10 +214,21 @@ export default function AdminCategories() {
                         const label = labelEl.value.trim();
                         const img = imgEl.value.trim();
                         if (label && img) {
-                          setEditingCategory(prev => ({
-                            ...prev,
-                            subcategories: [...(prev?.subcategories || []), { id: label.toLowerCase().replace(/\s+/g, '-'), label, img }]
-                          }));
+                          if (selectedSubIdx !== null) {
+                            // Update mode
+                            setEditingCategory(prev => {
+                              const newSubs = [...(prev?.subcategories || [])];
+                              newSubs[selectedSubIdx] = { id: label.toLowerCase().replace(/\s+/g, '-'), label, img };
+                              return { ...prev, subcategories: newSubs };
+                            });
+                            setSelectedSubIdx(null);
+                          } else {
+                            // Add mode
+                            setEditingCategory(prev => ({
+                              ...prev,
+                              subcategories: [...(prev?.subcategories || []), { id: label.toLowerCase().replace(/\s+/g, '-'), label, img }]
+                            }));
+                          }
                           labelEl.value = '';
                           imgEl.value = '';
                         } else {
@@ -223,26 +237,55 @@ export default function AdminCategories() {
                       }}
                       className="w-full bg-zinc-900 text-white h-12 rounded-2xl font-black text-[10px] tracking-widest"
                     >
-                      ADD SUBCATEGORY
+                      {selectedSubIdx !== null ? "UPDATE SUBCATEGORY" : "ADD SUBCATEGORY"}
                     </button>
+                    {selectedSubIdx !== null && (
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          setSelectedSubIdx(null);
+                          (document.getElementById('new-subcategory-label') as HTMLInputElement).value = '';
+                          (document.getElementById('new-subcategory-img') as HTMLInputElement).value = '';
+                        }}
+                        className="w-full text-[9px] font-black text-zinc-400 tracking-widest uppercase"
+                      >
+                        Cancel Editing
+                      </button>
+                    )}
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     {(editingCategory?.subcategories || []).map((sub, idx) => (
-                      <div key={idx} className="bg-zinc-50 p-3 rounded-2xl border border-zinc-100 flex items-center gap-3 relative group">
+                      <div key={idx} className={`bg-zinc-50 p-3 rounded-2xl border transition-all flex items-center gap-3 relative group ${selectedSubIdx === idx ? 'ring-2 ring-primary border-primary/20' : 'border-zinc-100'}`}>
                         <div className="w-10 h-10 rounded-full bg-white border border-zinc-100 p-1.5 flex items-center justify-center shrink-0">
                           <img src={sub.img} alt={sub.label} className="w-full h-full object-contain" />
                         </div>
                         <span className="text-[10px] font-black text-zinc-700 truncate">{sub.label}</span>
-                        <button 
-                          type="button"
-                          onClick={() => setEditingCategory(prev => ({
-                            ...prev,
-                            subcategories: prev?.subcategories?.filter((_, i) => i !== idx)
-                          }))}
-                          className="absolute -top-2 -right-2 w-6 h-6 bg-white border border-zinc-200 rounded-full flex items-center justify-center text-zinc-400 hover:text-red-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <span className="material-symbols-outlined text-[14px]">close</span>
-                        </button>
+                        <div className="absolute -top-2 -right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setSelectedSubIdx(idx);
+                              (document.getElementById('new-subcategory-label') as HTMLInputElement).value = sub.label;
+                              (document.getElementById('new-subcategory-img') as HTMLInputElement).value = sub.img;
+                            }}
+                            className="w-6 h-6 bg-white border border-zinc-200 rounded-full flex items-center justify-center text-zinc-400 hover:text-primary shadow-sm"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">edit</span>
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              if (selectedSubIdx === idx) setSelectedSubIdx(null);
+                              setEditingCategory(prev => ({
+                                ...prev,
+                                subcategories: prev?.subcategories?.filter((_, i) => i !== idx)
+                              }));
+                            }}
+                            className="w-6 h-6 bg-white border border-zinc-200 rounded-full flex items-center justify-center text-zinc-400 hover:text-red-500 shadow-sm"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">close</span>
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>

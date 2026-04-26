@@ -38,11 +38,13 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Products (Public read, Admin/Vendor write)
+    // Products (Public read, Admin/Vendor write, Customer stock/rating update)
     match /products/{productId} {
       allow read: if true;
-      allow update: if isAdmin() || (isVendor() && resource.data.vendorId == request.auth.uid && 
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mrp', 'price', 'stock', 'vendorAvailable', 'lastUpdatedBy', 'updatedAt']));
+      allow update: if isAdmin() || 
+        (isVendor() && resource.data.vendorId == request.auth.uid && 
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mrp', 'price', 'stock', 'vendorAvailable', 'lastUpdatedBy', 'updatedAt'])) ||
+        (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock', 'rating', 'ratingCount']));
       allow create, delete: if isAdmin();
     }
 
@@ -51,7 +53,7 @@ service cloud.firestore {
       allow read: if isSignedIn() && (request.auth.uid == resource.data.userId || isAdmin() || isRider() || (isVendor() && resource.data.vendorId == request.auth.uid));
       allow create: if isSignedIn();
       allow update: if isAdmin() || 
-        (isRider() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'riderId', 'deliveredAt', 'pickedUpAt'])) ||
+        (isRider() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'riderId', 'deliveredAt', 'pickedUpAt', 'items', 'subtotal', 'tax', 'total'])) ||
         (isVendor() && resource.data.vendorId == request.auth.uid);
     }
 
