@@ -14,6 +14,10 @@ export default function VendorProducts() {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(false);
+  const [filterCategory, setFilterCategory] = useState("ALL");
+  const [filterStock0, setFilterStock0] = useState(false);
+
+  const categories = Array.from(new Set(products.map(p => p.category)));
 
   useEffect(() => {
     if (!user) return;
@@ -54,10 +58,14 @@ export default function VendorProducts() {
     }
   };
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          p.category.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = filterCategory === "ALL" || p.category === filterCategory;
+    const matchesStock = !filterStock0 || p.stock === 0;
+    
+    return matchesSearch && matchesCategory && matchesStock;
+  });
 
   const toggleAvailability = async (product: Product) => {
     const toastId = toast.loading("Toggling availability...");
@@ -92,6 +100,26 @@ export default function VendorProducts() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+        </div>
+
+        {/* Filter Bar */}
+        <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+          <select 
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="bg-white border border-zinc-100 rounded-xl px-4 py-2.5 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 ring-primary/20 transition-all shrink-0"
+          >
+            <option value="ALL">All Categories</option>
+            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          
+          <button 
+            onClick={() => setFilterStock0(!filterStock0)}
+            className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all shrink-0 flex items-center gap-2 ${filterStock0 ? 'bg-red-50 border-red-100 text-red-600 shadow-inner' : 'bg-white border-zinc-100 text-zinc-400'}`}
+          >
+            <span className="material-symbols-outlined text-sm">inventory_2</span>
+            Out of Stock
+          </button>
         </div>
       </div>
 

@@ -42,6 +42,9 @@ export default function AdminProducts() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [displayCount, setDisplayCount] = useState(24);
+  const [viewMode, setViewMode] = useState<"categories" | "products">("categories");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [vendors, setVendors] = useState<{uid: string, name: string}[]>([]);
 
   useEffect(() => {
     async function loadData() {
@@ -54,6 +57,12 @@ export default function AdminProducts() {
         const catSnap = await getDocs(collection(db, "categories"));
         const cats = catSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setCategories(cats);
+
+        const vendorSnap = await getDocs(collection(db, "users"));
+        const vens = vendorSnap.docs
+          .filter(d => d.data().role === "vendor")
+          .map(d => ({ uid: d.id, name: d.data().name || d.data().email || d.id }));
+        setVendors(vens);
       } catch (e) {
         console.error("mapping error:", e);
         toast.error("Error loading inventory");
@@ -63,6 +72,31 @@ export default function AdminProducts() {
     }
     loadData();
   }, []);
+
+  const downloadInventory = () => {
+    const XLSX = require("xlsx");
+    const productsToExport = filteredProducts.filter(p => !selectedCategory || p.category === selectedCategory);
+    
+    const data = productsToExport.map(p => ({
+      id: p.id,
+      name: p.name,
+      price: p.price,
+      mrp: p.mrp || p.price,
+      category: p.category,
+      subcategory: p.subcategory || "",
+      stock: p.stock,
+      vendorId: p.vendorId || "",
+      section: (p as any).section || "BB",
+      image: p.image,
+      description: p.description || "",
+      active: p.active,
+      adminActive: p.adminActive ?? true
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Products");
+    XLSX.writeFile(workbook, "bazaarbolt_inventory.xlsx");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -338,8 +372,15 @@ export default function AdminProducts() {
                     <input type="number" required value={newProduct.stock} onChange={e => setNewProduct({ ...newProduct, stock: parseInt(e.target.value) })} className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all" />
                   </div>
                   <div>
-                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Vendor ID</label>
-                    <input type="text" value={newProduct.vendorId} onChange={e => setNewProduct({ ...newProduct, vendorId: e.target.value })} placeholder="Vendor UID" className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all" />
+                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Assign Vendor</label>
+                    <select 
+                      value={newProduct.vendorId} 
+                      onChange={e => setNewProduct({ ...newProduct, vendorId: e.target.value })} 
+                      className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all"
+                    >
+                      <option value="">No Vendor (Admin Managed)</option>
+                      {vendors.map(v => <option key={v.uid} value={v.uid}>{v.name}</option>)}
+                    </select>
                   </div>
                   <div className="md:col-span-2 flex items-center gap-4 bg-zinc-50 p-3 lg:p-4 rounded-xl lg:rounded-2xl">
                     <div className="flex items-center gap-2">
@@ -371,7 +412,7 @@ export default function AdminProducts() {
                   <h4 className="text-sm font-black text-zinc-900 mb-1">
                     {uploadFile ? uploadFile.name : "Drop your file here or click to upload"}
                   </h4>
-                  <p className="text-[10px] font-black text-zinc-400 tracking-widest">Supports CSV and Excel files</p>
+                  <p className="text-[10px] font-black text-zinc-400 tracking-widest px-6">Supports CSV/Excel. Use this to add new SKUs or update existing ones (via Exported file).</p>
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
@@ -476,13 +517,11 @@ export default function AdminProducts() {
         </Portal>
       )}
 
-      {/* Search and Header Section */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+<div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="flex-1">
           <h3 className="text-xl lg:text-2xl font-black text-zinc-900 tracking-tight leading-none mb-2">Inventory Control</h3>
           <p className="text-[10px] lg:text-xs font-bold text-zinc-400 tracking-widest uppercase">Total SKU Count: {filteredProducts.length}</p>
         </div>
-        
         <div className="flex flex-col sm:flex-row items-center gap-4 flex-1 max-w-2xl">
           <div className="relative w-full">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400">search</span>
@@ -491,12 +530,19 @@ export default function AdminProducts() {
               placeholder="Search by name, category or vendor..."
               className="w-full bg-white border border-zinc-100 rounded-2xl py-3 pl-12 pr-4 text-xs font-bold shadow-sm focus:ring-2 ring-primary transition-all"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (e.target.value) setViewMode("products");
+              }}
             />
           </div>
-          <button onClick={startAdd} className="bg-zinc-900 text-white px-8 py-3.5 rounded-2xl font-black text-[10px] tracking-widest flex items-center gap-2 hover:bg-black shadow-xl active:scale-95 transition-all w-full sm:w-auto justify-center whitespace-nowrap">
+          <button onClick={downloadInventory} className="bg-white border-2 border-zinc-900 text-zinc-900 px-6 py-3.5 rounded-2xl font-black text-[10px] tracking-widest flex items-center gap-2 hover:bg-zinc-50 transition-all w-full sm:w-auto justify-center whitespace-nowrap uppercase">
+            <span className="material-symbols-outlined text-sm">download</span>
+            {selectedCategory ? `Export ${categories.find(c => c.id === selectedCategory)?.label}` : 'Export All'}
+          </button>
+          <button onClick={startAdd} className="bg-zinc-900 text-white px-8 py-3.5 rounded-2xl font-black text-[10px] tracking-widest flex items-center gap-2 hover:bg-black shadow-xl active:scale-95 transition-all w-full sm:w-auto justify-center whitespace-nowrap uppercase">
             <span className="material-symbols-outlined text-sm">add_circle</span>
-            ADD NEW SKU
+            Add New
           </button>
         </div>
       </div>
@@ -516,36 +562,74 @@ export default function AdminProducts() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:gap-4">
-        {paginatedProducts.map(p => (
-          <div key={p.id} className={`bg-white rounded-2xl p-3 shadow-sm border transition-all group ${p.isBestseller ? 'border-orange-400 ring-2 ring-orange-400/10 shadow-orange-100' : 'border-zinc-100'}`}>
-            <div className="aspect-square bg-zinc-50 rounded-xl mb-2 p-2 flex items-center justify-center border border-zinc-50 relative overflow-hidden">
-              <img src={p.image} alt={p.name} className="w-16 h-16 lg:w-20 lg:h-20 object-contain group-hover:scale-110 transition-transform" />
-              <div className="absolute top-1 right-1 flex flex-col gap-1 items-end">
-                <span className={`px-1.5 py-0.5 rounded-md text-[6px] lg:text-[7px] font-black tracking-widest border ${p.active ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
-                  {p.active ? 'LIVE' : 'HIDDEN'}
-                </span>
+      {viewMode === "categories" ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+          {categories.filter(c => (c.section || "BB") === activeTab).map(cat => (
+            <button 
+              key={cat.id} 
+              onClick={() => { setSelectedCategory(cat.id); setViewMode("products"); }}
+              className="bg-white p-6 rounded-[32px] border border-zinc-100 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all group flex flex-col items-center text-center"
+            >
+              <div className="w-20 h-20 bg-zinc-50 rounded-2xl p-4 mb-4 group-hover:scale-110 transition-transform flex items-center justify-center">
+                <img src={cat.img} alt="" className="w-full h-full object-contain" />
               </div>
-            </div>
-            <h4 className="font-headline font-black text-[9px] lg:text-[10px] text-zinc-900 truncate mb-0.5 leading-tight">{p.name}</h4>
-            <div className="flex flex-col gap-1 mb-1">
-              <p className="text-[7px] lg:text-[8px] font-black text-zinc-400 tracking-widest uppercase">STOCK: {p.stock} • VENDOR: {p.vendorId ? 'ASSIGNED' : 'NONE'}</p>
-              {p.lastUpdatedBy && <p className="text-[6px] lg:text-[7px] font-bold text-primary tracking-tighter italic">Last updated by {p.lastUpdatedBy}</p>}
-            </div>
-            <div className="flex items-center justify-between pt-2 border-t border-zinc-50 mt-1">
-              <span className="font-headline font-black text-[10px] lg:text-xs text-zinc-900 tracking-tighter">₹{p.price.toFixed(0)}</span>
-              <div className="flex gap-1 lg:gap-1.5">
-                <button onClick={() => startEdit(p)} className="w-5 h-5 lg:w-6 lg:h-6 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-400 hover:text-primary transition-colors">
-                  <span className="material-symbols-outlined text-[12px] lg:text-[14px]">edit</span>
-                </button>
-                <button onClick={() => removeProduct(p.id)} className="w-5 h-5 lg:w-6 lg:h-6 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-400 hover:text-red-500 transition-colors">
-                  <span className="material-symbols-outlined text-[12px] lg:text-[14px]">delete</span>
-                </button>
-              </div>
-            </div>
+              <h4 className="font-headline font-black text-xs text-zinc-900 tracking-tight">{cat.label}</h4>
+              <p className="text-[8px] font-black text-zinc-400 mt-1 uppercase tracking-widest">
+                {products.filter(p => p.category === cat.id && ((p as any).section || "BB") === activeTab).length} Products
+              </p>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => { setViewMode("categories"); setSelectedCategory(null); }}
+              className="p-3 bg-white rounded-xl border border-zinc-100 text-zinc-400 hover:text-zinc-900 transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"
+            >
+              <span className="material-symbols-outlined text-sm">arrow_back</span>
+              Back to categories
+            </button>
+            {selectedCategory && (
+              <h4 className="text-sm font-black text-zinc-400 uppercase tracking-widest">
+                Viewing: <span className="text-zinc-900">{categories.find(c => c.id === selectedCategory)?.label}</span>
+              </h4>
+            )}
           </div>
-        ))}
-      </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:gap-4">
+            {paginatedProducts
+              .filter(p => !selectedCategory || p.category === selectedCategory)
+              .map(p => (
+              <div key={p.id} className={`bg-white rounded-2xl p-3 shadow-sm border transition-all group ${p.isBestseller ? 'border-orange-400 ring-2 ring-orange-400/10 shadow-orange-100' : 'border-zinc-100'}`}>
+                <div className="aspect-square bg-zinc-50 rounded-xl mb-2 p-2 flex items-center justify-center border border-zinc-50 relative overflow-hidden">
+                  <img src={p.image} alt={p.name} className="w-16 h-16 lg:w-20 lg:h-20 object-contain group-hover:scale-110 transition-transform" />
+                  <div className="absolute top-1 right-1 flex flex-col gap-1 items-end">
+                    <span className={`px-1.5 py-0.5 rounded-md text-[6px] lg:text-[7px] font-black tracking-widest border ${p.active ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
+                      {p.active ? 'LIVE' : 'HIDDEN'}
+                    </span>
+                  </div>
+                </div>
+                <h4 className="font-headline font-black text-[9px] lg:text-[10px] text-zinc-900 truncate mb-0.5 leading-tight">{p.name}</h4>
+                <div className="flex flex-col gap-1 mb-1">
+                  <p className="text-[7px] lg:text-[8px] font-black text-zinc-400 tracking-widest uppercase">STOCK: {p.stock} • VENDOR: {p.vendorId ? vendors.find(v => v.uid === p.vendorId)?.name || 'ASSIGNED' : 'NONE'}</p>
+                  {p.lastUpdatedBy && <p className="text-[6px] lg:text-[7px] font-bold text-primary tracking-tighter italic">Last updated by {p.lastUpdatedBy}</p>}
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-zinc-50 mt-1">
+                  <span className="font-headline font-black text-[10px] lg:text-xs text-zinc-900 tracking-tighter">₹{p.price.toFixed(0)}</span>
+                  <div className="flex gap-1 lg:gap-1.5">
+                    <button onClick={() => startEdit(p)} className="w-5 h-5 lg:w-6 lg:h-6 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-400 hover:text-primary transition-colors">
+                      <span className="material-symbols-outlined text-[12px] lg:text-[14px]">edit</span>
+                    </button>
+                    <button onClick={() => removeProduct(p.id)} className="w-5 h-5 lg:w-6 lg:h-6 flex items-center justify-center rounded-lg bg-zinc-50 text-zinc-400 hover:text-red-500 transition-colors">
+                      <span className="material-symbols-outlined text-[12px] lg:text-[14px]">delete</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {displayCount < filteredProducts.length && (
         <div className="flex justify-center pt-10">

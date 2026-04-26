@@ -106,7 +106,7 @@ export default function Home() {
         section: "CAFE" as const
       }
     ]
-  ).filter(b => b.section === activeSection);
+  ).filter(b => (b.section || "BB") === activeSection);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -135,6 +135,10 @@ export default function Home() {
   });
 
   useEffect(() => {
+    setCurrentBannerIndex(0);
+  }, [activeSection]);
+
+  useEffect(() => {
     if (BANNERS.length <= 1) {
       setCurrentBannerIndex(0);
       return;
@@ -143,7 +147,7 @@ export default function Home() {
       setCurrentBannerIndex(prev => (prev + 1) % BANNERS.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, [BANNERS.length, activeSection]);
+  }, [BANNERS.length]);
 
   if (!authLoading && user && role !== 'customer') {
     return (

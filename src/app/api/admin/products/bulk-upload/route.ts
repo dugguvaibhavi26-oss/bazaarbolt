@@ -45,12 +45,22 @@ export async function POST(request: Request) {
       const batch = adminDb.batch();
 
       chunk.forEach((product) => {
-        const newDocRef = productsRef.doc();
-        batch.set(newDocRef, {
-          ...product,
-          createdAt: new Date().toISOString(),
-          isDeleted: false,
-        });
+        if (product.id) {
+          const docRef = productsRef.doc(product.id);
+          const data = { ...product };
+          delete (data as any).id;
+          batch.set(docRef, {
+            ...data,
+            updatedAt: new Date().toISOString()
+          }, { merge: true });
+        } else {
+          const newDocRef = productsRef.doc();
+          batch.set(newDocRef, {
+            ...product,
+            createdAt: new Date().toISOString(),
+            isDeleted: false,
+          });
+        }
       });
 
       await batch.commit();

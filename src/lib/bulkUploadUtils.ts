@@ -2,7 +2,7 @@ import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { Product } from "@/types";
 
-export const PRODUCT_TEMPLATE_HEADERS = ["name", "price", "category", "image", "stock", "description", "section"];
+export const PRODUCT_TEMPLATE_HEADERS = ["name", "price", "category", "image", "stock", "description", "section", "vendorId"];
 
 export const downloadTemplate = () => {
   const csvContent = PRODUCT_TEMPLATE_HEADERS.join(",") + "\n" + 
@@ -74,14 +74,18 @@ export const validateProducts = (products: any[], defaultSection: "BB" | "CAFE" 
 
     if (name && !isNaN(price) && category) {
       valid.push({
+        id: p.id || undefined,
         name,
         price,
         category,
         image,
         stock,
         description: p.description?.toString().trim() || "",
-        active: true,
+        active: p.active !== undefined ? (p.active === "true" || p.active === true) : true,
         section: section as any,
+        vendorId: p.vendorId?.toString().trim() || "",
+        mrp: parseFloat(p.mrp) || price,
+        subcategory: p.subcategory?.toString().trim() || ""
       });
     } else {
       invalid.push({ row: index + 2, data: p }); // index + 2 because CSV header is 1st row and it's 0-indexed
