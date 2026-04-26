@@ -167,7 +167,6 @@ export const useStore = create<StoreState>()(
         // 2. Products Listener
         const prodQuery = query(
           collection(db, "products"), 
-          where("adminActive", "==", true), 
           limit(1000)
         );
         const unsubProds = onSnapshot(prodQuery, (prodSnap) => {
@@ -177,7 +176,7 @@ export const useStore = create<StoreState>()(
             const data = docSnap.data();
             const p = mapProduct(docSnap);
             // Visibility logic: adminActive && vendorAvailable && stock > 0
-            if (!data.isDeleted && p.adminActive && p.vendorAvailable && p.stock > 0) {
+            if (!data.isDeleted && p.adminActive && p.vendorAvailable) {
               prods.push(p);
             }
           });

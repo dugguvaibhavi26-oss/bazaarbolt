@@ -12,21 +12,15 @@ export const mapProduct = (doc: DocumentSnapshot<DocumentData>): Product => {
   const data = doc.data();
   if (!data) throw new Error(`Product document ${doc.id} is non-existent`);
 
-  // Critical Validation
-  if (typeof data.name !== "string" || data.name.trim() === "") throw new Error(`Invalid name for product ${doc.id}`);
-  if (typeof data.price !== "number") throw new Error(`Invalid price for product ${doc.id}`);
-  if (typeof data.category !== "string") throw new Error(`Invalid category for product ${doc.id}`);
-  if (typeof data.stock !== "number") throw new Error(`Invalid stock for product ${doc.id}`);
-
   return {
     id: doc.id,
-    name: data.name,
-    price: data.price,
-    mrp: typeof data.mrp === "number" ? data.mrp : data.price,
-    image: typeof data.image === "string" ? data.image : "",
-    category: data.category,
+    name: typeof data.name === "string" ? data.name : "Unknown Product",
+    price: typeof data.price === "number" ? data.price : 0,
+    mrp: typeof data.mrp === "number" ? data.mrp : (typeof data.price === "number" ? data.price : 0),
+    image: typeof data.image === "string" ? data.image : "https://via.placeholder.com/150",
+    category: typeof data.category === "string" ? data.category : "uncategorized",
     description: typeof data.description === "string" ? data.description : undefined,
-    stock: data.stock,
+    stock: typeof data.stock === "number" ? data.stock : 0,
     active: typeof data.active === "boolean" ? data.active : false,
     adminActive: typeof data.adminActive === "boolean" ? data.adminActive : (typeof data.active === "boolean" ? data.active : true),
     vendorAvailable: typeof data.vendorAvailable === "boolean" ? data.vendorAvailable : true,
@@ -38,6 +32,7 @@ export const mapProduct = (doc: DocumentSnapshot<DocumentData>): Product => {
     rating: typeof data.rating === "number" ? data.rating : 0,
     ratingCount: typeof data.ratingCount === "number" ? data.ratingCount : 0,
     isBestseller: typeof data.isBestseller === "boolean" ? data.isBestseller : false,
+    subcategory: typeof data.subcategory === "string" ? data.subcategory : ""
   };
 };
 
