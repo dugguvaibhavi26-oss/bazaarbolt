@@ -37,17 +37,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
  { label: "Store Settings", href: "/admin/settings", icon: "settings"},
  ];
 
- useEffect(() => {
- if (!authLoading) {
- if (!user || role !== 'admin') {
- if (pathname !== '/admin/login') {
- router.push("/admin/login");
- }
- } else if (pathname === '/admin/login') {
- router.push("/admin");
- }
- }
- }, [user, role, authLoading, pathname, router]);
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user) {
+        router.replace("/login?redirect=" + pathname);
+      } else if (role !== 'admin') {
+        router.replace("/");
+      }
+    }
+  }, [user, role, authLoading, pathname, router]);
 
  if (authLoading) {
  return (
@@ -57,11 +55,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
  );
  }
 
- // If at login page and role is admin, the useEffect will redirect.
- // We can render children at login page without sidebar.
- if (pathname === '/admin/login') {
- return <>{children}</>;
- }
+
 
   if (role !== 'admin') {
     return null;
@@ -119,8 +113,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         <button onClick={() => {
           signOut();
-          toast.success("Signed out from Admin");
-          router.push("/admin/login");
+          toast.success("Signed out");
+          router.push("/login");
         }} className="flex items-center justify-center gap-3 px-5 py-4 text-red-400 hover:bg-red-500/10 rounded-2xl w-full transition-all font-black tracking-widest text-[10px] border border-red-500/20 group"
         >
           <span className="material-symbols-outlined text-[18px] group-hover:rotate-180 transition-transform duration-500">logout</span>

@@ -27,10 +27,25 @@ function LoginContent() {
   // Redirect if already logged in and profile is complete
   useEffect(() => {
     if (!authLoading && user && !showProfileCompletion && !showServicePopup) {
-      if (role === "admin") router.push("/admin");
-      else if (role === "rider") router.push("/rider");
-      else if (role === "vendor") router.push("/vendor");
-      else router.push(redirectPath);
+      if (role === "admin") {
+        if (redirectPath.startsWith("/admin")) router.push(redirectPath);
+        else router.push("/admin");
+      }
+      else if (role === "rider") {
+        if (redirectPath.startsWith("/rider")) router.push(redirectPath);
+        else router.push("/rider");
+      }
+      else if (role === "vendor") {
+        if (redirectPath.startsWith("/vendor")) router.push(redirectPath);
+        else router.push("/vendor");
+      }
+      else {
+        if (redirectPath.startsWith("/admin") || redirectPath.startsWith("/vendor") || redirectPath.startsWith("/rider")) {
+          router.push("/");
+        } else {
+          router.push(redirectPath);
+        }
+      }
     }
   }, [user, role, authLoading, showProfileCompletion, showServicePopup, router, redirectPath]);
 

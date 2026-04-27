@@ -14,8 +14,12 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!authLoading && (!user || role !== 'vendor')) {
-      router.replace("/login?redirect=" + pathname);
+    if (!authLoading) {
+      if (!user) {
+        router.replace("/login?redirect=" + pathname);
+      } else if (role !== 'vendor') {
+        router.replace("/");
+      }
     }
   }, [user, role, authLoading, pathname, router]);
 

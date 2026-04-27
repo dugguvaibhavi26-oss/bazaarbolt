@@ -11,14 +11,16 @@ export default function RiderLayout({ children }: { children: React.ReactNode })
  const pathname = usePathname();
  const router = useRouter();
 
- useEffect(() => {
- if (!authLoading) {
- if (!user || role !== 'rider') {
- toast.error("Rider access only");
- router.push("/login");
- }
- }
- }, [user, role, authLoading, router]);
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user) {
+        router.replace("/login?redirect=" + pathname);
+      } else if (role !== 'rider') {
+        toast.error("Rider access only");
+        router.replace("/");
+      }
+    }
+  }, [user, role, authLoading, pathname, router]);
 
  if (authLoading) {
  return (
