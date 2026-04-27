@@ -280,7 +280,14 @@ export default function AdminProducts() {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           p.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           p.vendorId?.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSection && matchesSearch;
+    
+    let matchesCategory = true;
+    if (selectedCategory) {
+      const cat = categories.find(c => c.id === selectedCategory);
+      matchesCategory = p.category === selectedCategory || (cat && p.category === cat.label);
+    }
+
+    return matchesSection && matchesSearch && matchesCategory;
   });
 
   const paginatedProducts = filteredProducts.slice(0, displayCount);
@@ -575,7 +582,7 @@ export default function AdminProducts() {
               </div>
               <h4 className="font-headline font-black text-xs text-zinc-900 tracking-tight">{cat.label}</h4>
               <p className="text-[8px] font-black text-zinc-400 mt-1 uppercase tracking-widest">
-                {products.filter(p => p.category === cat.id && ((p as any).section || "BB") === activeTab).length} Products
+                {products.filter(p => (p.category === cat.id || p.category === cat.label) && ((p as any).section || "BB") === activeTab).length} Products
               </p>
             </button>
           ))}
@@ -597,9 +604,7 @@ export default function AdminProducts() {
             )}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:gap-4">
-            {paginatedProducts
-              .filter(p => !selectedCategory || p.category === selectedCategory)
-              .map(p => (
+            {paginatedProducts.map(p => (
               <div key={p.id} className={`bg-white rounded-2xl p-3 shadow-sm border transition-all group ${p.isBestseller ? 'border-orange-400 ring-2 ring-orange-400/10 shadow-orange-100' : 'border-zinc-100'}`}>
                 <div className="aspect-square bg-zinc-50 rounded-xl mb-2 p-2 flex items-center justify-center border border-zinc-50 relative overflow-hidden">
                   <img src={p.image} alt={p.name} className="w-16 h-16 lg:w-20 lg:h-20 object-contain group-hover:scale-110 transition-transform" />
