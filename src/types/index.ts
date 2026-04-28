@@ -35,6 +35,7 @@ export interface AppSettings {
       body: string;
     }
   };
+  promoSections?: PromoSection[];
 }
 
 export interface Address {
@@ -43,4 +44,37 @@ export interface Address {
   city: string;
   pincode: string;
   landmark?: string;
+}
+
+export interface PromoSectionItem {
+  imageUrl: string;
+  redirectUrl?: string;
+  label?: string;
+  colSpan?: number;
+  rowSpan?: number;
+}
+
+export interface PromoSection {
+  id: string;
+  type: "banner" | "grid" | "deal_row";
+  section: "BB" | "CAFE";
+  position?: "TOP" | "MIDDLE" | "BOTTOM" | "AFTER_HERO" | "AFTER_CATEGORIES" | "AFTER_BESTSELLERS" | "AFTER_NEW_ARRIVALS";
+  title?: string;
+  subtitle?: string;
+  bgColor?: string;
+  textColor?: string;
+  bgImageUrl?: string;
+  bgAnimation?: "none" | "parallax" | "zoom";
+  isCompact?: boolean;
+  items: PromoSectionItem[];
+  
+  // Banner specific
+  buttonText?: string;
+  buttonColor?: string;
+  buttonTextColor?: string;
+  
+  // Deal Row specific
+  priceLimit?: number;
+  manualProductIds?: string[];
+  sideBannerImageUrl?: string;
 }

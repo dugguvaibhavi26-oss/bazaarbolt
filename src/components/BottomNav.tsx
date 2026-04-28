@@ -74,7 +74,7 @@ export const BottomNav = () => {
             {/* Left: Overlapping product images */}
             <div className="flex items-center -space-x-4 pl-1">
               {cart.slice(0, 3).map((item, idx) => (
-                <div key={idx} className="w-12 h-12 rounded-full bg-white border-2 border-[#318b18] overflow-hidden flex-shrink-0 z-[3] relative">
+                <div key={idx} className="w-12 h-12 rounded-full bg-white border-[1.5px] border-[#318b18] overflow-hidden flex-shrink-0 z-[3] relative">
                   <img src={item.image} alt={item.name} className="w-full h-full object-contain p-1" />
                 </div>
               ))}

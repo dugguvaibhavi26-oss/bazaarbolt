@@ -5,7 +5,7 @@ import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import toast from "react-hot-toast";
 import { mapSettings } from "@/lib/mappers";
-import { AppSettings } from "@/types";
+import { AppSettings, PromoSection } from "@/types";
 import { useStore } from "@/store/useStore";
 
 export default function AdminSettings() {
@@ -35,15 +35,7 @@ export default function AdminSettings() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [newBanner, setNewBanner] = useState({
-    url: "",
-    section: "BB" as "BB" | "CAFE",
-    title: "",
-    subtitle: "",
-    redirectUrl: ""
-  });
-  const [activeBannerTab, setActiveBannerTab] = useState<"BB" | "CAFE">("BB");
-  const [bannerRedirectType, setBannerRedirectType] = useState<"NONE" | "CATEGORY" | "PRODUCT" | "CUSTOM">("NONE");
+
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "settings", "config"), (docSnap) => {
@@ -72,20 +64,7 @@ export default function AdminSettings() {
     }
   };
 
-  const addBanner = () => {
-    if (!newBanner.url) return;
-    const currentBanners = settings.heroBanners || [];
-    setSettings({ ...settings, heroBanners: [...currentBanners, { ...newBanner }] });
-    // Reset but keep the current section
-    setNewBanner({ url: "", section: activeBannerTab, title: "", subtitle: "", redirectUrl: "" });
-    setBannerRedirectType("NONE");
-    toast.success("Banner added locally. Remember to click 'Propagate Changes' to save!", { duration: 4000 });
-  };
 
-  const removeBanner = (index: number) => {
-    const updated = (settings.heroBanners || []).filter((_, i) => i !== index);
-    setSettings({ ...settings, heroBanners: updated });
-  };
 
   if (loading) return (
     <div className="max-w-3xl space-y-6 animate-pulse">
@@ -133,131 +112,7 @@ export default function AdminSettings() {
                 />
               </div>
 
-              <div>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 lg:mb-4">
-                  <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 uppercase">Carousel Banners</label>
-                  <div className="flex bg-zinc-100 p-1 rounded-xl w-full sm:w-auto">
-                    <button 
-                      onClick={() => { setActiveBannerTab("BB"); setNewBanner(prev => ({...prev, section: "BB"})); }} 
-                      className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[8px] font-black tracking-widest uppercase transition-all ${activeBannerTab === "BB" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500"}`}
-                    >
-                      Bazaarbolt
-                    </button>
-                    <button 
-                      onClick={() => { setActiveBannerTab("CAFE"); setNewBanner(prev => ({...prev, section: "CAFE"})); }} 
-                      className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[8px] font-black tracking-widest uppercase transition-all ${activeBannerTab === "CAFE" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500"}`}
-                    >
-                      BB Cafe
-                    </button>
-                  </div>
-                </div>
-                <div className="space-y-4 mb-4 bg-zinc-50 p-4 lg:p-6 rounded-[24px] lg:rounded-[32px] border border-zinc-100 uppercase">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 uppercase">
-                    <div className="space-y-1 lg:space-y-1.5 uppercase">
-                      <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Image URL</label>
-                      <input type="text" value={newBanner.url} onChange={e => setNewBanner({...newBanner, url: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="URL..." />
-                    </div>
-                    <div className="space-y-1 lg:space-y-1.5 uppercase">
-                      <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Section</label>
-                      <select 
-                        value={newBanner.section} 
-                        onChange={e => {
-                          const val = e.target.value as "BB" | "CAFE";
-                          setNewBanner({...newBanner, section: val});
-                          setActiveBannerTab(val);
-                        }} 
-                        className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
-                      >
-                        <option value="BB">BAZAAR BOLT</option>
-                        <option value="CAFE">BB CAFE</option>
-                      </select>
-                    </div>
-                    <div className="space-y-1 lg:space-y-1.5 uppercase">
-                      <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Title</label>
-                      <input type="text" value={newBanner.title} onChange={e => setNewBanner({...newBanner, title: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. FLASH SALE" />
-                    </div>
-                    <div className="space-y-1 lg:space-y-1.5 uppercase">
-                      <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Subtitle</label>
-                      <input type="text" value={newBanner.subtitle} onChange={e => setNewBanner({...newBanner, subtitle: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. 50% OFF" />
-                    </div>
-                    
-                    <div className="sm:col-span-2 space-y-2 mt-2 pt-4 border-t border-zinc-200">
-                      <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase block">Redirect On Click</label>
-                      <div className="flex bg-zinc-200/50 p-1 rounded-xl mb-2 overflow-x-auto hide-scrollbar">
-                        {(["NONE", "CATEGORY", "PRODUCT", "CUSTOM"] as const).map(t => (
-                          <button
-                            key={t}
-                            type="button"
-                            onClick={() => {
-                              setBannerRedirectType(t);
-                              if (t === "NONE") setNewBanner(prev => ({...prev, redirectUrl: ""}));
-                              else if (t === "CATEGORY" && categories.length > 0) setNewBanner(prev => ({...prev, redirectUrl: `/category/${categories[0].id}`}));
-                              else if (t === "PRODUCT" && products.length > 0) setNewBanner(prev => ({...prev, redirectUrl: `/product/${products[0].id}`}));
-                              else if (t === "CUSTOM") setNewBanner(prev => ({...prev, redirectUrl: "/search"}));
-                            }}
-                            className={`flex-1 py-2 rounded-lg text-[7px] lg:text-[8px] font-black tracking-widest uppercase transition-all whitespace-nowrap px-3 ${bannerRedirectType === t ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-500'}`}
-                          >
-                            {t}
-                          </button>
-                        ))}
-                      </div>
-                      
-                      {bannerRedirectType === "CATEGORY" && (
-                        <select 
-                          value={newBanner.redirectUrl?.replace('/category/', '') || ''}
-                          onChange={e => setNewBanner({...newBanner, redirectUrl: `/category/${e.target.value}`})}
-                          className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
-                        >
-                          {categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
-                        </select>
-                      )}
-                      
-                      {bannerRedirectType === "PRODUCT" && (
-                        <select 
-                          value={newBanner.redirectUrl?.replace('/product/', '') || ''}
-                          onChange={e => setNewBanner({...newBanner, redirectUrl: `/product/${e.target.value}`})}
-                          className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
-                        >
-                          {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                        </select>
-                      )}
-                      
-                      {bannerRedirectType === "CUSTOM" && (
-                        <input
-                          type="text"
-                          value={newBanner.redirectUrl}
-                          onChange={(e) => setNewBanner({ ...newBanner, redirectUrl: e.target.value })}
-                          placeholder="e.g. /search"
-                          className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold"
-                        />
-                      )}
-                    </div>
-                  </div>
-                  <button onClick={addBanner} className="w-full bg-primary text-zinc-900 py-3 lg:py-4 rounded-xl font-black text-[9px] lg:text-[10px] tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/10 uppercase">
-                    Add Banner
-                  </button>
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  {(settings.heroBanners || []).map((b, idx) => b.section === activeBannerTab ? (
-                    <div key={idx} className="relative group aspect-[21/9] rounded-2xl overflow-hidden border border-zinc-100 shadow-sm uppercase">
-                      <img src={b.url} className="w-full h-full object-cover" alt="" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                        <button onClick={() => removeBanner(idx)} className="bg-white/20 backdrop-blur-md p-2 rounded-full text-white hover:bg-red-500 transition-colors">
-                          <span className="material-symbols-outlined">delete</span>
-                        </button>
-                      </div>
-                      <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md text-white text-[8px] font-black px-2 py-1 rounded-md uppercase">{b.section}</div>
-                    </div>
-                  ) : null)}
-                  {(!settings.heroBanners || settings.heroBanners.filter(b => b.section === activeBannerTab).length === 0) && (
-                    <div className="col-span-2 py-10 border-2 border-dashed border-zinc-100 rounded-3xl flex flex-col items-center justify-center opacity-40">
-                       <span className="material-symbols-outlined text-4xl mb-2">add_photo_alternate</span>
-                       <p className="text-[10px] font-black tracking-widest uppercase">No carousel slides added for this section</p>
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
           </div>
         </div>

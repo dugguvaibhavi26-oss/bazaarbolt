@@ -188,61 +188,201 @@ export default function Home() {
     const outOfStock = product.stock <= 0;
 
     return (
-      <div className={`flex flex-col gap-1.5 transition-all group ${outOfStock ? 'opacity-60 grayscale' : ''}`}>
-        <div className="relative aspect-square bg-[#F3F4F6] rounded-2xl overflow-hidden border border-zinc-100 cursor-pointer" onClick={() => router.push(`/product/${product.id}`)}>
-          <img className="w-full h-full p-2 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} />
+      <div className={`flex flex-col gap-1 transition-all group ${outOfStock ? 'opacity-60 grayscale' : ''}`}>
+        <div className="relative aspect-square bg-white rounded-xl sm:rounded-2xl overflow-hidden border border-zinc-100 cursor-pointer shadow-sm" onClick={() => router.push(`/product/${product.id}`)}>
+          <img className="w-full h-full p-2.5 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} />
           <div className="absolute bottom-1 right-1">
             {outOfStock ? (
-              <div className="bg-red-50 border border-red-100 text-red-600 px-2 py-1 rounded-lg text-[8px] font-black shadow-sm">
+              <div className="bg-red-50 border border-red-100 text-red-600 px-2 py-1 rounded-lg text-[8px] font-black uppercase">
                 Sold Out
               </div>
             ) : !cartItem ? (
               <button
                 onClick={(e) => { e.stopPropagation(); addToCart({ ...product, quantity: 1 }); }}
-                className="bg-white border-[1.5px] border-green-600 text-green-600 px-3 py-1 rounded-lg text-[10px] font-black shadow-lg active:scale-90 transition-all"
+                className="bg-white border-[1.2px] border-green-600 text-green-600 px-3 py-1 rounded-lg text-[9px] font-black hover:bg-green-600 hover:text-white transition-all active:scale-95"
               >
                 Add
               </button>
             ) : (
-              <div className="flex items-center bg-green-600 text-white rounded-lg px-1 py-1 shadow-lg h-7" onClick={e => e.stopPropagation()}>
-                <button onClick={() => updateQuantity(product.id, -1)} className="w-5 h-5 flex items-center justify-center hover:bg-black/10 rounded transition-colors">
+              <div className="flex items-center bg-green-600 text-white rounded-lg px-0.5 py-0.5 shadow-md h-6" onClick={e => e.stopPropagation()}>
+                <button onClick={() => updateQuantity(product.id, -1)} className="w-4 h-4 flex items-center justify-center hover:bg-black/10 rounded transition-colors">
                   <span className="material-symbols-outlined text-[10px] font-bold">remove</span>
                 </button>
-                <span className="w-4 text-center font-black text-[10px]">{cartItem.quantity}</span>
-                <button onClick={() => updateQuantity(product.id, 1)} disabled={cartItem.quantity >= product.stock} className="w-5 h-5 flex items-center justify-center hover:bg-black/10 rounded transition-colors">
+                <span className="w-3 text-center font-black text-[9px]">{cartItem.quantity}</span>
+                <button onClick={() => updateQuantity(product.id, 1)} disabled={cartItem.quantity >= product.stock} className="w-4 h-4 flex items-center justify-center hover:bg-black/10 rounded transition-colors">
                   <span className="material-symbols-outlined text-[10px] font-bold">add</span>
                 </button>
               </div>
             )}
           </div>
         </div>
-        <div className="flex flex-col px-0.5">
-          <div className="flex gap-1 mb-1">
-            <span className="bg-zinc-100 text-zinc-500 text-[7px] font-bold px-1.5 py-0.5 rounded tracking-wider leading-none">1 Unit</span>
-            {product.stock < 10 && product.stock > 0 && <span className="bg-orange-50 text-orange-600 text-[7px] font-bold px-1.5 py-0.5 rounded tracking-wider leading-none">Only {product.stock} Left</span>}
+        <div className="flex flex-col px-0.5 mt-0.5">
+          <div className="flex items-center gap-1 mb-0.5 h-3">
+            <span className="text-zinc-400 text-[8px] font-medium tracking-tight">1 Unit</span>
+            {product.stock < 10 && product.stock > 0 && <span className="text-orange-600 text-[8px] font-bold tracking-tight">Only {product.stock} Left</span>}
           </div>
-          <Link href={`/product/${product.id}`} className="text-[10px] font-bold text-zinc-900 leading-[1.2] mb-1 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
+          <Link href={`/product/${product.id}`} className="text-[10px] font-bold text-zinc-900 leading-[1.15] mb-1 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
             {product.name}
           </Link>
-          {((product as any).section === "CAFE") && (
-            <p className="text-[7px] font-bold text-zinc-400 mb-1 leading-tight italic">Image for representation only</p>
-          )}
-          {(product.rating || 0) > 0 ? (
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <div className="flex items-center bg-[#f3f9f3] text-[#2d7d2d] px-1.5 py-0.5 rounded-md border border-[#e1eee1]">
-                <span className="text-[10px] font-black mr-0.5">{product.rating?.toFixed(1)}</span>
-                <span className="material-symbols-outlined text-[10px]" style={{ fontVariationSettings: "'FILL'1" }}>star</span>
-              </div>
-              <span className="text-[9px] font-bold text-zinc-400">{product.ratingCount || 0} Ratings</span>
-            </div>
-          ) : null}
-          <div className="flex items-center flex-wrap gap-x-1.5">
-            <span className="text-xs font-black text-zinc-900 tracking-tight">₹{product.price.toFixed(0)}</span>
-            <span className="text-[9px] text-zinc-400 line-through font-medium tracking-tight opacity-50">₹{(product.price * 1.25).toFixed(0)}</span>
+          <div className="flex items-center gap-1">
+            <span className="text-[11px] font-black text-zinc-900 tracking-tighter">₹{product.price.toFixed(0)}</span>
+            <span className="text-[8px] text-zinc-400 line-through font-medium tracking-tight opacity-50">₹{(product.price * 1.25).toFixed(0)}</span>
           </div>
         </div>
       </div>
     );
+  };
+
+  const renderPromoSections = (pos: PromoSection['position'] | "TOP" | "MIDDLE" | "BOTTOM") => {
+    return (settings?.promoSections || [])
+      .filter(s => s.section === activeSection && (s.position || "MIDDLE") === pos)
+      .map(section => {
+        const bgStyles: React.CSSProperties = {
+          backgroundColor: section.bgColor || "#F3F4F6",
+          backgroundImage: section.bgImageUrl ? `url(${section.bgImageUrl})` : `linear-gradient(135deg, ${section.bgColor} 0%, rgba(255,255,255,0.05) 100%)`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        };
+
+        const containerClasses = `relative overflow-hidden shadow-2xl transition-all duration-500 ${
+          section.isCompact ? 'p-4 sm:p-5 rounded-[24px] sm:rounded-[32px]' : 'p-6 sm:p-8 rounded-[32px] sm:rounded-[40px]'
+        } ${section.bgAnimation === 'zoom' ? 'hover:scale-[1.01]' : ''}`;
+
+        if (section.type === "banner") {
+          return (
+            <section key={section.id} className="px-4 mb-8">
+              <div 
+                className={`relative w-full aspect-[21/9] sm:aspect-[21/7] rounded-[24px] sm:rounded-[32px] overflow-hidden shadow-xl cursor-pointer group ${section.bgAnimation === 'zoom' ? 'hover:scale-[1.02]' : ''}`} 
+                onClick={() => section.items[0]?.redirectUrl && router.push(section.items[0].redirectUrl)}
+              >
+                <img 
+                  src={section.items[0]?.imageUrl} 
+                  alt={section.title || ""} 
+                  className={`w-full h-full object-cover transition-transform duration-[20s] ease-linear ${section.bgAnimation === 'zoom' ? 'scale-110 group-hover:scale-100' : 'group-hover:scale-105'}`} 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60"></div>
+                {section.buttonText && (
+                  <div className="absolute bottom-4 right-4 lg:bottom-8 lg:right-8 z-10">
+                    <div className="px-6 py-2.5 rounded-full font-black text-[10px] lg:text-xs tracking-widest uppercase shadow-2xl hover:scale-105 transition-transform" style={{ backgroundColor: section.buttonColor || "#000", color: section.buttonTextColor || "#fff" }}>
+                      {section.buttonText}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          );
+        } else if (section.type === "grid") {
+          return (
+            <section key={section.id} className="px-3 mb-6">
+              <div className={containerClasses} style={bgStyles}>
+                {section.bgImageUrl && <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px] pointer-events-none" />}
+                
+                {section.title && (
+                  <div className={`relative z-10 ${section.isCompact ? 'mb-3' : 'mb-6 sm:mb-8'}`}>
+                    <h3 className={`font-headline font-black tracking-tighter uppercase drop-shadow-sm ${section.isCompact ? 'text-xl sm:text-2xl leading-none' : 'text-3xl sm:text-5xl'}`} style={{ color: section.textColor || "#18181b" }}>{section.title}</h3>
+                  </div>
+                )}
+                
+                <div className={`grid grid-cols-3 gap-2 sm:gap-3 relative z-10 ${section.isCompact ? 'auto-rows-[90px] sm:auto-rows-[120px]' : 'auto-rows-[140px] sm:auto-rows-[180px]'}`}>
+                  {section.items.map((item, idx) => {
+                    const cSpan = Math.min(item.colSpan || 1, 3);
+                    const rSpan = Math.min(item.rowSpan || 1, 3);
+                    
+                    const colSpanClass = {
+                      1: "col-span-1",
+                      2: "col-span-2",
+                      3: "col-span-3",
+                    }[cSpan] || "col-span-1";
+                    
+                    const rowSpanClass = {
+                      1: "row-span-1",
+                      2: "row-span-2",
+                      3: "row-span-3",
+                    }[rSpan] || "row-span-1";
+
+                    return (
+                      <div key={idx} onClick={() => item.redirectUrl && router.push(item.redirectUrl)} className={`cursor-pointer group ${colSpanClass} ${rowSpanClass}`}>
+                        <div className={`w-full h-full rounded-xl sm:rounded-[20px] bg-white shadow-sm overflow-hidden group-hover:scale-[1.02] transition-all duration-300 relative border border-black/5 p-[1px]`}>
+                          <div className="w-full h-full rounded-lg sm:rounded-[14px] overflow-hidden bg-zinc-50 flex items-center justify-center relative">
+                            {item.imageUrl ? (
+                              <img src={item.imageUrl} alt={item.label || ""} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[10s]" />
+                            ) : (
+                              <div className="w-full h-full bg-black/5" />
+                            )}
+                            
+                            {item.label && (
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
+                            )}
+                          </div>
+                          
+                          {item.label && (
+                            <div className="absolute bottom-2 left-2 right-2 z-10">
+                              <h4 className="text-white font-black text-[9px] sm:text-[11px] uppercase tracking-tight leading-none drop-shadow-md group-hover:text-primary transition-colors">{item.label}</h4>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          );
+        } else if (section.type === "deal_row") {
+          let dealProducts = filteredProducts.filter(p => section.priceLimit ? p.price <= section.priceLimit : true);
+          
+          if (section.manualProductIds && section.manualProductIds.length > 0) {
+            const manualProds = section.manualProductIds.map(id => filteredProducts.find(p => p.id === id)).filter(Boolean) as typeof filteredProducts;
+            const otherProds = dealProducts.filter(p => !section.manualProductIds?.includes(p.id));
+            dealProducts = [...manualProds, ...otherProds];
+          }
+          
+          if (dealProducts.length === 0) return null;
+
+          return (
+            <section key={section.id} className="px-4 mb-10 w-full relative z-10">
+              <div className={containerClasses} style={bgStyles}>
+                {section.bgImageUrl && <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />}
+                <div className="absolute top-0 right-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
+                <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-white/30 rounded-full blur-[80px] pointer-events-none"></div>
+                <div className="absolute bottom-[-20%] left-[-10%] w-64 h-64 bg-black/10 rounded-full blur-[60px] pointer-events-none"></div>
+                
+                <div className="flex flex-col sm:flex-row gap-5 sm:gap-6 relative z-10">
+                  {/* Side Banner */}
+                  <div className={`w-full sm:w-48 flex-shrink-0 rounded-[24px] overflow-hidden shadow-2xl relative group cursor-pointer border-[1.5px] border-white/40 bg-gradient-to-b from-white/20 to-transparent aspect-[21/9] sm:aspect-auto ${section.isCompact ? 'sm:w-36' : ''}`}>
+                    {section.sideBannerImageUrl ? (
+                      <img src={section.sideBannerImageUrl} alt="Deals" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    ) : (
+                      <div className="w-full h-full bg-black/10"></div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+                    {section.title && (
+                      <div className="absolute bottom-4 sm:bottom-6 left-0 right-0 px-4 flex flex-col items-center text-center">
+                        <span className="text-[10px] font-black text-white/80 tracking-widest uppercase mb-1 drop-shadow-md">Starting At</span>
+                        <h3 className={`font-headline font-black tracking-tighter uppercase text-white leading-none drop-shadow-2xl ${section.isCompact ? 'text-2xl sm:text-3xl' : 'text-3xl sm:text-5xl'}`}>
+                          {section.title}
+                        </h3>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Sliding Products */}
+                  <div className="flex overflow-x-auto hide-scrollbar gap-3 sm:gap-4 pb-4 snap-x flex-1 items-center pt-2 px-1">
+                    {dealProducts.map(p => (
+                      <div key={p.id} className={`${section.isCompact ? 'min-w-[105px] max-w-[105px]' : 'min-w-[120px] max-w-[120px]'} snap-start shrink-0 transform transition-transform hover:-translate-y-2`}>
+                        <div className="bg-white/95 backdrop-blur-xl rounded-2xl p-1 h-full shadow-2xl border border-white ring-1 ring-black/5 hover:border-primary/50 transition-colors">
+                          <ProductCard product={p} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          );
+        }
+        return null;
+    });
   };
 
   if (settingsLoading) {
@@ -330,6 +470,9 @@ export default function Home() {
           </section>
         ) : (
           <>
+            {/* Dynamic Promo Sections - VERY TOP */}
+            {renderPromoSections("TOP")}
+
             <section className="mt-4 mb-8">
               <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-x-1 gap-y-6 px-2 justify-items-center">
                 {filteredCategories.map(cat => (
@@ -368,6 +511,9 @@ export default function Home() {
               </div>
             </section>
 
+            {/* Dynamic Promo Sections - MIDDLE */}
+            {renderPromoSections("AFTER_HERO")}
+
             {/* Sliding Sections: Bestsellers & New Arrivals */}
             {[
               {
@@ -401,25 +547,21 @@ export default function Home() {
                 </div>
                 <div className="flex overflow-x-auto hide-scrollbar gap-3 pb-4 pr-4 snap-x w-full pointer-events-auto">
                   {section.products.map(p => (
-                    <div key={p.id} className="min-w-[140px] max-w-[140px] snap-start shrink-0">
+                    <div key={p.id} className="min-w-[110px] max-w-[110px] snap-start shrink-0">
                       <ProductCard product={p} />
                     </div>
                   ))}
-                  {section.products.length >= 10 && (
-                    <div className="min-w-[140px] flex items-center justify-center snap-start shrink-0 pr-4">
-                      <Link href={section.link} className="w-24 h-24 bg-zinc-50 rounded-full flex flex-col items-center justify-center border border-zinc-100 hover:border-primary hover:bg-primary/5 transition-all text-zinc-400 hover:text-primary shadow-sm active:scale-95 group">
-                        <span className="material-symbols-outlined text-3xl mb-1 group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                        <span className="text-[10px] font-black tracking-widest leading-none">See All</span>
-                      </Link>
-                    </div>
-                  )}
                 </div>
               </section>
             ))}
 
+            {/* Dynamic Promo Sections - MIDDLE */}
+            {renderPromoSections("AFTER_NEW_ARRIVALS")}
+            {renderPromoSections("MIDDLE")}
+
             {/* Grid Sections: Categories */}
             {filteredCategories.map(cat => {
-              const catProducts = filteredProducts.filter(p => p.category === cat.id || p.category === cat.label).slice(0, 12);
+              const catProducts = filteredProducts.filter(p => p.category === cat.id || p.category === cat.label);
               if (catProducts.length === 0) return null;
 
               return (
@@ -430,20 +572,20 @@ export default function Home() {
                       <span>{cat.label}</span>
                     </h3>
                   </div>
-                  <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-2">
-                    {catProducts.map(p => <ProductCard key={p.id} product={p} />)}
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+                    {catProducts.map(p => (
+                      <div key={p.id} className="w-full">
+                         <ProductCard product={p} />
+                      </div>
+                    ))}
                   </div>
-                  {catProducts.length >= 12 && (
-                    <div className="mt-6 flex justify-center">
-                      <Link href={`/category/${cat.id}`} className="w-full sm:w-auto px-8 py-3.5 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-2xl flex items-center justify-center gap-2 transition-all group shadow-sm active:scale-95">
-                        <span className="text-xs font-black tracking-widest text-zinc-900 group-hover:text-primary transition-colors">See all</span>
-                        <span className="material-symbols-outlined text-zinc-400 text-sm group-hover:translate-x-1 transition-transform group-hover:text-primary">arrow_forward</span>
-                      </Link>
-                    </div>
-                  )}
                 </section>
               );
             })}
+
+            {/* Dynamic Promo Sections - BOTTOM */}
+            {renderPromoSections("AFTER_CATEGORIES")}
+            {renderPromoSections("BOTTOM")}
 
             <section className="px-4 mb-8">
               <AdUnit slotId="home-mid-banner" className="m-0" />

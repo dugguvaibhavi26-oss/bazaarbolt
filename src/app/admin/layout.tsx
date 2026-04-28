@@ -34,6 +34,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
  { label: "Payments", href: "/admin/payments", icon: "payments"},
  { label: "Help & FAQs", href: "/admin/help", icon: "live_help"},
  { label: "Push Alerts", href: "/admin/notifications", icon: "notification_important"},
+ { label: "Layouts & Banners", href: "/admin/layouts", icon: "view_quilt"},
  { label: "Store Settings", href: "/admin/settings", icon: "settings"},
  ];
 
