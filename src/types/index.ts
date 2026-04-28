@@ -56,9 +56,9 @@ export interface PromoSectionItem {
 
 export interface PromoSection {
   id: string;
-  type: "banner" | "grid" | "deal_row";
+  type: "banner" | "grid" | "deal_row" | "sliding_row";
   section: "BB" | "CAFE";
-  position?: "TOP" | "MIDDLE" | "BOTTOM" | "AFTER_HERO" | "AFTER_CATEGORIES" | "AFTER_BESTSELLERS" | "AFTER_NEW_ARRIVALS";
+  position?: "TOP" | "MIDDLE" | "BOTTOM" | "AFTER_HERO" | "AFTER_CATEGORIES" | "AFTER_BESTSELLERS" | "AFTER_NEW_ARRIVALS" | string;
   title?: string;
   subtitle?: string;
   bgColor?: string;
@@ -73,8 +73,12 @@ export interface PromoSection {
   buttonColor?: string;
   buttonTextColor?: string;
   
-  // Deal Row specific
+  // Deal Row & Sliding Row specific
   priceLimit?: number;
   manualProductIds?: string[];
   sideBannerImageUrl?: string;
+  afterCategoryId?: string;
+  iconUrl?: string;
+  filterCategoryId?: string;
+  filterSubcategory?: string;
 }

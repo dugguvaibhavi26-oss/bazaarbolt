@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import toast from "react-hot-toast";
@@ -9,7 +9,7 @@ import { AppSettings, PromoSection } from "@/types";
 import { useStore } from "@/store/useStore";
 
 export default function AdminLayouts() {
-  const { categories, products } = useStore();
+  const { categories, products, fetchCatalog } = useStore();
   const [settings, setSettings] = useState<AppSettings>({
     storeOpen: true,
     bannerImage: "",
@@ -57,7 +57,33 @@ export default function AdminLayouts() {
     priceLimit: 99,
     sideBannerImageUrl: "",
     manualProductIds: [],
-    items: []
+    items: [],
+    afterCategoryId: ""
+  });
+  const [newUnderPriceStore, setNewUnderPriceStore] = useState<PromoSection>({
+    id: Date.now().toString(),
+    type: "deal_row",
+    section: "BB",
+    position: "MIDDLE",
+    title: "",
+    priceLimit: 19,
+    sideBannerImageUrl: "",
+    manualProductIds: [],
+    items: [],
+    afterCategoryId: ""
+  });
+  const [newDynamicRow, setNewDynamicRow] = useState<PromoSection>({
+    id: Date.now().toString(),
+    type: "sliding_row",
+    section: "BB",
+    position: "MIDDLE",
+    title: "",
+    iconUrl: "",
+    filterCategoryId: "",
+    filterSubcategory: "",
+    manualProductIds: [],
+    items: [],
+    afterCategoryId: ""
   });
   const [newPromoItem, setNewPromoItem] = useState({ imageUrl: "", redirectUrl: "", label: "", colSpan: 1, rowSpan: 1 });
   const [promoRedirectType, setPromoRedirectType] = useState<"NONE" | "CATEGORY" | "PRODUCT" | "CUSTOM">("NONE");
@@ -73,6 +99,10 @@ export default function AdminLayouts() {
       }
       setLoading(false);
     });
+    
+    // Ensure catalog data is loaded for category dropdowns
+    fetchCatalog();
+    
     return () => unsub();
   }, []);
 
@@ -122,7 +152,7 @@ export default function AdminLayouts() {
   };
 
   const addPromoSection = () => {
-    if (newPromoSection.type !== "deal_row" && newPromoSection.items.length === 0) {
+    if (newPromoSection.items.length === 0) {
       toast.error("Please add at least one item to the section");
       return;
     }
@@ -148,9 +178,59 @@ export default function AdminLayouts() {
       priceLimit: 99,
       sideBannerImageUrl: "",
       manualProductIds: [],
-      items: []
+      items: [],
+      afterCategoryId: ""
     });
     toast.success("Section added locally. Remember to click 'Propagate Changes' to save!", { duration: 4000 });
+  };
+
+  const addUnderPriceStore = () => {
+    if (!newUnderPriceStore.title) {
+      toast.error("Please enter a title for the store");
+      return;
+    }
+    const currentSections = settings.promoSections || [];
+    setSettings({ ...settings, promoSections: [...currentSections, { ...newUnderPriceStore, id: Date.now().toString() }] });
+    
+    // Reset
+    setNewUnderPriceStore({
+      id: Date.now().toString(),
+      type: "deal_row",
+      section: activeBannerTab,
+      position: "MIDDLE",
+      title: "",
+      priceLimit: 19,
+      sideBannerImageUrl: "",
+      manualProductIds: [],
+      items: [],
+      afterCategoryId: ""
+    });
+    toast.success("Under Price Store added locally!", { duration: 4000 });
+  };
+
+  const addDynamicRow = () => {
+    if (!newDynamicRow.title) {
+      toast.error("Please enter a title for the row");
+      return;
+    }
+    const currentSections = settings.promoSections || [];
+    setSettings({ ...settings, promoSections: [...currentSections, { ...newDynamicRow, id: Date.now().toString() }] });
+    
+    // Reset
+    setNewDynamicRow({
+      id: Date.now().toString(),
+      type: "sliding_row",
+      section: activeBannerTab,
+      position: "MIDDLE",
+      title: "",
+      iconUrl: "",
+      filterCategoryId: "",
+      filterSubcategory: "",
+      manualProductIds: [],
+      items: [],
+      afterCategoryId: ""
+    });
+    toast.success("Dynamic Row added locally!", { duration: 4000 });
   };
 
   const removePromoSection = (id: string) => {
@@ -308,34 +388,271 @@ export default function AdminLayouts() {
             </div>
           </div>
 
-          {/* PROMO SECTIONS UI */}
+          {/* UNDER PRICE STORES UI */}
+          <div className="pt-8 border-t border-zinc-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 lg:mb-4">
+              <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 uppercase">Under Price Stores (e.g. Under 19 Store)</label>
+            </div>
+            <div className="space-y-4 mb-4 bg-zinc-50 p-4 lg:p-6 rounded-[24px] lg:rounded-[32px] border border-zinc-100 uppercase">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 uppercase">
+                <div className="space-y-1 lg:space-y-1.5 uppercase">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Store Title</label>
+                  <input type="text" value={newUnderPriceStore.title} onChange={e => setNewUnderPriceStore({...newUnderPriceStore, title: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. UNDER 19 STORE" />
+                </div>
+                <div className="space-y-1 lg:space-y-1.5 uppercase">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Max Price Limit (₹)</label>
+                  <input type="number" value={newUnderPriceStore.priceLimit} onChange={e => setNewUnderPriceStore({...newUnderPriceStore, priceLimit: parseFloat(e.target.value) || 0})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase" />
+                </div>
+                <div className="space-y-1 lg:space-y-1.5 uppercase">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Side Banner Image URL</label>
+                  <input type="text" value={newUnderPriceStore.sideBannerImageUrl} onChange={e => setNewUnderPriceStore({...newUnderPriceStore, sideBannerImageUrl: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase" placeholder="URL..." />
+                </div>
+                <div className="space-y-1 lg:space-y-1.5 uppercase">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Place Under Category</label>
+                  <select 
+                    value={newUnderPriceStore.afterCategoryId ? `UNDER_${newUnderPriceStore.afterCategoryId}` : (newUnderPriceStore.position || "MIDDLE")} 
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (val.startsWith("UNDER_")) {
+                        setNewUnderPriceStore({...newUnderPriceStore, afterCategoryId: val.replace("UNDER_", ""), position: "MIDDLE"});
+                      } else {
+                        setNewUnderPriceStore({...newUnderPriceStore, position: val as any, afterCategoryId: ""});
+                      }
+                    }} 
+                    className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
+                  >
+                    <option value="TOP">PAGE TOP</option>
+                    <option value="AFTER_HERO">AFTER HERO BANNERS</option>
+                    <option value="AFTER_BESTSELLERS">AFTER BESTSELLERS</option>
+                    <option value="AFTER_NEW_ARRIVALS">AFTER NEW ARRIVALS</option>
+                    <option value="AFTER_CATEGORIES">AFTER ALL CATEGORIES</option>
+                    <option value="BOTTOM">PAGE BOTTOM</option>
+                    <optgroup label="ANCHOR TO CATEGORY">
+                      {categories.map(c => <option key={c.id} value={`UNDER_${c.id}`}>UNDER {c.label}</option>)}
+                    </optgroup>
+                    <optgroup label="ANCHOR TO CUSTOM SECTIONS">
+                      {settings.promoSections?.filter(s => s.id !== newUnderPriceStore.id && s.title).map(s => (
+                        <option key={s.id} value={`UNDER_${s.id}`}>AFTER {s.title}</option>
+                      ))}
+                    </optgroup>
+                  </select>
+                </div>
+                
+                <div className="space-y-1 lg:space-y-1.5 uppercase sm:col-span-2">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase block">Featured Products (Optional - Auto-filled by Price Limit)</label>
+                  <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto bg-white border border-zinc-100 rounded-xl p-3">
+                    {products.filter(p => newUnderPriceStore.priceLimit ? p.price <= newUnderPriceStore.priceLimit : true).map(p => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => {
+                          const ids = newUnderPriceStore.manualProductIds || [];
+                          if (ids.includes(p.id)) {
+                            setNewUnderPriceStore({...newUnderPriceStore, manualProductIds: ids.filter(id => id !== p.id)});
+                          } else {
+                            if (ids.length >= 8) {
+                              toast.error("You can only select up to 8 products");
+                              return;
+                            }
+                            setNewUnderPriceStore({...newUnderPriceStore, manualProductIds: [...ids, p.id]});
+                          }
+                        }}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[8px] font-bold tracking-widest uppercase transition-all ${newUnderPriceStore.manualProductIds?.includes(p.id) ? 'bg-primary text-zinc-900 border border-primary' : 'bg-zinc-50 text-zinc-500 border border-zinc-200'}`}
+                      >
+                        <img src={p.image} className="w-4 h-4 object-contain rounded" alt="" />
+                        {p.name.length > 20 ? p.name.substring(0, 20) + "..." : p.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <button onClick={addUnderPriceStore} className="w-full bg-primary text-zinc-900 py-3 lg:py-4 rounded-xl font-black text-[9px] lg:text-[10px] tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/10 uppercase mt-2">
+                Add Under Price Store
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {(settings.promoSections || []).filter(s => s.type === "deal_row").map((s) => s.section === activeBannerTab ? (
+                <div key={s.id} className="relative rounded-2xl overflow-hidden border border-zinc-200 shadow-sm p-4 bg-zinc-50">
+                  <div className="flex justify-between items-start mb-3 relative z-10">
+                    <div>
+                      <h4 className="font-headline font-black text-sm uppercase text-zinc-900">{s.title}</h4>
+                      <p className="text-[8px] font-bold text-zinc-400 tracking-widest uppercase">
+                        Under ₹{s.priceLimit} • {s.afterCategoryId ? `After Category: ${categories.find(c => c.id === s.afterCategoryId)?.label}` : `Position: ${s.position}`}
+                      </p>
+                    </div>
+                    <button onClick={() => removePromoSection(s.id)} className="bg-red-50 text-red-500 hover:bg-red-500 hover:text-white p-1.5 rounded-lg transition-colors">
+                      <span className="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                  </div>
+                </div>
+              ) : null)}
+            </div>
+          </div>
+
+          {/* DYNAMIC CUSTOMER ROWS UI */}
+          <div className="pt-8 border-t border-zinc-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 lg:mb-4">
+              <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 uppercase">Customer Panel Sections (Bestsellers, etc)</label>
+            </div>
+            <div className="space-y-4 mb-4 bg-zinc-50 p-4 lg:p-6 rounded-[24px] lg:rounded-[32px] border border-zinc-100 uppercase">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 uppercase">
+                <div className="space-y-1 lg:space-y-1.5 uppercase">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Section Title</label>
+                  <input type="text" value={newDynamicRow.title} onChange={e => setNewDynamicRow({...newDynamicRow, title: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. BESTSELLERS" />
+                </div>
+                <div className="space-y-1 lg:space-y-1.5 uppercase">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Icon URL (Optional)</label>
+                  <input type="text" value={newDynamicRow.iconUrl} onChange={e => setNewDynamicRow({...newDynamicRow, iconUrl: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase" placeholder="URL..." />
+                </div>
+                <div className="space-y-1 lg:space-y-1.5 uppercase">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Filter By Category</label>
+                  <select 
+                    value={newDynamicRow.filterCategoryId || ""} 
+                    onChange={e => setNewDynamicRow({...newDynamicRow, filterCategoryId: e.target.value})} 
+                    className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
+                  >
+                    <option value="">ALL CATEGORIES</option>
+                    {categories.map(c => (
+                      <React.Fragment key={c.id}>
+                        <option value={c.id}>{c.label}</option>
+                        {c.subcategories && Array.isArray(c.subcategories) && c.subcategories.map((sub: any) => {
+                          const subLabel = typeof sub === 'string' ? sub : sub.label;
+                          const subId = typeof sub === 'string' ? sub : (sub.id || sub.label);
+                          return (
+                            <option key={`${c.id}_${subId}`} value={subId}>— {subLabel} ({c.label})</option>
+                          );
+                        })}
+                      </React.Fragment>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1 lg:space-y-1.5 uppercase">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Placement</label>
+                  <select 
+                    value={newDynamicRow.afterCategoryId ? `UNDER_${newDynamicRow.afterCategoryId}` : (newDynamicRow.position || "MIDDLE")} 
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (val.startsWith("UNDER_")) {
+                        setNewDynamicRow({...newDynamicRow, afterCategoryId: val.replace("UNDER_", ""), position: "MIDDLE"});
+                      } else {
+                        setNewDynamicRow({...newDynamicRow, position: val as any, afterCategoryId: ""});
+                      }
+                    }} 
+                    className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
+                  >
+                    <option value="TOP">PAGE TOP</option>
+                    <option value="AFTER_HERO">AFTER HERO BANNERS</option>
+                    <option value="AFTER_BESTSELLERS">AFTER BESTSELLERS</option>
+                    <option value="AFTER_NEW_ARRIVALS">AFTER NEW ARRIVALS</option>
+                    <option value="AFTER_CATEGORIES">AFTER ALL CATEGORIES</option>
+                    <option value="BOTTOM">PAGE BOTTOM</option>
+                    <optgroup label="ANCHOR TO CATEGORY">
+                      {categories.map(c => <option key={c.id} value={`UNDER_${c.id}`}>UNDER {c.label}</option>)}
+                    </optgroup>
+                    <optgroup label="ANCHOR TO CUSTOM SECTIONS">
+                      {settings.promoSections?.filter(s => s.id !== newDynamicRow.id && s.title).map(s => (
+                        <option key={s.id} value={`UNDER_${s.id}`}>AFTER {s.title}</option>
+                      ))}
+                    </optgroup>
+                  </select>
+                </div>
+                
+                <div className="space-y-1 lg:space-y-1.5 uppercase sm:col-span-2">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase block">Featured Products (Optional - Overrides Category Filter)</label>
+                  <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto bg-white border border-zinc-100 rounded-xl p-3">
+                    {products.filter(p => !newDynamicRow.filterCategoryId || p.category === newDynamicRow.filterCategoryId).map(p => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => {
+                          const ids = newDynamicRow.manualProductIds || [];
+                          if (ids.includes(p.id)) {
+                            setNewDynamicRow({...newDynamicRow, manualProductIds: ids.filter(id => id !== p.id)});
+                          } else {
+                            if (ids.length >= 20) {
+                              toast.error("You can only select up to 20 products");
+                              return;
+                            }
+                            setNewDynamicRow({...newDynamicRow, manualProductIds: [...ids, p.id]});
+                          }
+                        }}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[8px] font-bold tracking-widest uppercase transition-all ${newDynamicRow.manualProductIds?.includes(p.id) ? 'bg-primary text-zinc-900 border border-primary' : 'bg-zinc-50 text-zinc-500 border border-zinc-200'}`}
+                      >
+                        <img src={p.image} className="w-4 h-4 object-contain rounded" alt="" />
+                        {p.name.length > 20 ? p.name.substring(0, 20) + "..." : p.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <button onClick={addDynamicRow} className="w-full bg-primary text-zinc-900 py-3 lg:py-4 rounded-xl font-black text-[9px] lg:text-[10px] tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/10 uppercase mt-2">
+                Add Section Row
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {(settings.promoSections || []).filter(s => s.type === "sliding_row").map((s) => s.section === activeBannerTab ? (
+                <div key={s.id} className="relative rounded-2xl overflow-hidden border border-zinc-200 shadow-sm p-4 bg-zinc-50">
+                  <div className="flex justify-between items-start mb-3 relative z-10">
+                    <div className="flex items-center gap-3">
+                      {s.iconUrl && <img src={s.iconUrl} className="w-8 h-8 object-contain" alt="" />}
+                      <div>
+                        <h4 className="font-headline font-black text-sm uppercase text-zinc-900">{s.title}</h4>
+                        <p className="text-[8px] font-bold text-zinc-400 tracking-widest uppercase">
+                          {s.filterCategoryId ? `Category: ${categories.find(c => c.id === s.filterCategoryId)?.label}` : 'All Products'} • {s.afterCategoryId ? `After Category: ${categories.find(c => c.id === s.afterCategoryId)?.label}` : `Position: ${s.position}`}
+                        </p>
+                      </div>
+                    </div>
+                    <button onClick={() => removePromoSection(s.id)} className="bg-red-50 text-red-500 hover:bg-red-500 hover:text-white p-1.5 rounded-lg transition-colors">
+                      <span className="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                  </div>
+                </div>
+              ) : null)}
+            </div>
+          </div>
           <div className="pt-6 border-t border-zinc-100">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 lg:mb-4">
-              <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 uppercase">Promotional Layout Sections</label>
+              <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 uppercase">Other Promotional Layout Sections</label>
             </div>
             <div className="space-y-4 mb-4 bg-zinc-50 p-4 lg:p-6 rounded-[24px] lg:rounded-[32px] border border-zinc-100 uppercase">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 uppercase">
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Section Type</label>
-                  <select value={newPromoSection.type} onChange={e => setNewPromoSection({...newPromoSection, type: e.target.value as "banner" | "grid" | "deal_row"})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase">
+                  <select value={newPromoSection.type} onChange={e => setNewPromoSection({...newPromoSection, type: e.target.value as "banner" | "grid"})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase">
                     <option value="banner">Wide Banner</option>
                     <option value="grid">Grid Items</option>
-                    <option value="deal_row">Deal Row (Under ₹X)</option>
                   </select>
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Display Placement</label>
                   <select 
-                    value={newPromoSection.position || "MIDDLE"} 
-                    onChange={e => setNewPromoSection({...newPromoSection, position: e.target.value as any})} 
+                    value={newPromoSection.afterCategoryId ? `UNDER_${newPromoSection.afterCategoryId}` : (newPromoSection.position || "MIDDLE")} 
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (val.startsWith("UNDER_")) {
+                        setNewPromoSection({...newPromoSection, afterCategoryId: val.replace("UNDER_", ""), position: "MIDDLE"});
+                      } else {
+                        setNewPromoSection({...newPromoSection, position: val as any, afterCategoryId: ""});
+                      }
+                    }} 
                     className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
                   >
-                    <option value="TOP">Page Top</option>
-                    <option value="AFTER_HERO">After Hero Banners</option>
-                    <option value="AFTER_CATEGORIES">After Categories</option>
-                    <option value="AFTER_BESTSELLERS">After Bestsellers</option>
-                    <option value="AFTER_NEW_ARRIVALS">After New Arrivals</option>
-                    <option value="BOTTOM">Page Bottom (Above Footer)</option>
+                    <option value="TOP">PAGE TOP</option>
+                    <option value="AFTER_HERO">AFTER HERO BANNERS</option>
+                    <option value="AFTER_BESTSELLERS">AFTER BESTSELLERS</option>
+                    <option value="AFTER_NEW_ARRIVALS">AFTER NEW ARRIVALS</option>
+                    <option value="AFTER_CATEGORIES">AFTER ALL CATEGORIES</option>
+                    <option value="BOTTOM">PAGE BOTTOM</option>
+                    <optgroup label="ANCHOR TO CATEGORY">
+                      {categories.map(c => <option key={c.id} value={`UNDER_${c.id}`}>UNDER {c.label}</option>)}
+                    </optgroup>
+                    <optgroup label="ANCHOR TO CUSTOM SECTIONS">
+                      {settings.promoSections?.filter(s => s.id !== newPromoSection.id && s.title).map(s => (
+                        <option key={s.id} value={`UNDER_${s.id}`}>AFTER {s.title}</option>
+                      ))}
+                    </optgroup>
                   </select>
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
@@ -392,45 +709,7 @@ export default function AdminLayouts() {
                   </>
                 )}
 
-                {newPromoSection.type === "deal_row" && (
-                  <>
-                    <div className="space-y-1 lg:space-y-1.5 uppercase">
-                      <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Max Price Limit (₹)</label>
-                      <input type="number" value={newPromoSection.priceLimit} onChange={e => setNewPromoSection({...newPromoSection, priceLimit: parseFloat(e.target.value) || 0})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase" />
-                    </div>
-                    <div className="space-y-1 lg:space-y-1.5 uppercase">
-                      <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Side Banner Image URL</label>
-                      <input type="text" value={newPromoSection.sideBannerImageUrl} onChange={e => setNewPromoSection({...newPromoSection, sideBannerImageUrl: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase" placeholder="URL..." />
-                    </div>
-                    <div className="space-y-1 lg:space-y-1.5 uppercase sm:col-span-2">
-                      <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase block">Select Priority Products (up to 5)</label>
-                      <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto bg-white border border-zinc-100 rounded-xl p-3">
-                        {products.filter(p => newPromoSection.priceLimit ? p.price <= newPromoSection.priceLimit : true).map(p => (
-                          <button
-                            key={p.id}
-                            type="button"
-                            onClick={() => {
-                              const ids = newPromoSection.manualProductIds || [];
-                              if (ids.includes(p.id)) {
-                                setNewPromoSection({...newPromoSection, manualProductIds: ids.filter(id => id !== p.id)});
-                              } else {
-                                if (ids.length >= 5) {
-                                  toast.error("You can only select up to 5 products");
-                                  return;
-                                }
-                                setNewPromoSection({...newPromoSection, manualProductIds: [...ids, p.id]});
-                              }
-                            }}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[8px] font-bold tracking-widest uppercase transition-all ${newPromoSection.manualProductIds?.includes(p.id) ? 'bg-primary text-zinc-900 border border-primary' : 'bg-zinc-50 text-zinc-500 border border-zinc-200'}`}
-                          >
-                            <img src={p.image} className="w-4 h-4 object-contain rounded" alt="" />
-                            {p.name.length > 20 ? p.name.substring(0, 20) + "..." : p.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
+
 
                 {newPromoSection.type !== "deal_row" && (
                   <div className="sm:col-span-2 space-y-2 mt-4 p-4 border border-zinc-200 rounded-2xl bg-white">
@@ -614,7 +893,7 @@ export default function AdminLayouts() {
             </div>
 
             <div className="space-y-4">
-              {(settings.promoSections || []).map((s, idx) => s.section === activeBannerTab ? (
+              {(settings.promoSections || []).filter(s => s.type !== "deal_row").map((s, idx) => s.section === activeBannerTab ? (
                 <div key={s.id} className="relative rounded-2xl overflow-hidden border border-zinc-200 shadow-sm p-4" style={{ backgroundColor: s.bgColor }}>
                   <div className="flex justify-between items-start mb-3 relative z-10">
                     <h4 className="font-headline font-black text-sm uppercase" style={{ color: s.textColor }}>{s.title || `${s.type} Section`}</h4>
@@ -631,10 +910,10 @@ export default function AdminLayouts() {
                   </div>
                 </div>
               ) : null)}
-              {(!settings.promoSections || settings.promoSections.filter(s => s.section === activeBannerTab).length === 0) && (
+              {(!settings.promoSections || settings.promoSections.filter(s => s.section === activeBannerTab && s.type !== "deal_row").length === 0) && (
                 <div className="py-10 border-2 border-dashed border-zinc-100 rounded-3xl flex flex-col items-center justify-center opacity-40">
                    <span className="material-symbols-outlined text-4xl mb-2">view_carousel</span>
-                   <p className="text-[10px] font-black tracking-widest uppercase">No promotional sections added</p>
+                   <p className="text-[10px] font-black tracking-widest uppercase">No other promotional sections added</p>
                 </div>
               )}
             </div>

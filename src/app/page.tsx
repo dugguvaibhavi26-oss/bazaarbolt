@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useStore } from "@/store/useStore";
 import { collection, onSnapshot, query, where, doc, updateDoc, arrayUnion, getDocs, limit, orderBy, runTransaction } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -233,10 +233,11 @@ export default function Home() {
     );
   };
 
-  const renderPromoSections = (pos: PromoSection['position'] | "TOP" | "MIDDLE" | "BOTTOM") => {
+  const renderPromoSections = (pos: PromoSection['position'] | "TOP" | "MIDDLE" | "BOTTOM", anchoredTo?: string) => {
     return (settings?.promoSections || [])
-      .filter(s => s.section === activeSection && (s.position || "MIDDLE") === pos)
+      .filter(s => s.section === activeSection && (s.position || "MIDDLE") === pos && (anchoredTo ? s.afterCategoryId === anchoredTo : !s.afterCategoryId))
       .map(section => {
+        let content: React.ReactNode = null;
         const bgStyles: React.CSSProperties = {
           backgroundColor: section.bgColor || "#F3F4F6",
           backgroundImage: section.bgImageUrl ? `url(${section.bgImageUrl})` : `linear-gradient(135deg, ${section.bgColor} 0%, rgba(255,255,255,0.05) 100%)`,
@@ -249,7 +250,7 @@ export default function Home() {
         } ${section.bgAnimation === 'zoom' ? 'hover:scale-[1.01]' : ''}`;
 
         if (section.type === "banner") {
-          return (
+          content = (
             <section key={section.id} className="px-4 mb-8">
               <div 
                 className={`relative w-full aspect-[21/9] sm:aspect-[21/7] rounded-[24px] sm:rounded-[32px] overflow-hidden shadow-xl cursor-pointer group ${section.bgAnimation === 'zoom' ? 'hover:scale-[1.02]' : ''}`} 
@@ -272,7 +273,7 @@ export default function Home() {
             </section>
           );
         } else if (section.type === "grid") {
-          return (
+          content = (
             <section key={section.id} className="px-3 mb-6">
               <div className={containerClasses} style={bgStyles}>
                 {section.bgImageUrl && <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px] pointer-events-none" />}
@@ -337,51 +338,134 @@ export default function Home() {
             dealProducts = [...manualProds, ...otherProds];
           }
           
-          if (dealProducts.length === 0) return null;
-
-          return (
-            <section key={section.id} className="px-4 mb-10 w-full relative z-10">
-              <div className={containerClasses} style={bgStyles}>
-                {section.bgImageUrl && <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />}
-                <div className="absolute top-0 right-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
-                <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-white/30 rounded-full blur-[80px] pointer-events-none"></div>
-                <div className="absolute bottom-[-20%] left-[-10%] w-64 h-64 bg-black/10 rounded-full blur-[60px] pointer-events-none"></div>
-                
-                <div className="flex flex-col sm:flex-row gap-5 sm:gap-6 relative z-10">
-                  {/* Side Banner */}
-                  <div className={`w-full sm:w-48 flex-shrink-0 rounded-[24px] overflow-hidden shadow-2xl relative group cursor-pointer border-[1.5px] border-white/40 bg-gradient-to-b from-white/20 to-transparent aspect-[21/9] sm:aspect-auto ${section.isCompact ? 'sm:w-36' : ''}`}>
-                    {section.sideBannerImageUrl ? (
-                      <img src={section.sideBannerImageUrl} alt="Deals" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                    ) : (
-                      <div className="w-full h-full bg-black/10"></div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
-                    {section.title && (
-                      <div className="absolute bottom-4 sm:bottom-6 left-0 right-0 px-4 flex flex-col items-center text-center">
-                        <span className="text-[10px] font-black text-white/80 tracking-widest uppercase mb-1 drop-shadow-md">Starting At</span>
-                        <h3 className={`font-headline font-black tracking-tighter uppercase text-white leading-none drop-shadow-2xl ${section.isCompact ? 'text-2xl sm:text-3xl' : 'text-3xl sm:text-5xl'}`}>
-                          {section.title}
+          if (dealProducts.length > 0) {
+            content = (
+              <section key={section.id} className="px-4 mb-10 w-full relative z-10">
+                <div className="bg-zinc-50 rounded-[32px] overflow-hidden border border-zinc-200 shadow-sm flex h-[280px] sm:h-[320px]">
+                  <div className="w-14 sm:w-16 bg-[#f3f9f3] border-r border-green-100 flex flex-col items-center justify-between py-6 relative overflow-hidden shrink-0">
+                    <div className="w-[1.5px] h-12 bg-green-200 rounded-full shrink-0" />
+                    <div className="flex-1 flex items-center justify-center w-full">
+                      <div className="rotate-[-90deg] whitespace-nowrap">
+                        <h3 className="text-[12px] sm:text-[15px] font-black tracking-[0.2em] uppercase text-green-950 leading-none italic drop-shadow-sm font-headline">
+                          {section.title || "UNDER 19 STORE"}
                         </h3>
                       </div>
-                    )}
+                    </div>
+                    <div className="w-[1.5px] h-12 bg-green-200 rounded-full shrink-0" />
                   </div>
-                  
-                  {/* Sliding Products */}
-                  <div className="flex overflow-x-auto hide-scrollbar gap-3 sm:gap-4 pb-4 snap-x flex-1 items-center pt-2 px-1">
+                  <div className="flex-1 flex overflow-x-auto hide-scrollbar gap-3 sm:gap-4 p-4 items-center snap-x">
                     {dealProducts.map(p => (
-                      <div key={p.id} className={`${section.isCompact ? 'min-w-[105px] max-w-[105px]' : 'min-w-[120px] max-w-[120px]'} snap-start shrink-0 transform transition-transform hover:-translate-y-2`}>
-                        <div className="bg-white/95 backdrop-blur-xl rounded-2xl p-1 h-full shadow-2xl border border-white ring-1 ring-black/5 hover:border-primary/50 transition-colors">
-                          <ProductCard product={p} />
+                      <div key={p.id} className={`${section.isCompact ? 'min-w-[130px] max-w-[130px]' : 'min-w-[150px] max-w-[150px]'} h-full snap-start shrink-0`}>
+                        <div className="bg-white rounded-2xl p-2.5 h-full shadow-sm border border-white flex flex-col">
+                          <div className="mb-2">
+                            <span className="bg-green-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm">
+                              ₹{p.price.toFixed(0)}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-h-0">
+                            <ProductCard product={p} />
+                          </div>
                         </div>
                       </div>
                     ))}
+                    <div className="min-w-[100px] flex items-center justify-center snap-start shrink-0 pr-4">
+                      <Link href="/search" className="w-16 h-16 rounded-full bg-green-600 flex flex-col items-center justify-center text-white shadow-lg active:scale-95 transition-transform group">
+                        <span className="material-symbols-outlined text-2xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                        <span className="text-[7px] font-black tracking-widest uppercase">All</span>
+                      </Link>
+                    </div>
                   </div>
                 </div>
+              </section>
+            );
+          }
+        } else if (section.type === "sliding_row") {
+          let rowProducts = filteredProducts;
+          if (section.filterCategoryId) {
+            rowProducts = rowProducts.filter(p => p.category === section.filterCategoryId || p.category === categories.find(c => c.id === section.filterCategoryId)?.label);
+          }
+          
+          if (section.manualProductIds && section.manualProductIds.length > 0) {
+            const manualProds = section.manualProductIds.map(id => filteredProducts.find(p => p.id === id)).filter(Boolean) as typeof filteredProducts;
+            const otherProds = rowProducts.filter(p => !section.manualProductIds?.includes(p.id));
+            rowProducts = [...manualProds, ...otherProds];
+          }
+
+          if (rowProducts.length > 0) {
+            content = (
+              <section key={section.id} className="mb-10 pl-4 w-full overflow-hidden">
+                <div className="flex items-center justify-between mb-4 pr-4">
+                  <h3 className="font-headline font-black text-lg tracking-tight text-zinc-900 flex items-center gap-2">
+                    {section.iconUrl ? (
+                      <img src={section.iconUrl} className="w-6 h-6 object-contain" alt="" />
+                    ) : (
+                      <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL'1" }}>local_fire_department</span>
+                    )}
+                    <span>{section.title}</span>
+                  </h3>
+                </div>
+                <div className="flex overflow-x-auto hide-scrollbar gap-3 pb-4 pr-4 snap-x w-full pointer-events-auto">
+                  {rowProducts.map(p => (
+                    <div key={p.id} className="min-w-[110px] max-w-[110px] snap-start shrink-0">
+                      <ProductCard product={p} />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            );
+          }
+        } else {
+          content = (
+            <section key={section.id} className={section.type === "sliding_row" ? "mb-10 pl-4 w-full overflow-hidden" : "mb-12 px-4"}>
+              <div style={bgStyles} className={containerClasses}>
+                 {section.type === "banner" && (
+                   <div className="relative z-10 flex flex-col items-center text-center space-y-4">
+                     {section.title && <h3 className="text-2xl sm:text-4xl font-black tracking-tighter uppercase" style={{ color: section.textColor }}>{section.title}</h3>}
+                     {section.subtitle && <p className="text-sm sm:text-lg font-bold opacity-80 uppercase" style={{ color: section.textColor }}>{section.subtitle}</p>}
+                     {section.buttonText && (
+                       <button className="px-6 py-3 rounded-xl font-black text-xs tracking-widest uppercase transition-all hover:scale-105 active:scale-95 shadow-lg" style={{ backgroundColor: section.buttonColor, color: section.buttonTextColor }}>
+                         {section.buttonText}
+                       </button>
+                     )}
+                   </div>
+                 )}
+                 {section.type === "grid" && (
+                   <div className="relative z-10 space-y-6">
+                     {section.title && (
+                       <div className="flex items-center justify-between">
+                         <h3 className="text-xl sm:text-2xl font-black tracking-tight uppercase" style={{ color: section.textColor }}>{section.title}</h3>
+                         {section.subtitle && <span className="text-[10px] font-black tracking-widest opacity-60 uppercase" style={{ color: section.textColor }}>{section.subtitle}</span>}
+                       </div>
+                     )}
+                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                       {section.items.map((item, i) => (
+                         <Link key={i} href={item.redirectUrl || "#"} 
+                           className={`relative overflow-hidden rounded-2xl group shadow-md hover:shadow-xl transition-all duration-300 ${
+                             item.colSpan === 2 ? 'col-span-2' : 'col-span-1'
+                           } ${item.rowSpan === 2 ? 'row-span-2 aspect-[1/2]' : 'aspect-square'}`}
+                         >
+                           <img src={item.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={item.label || ""} />
+                           {item.label && (
+                             <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+                               <span className="text-[10px] font-black text-white tracking-widest uppercase">{item.label}</span>
+                             </div>
+                           )}
+                         </Link>
+                       ))}
+                     </div>
+                   </div>
+                 )}
               </div>
             </section>
           );
         }
-        return null;
+
+        return (
+          <React.Fragment key={section.id}>
+            {content}
+            {renderPromoSections("MIDDLE", section.id)}
+          </React.Fragment>
+        );
     });
   };
 
@@ -565,21 +649,24 @@ export default function Home() {
               if (catProducts.length === 0) return null;
 
               return (
-                <section key={cat.id} className="mb-10 px-4">
-                  <div className="mb-4">
-                    <h3 className="font-headline font-black text-lg tracking-tight text-zinc-900 flex items-center gap-2">
-                      <span className="material-symbols-outlined text-zinc-400" style={{ fontVariationSettings: "'FILL'1" }}>category</span>
-                      <span>{cat.label}</span>
-                    </h3>
-                  </div>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
-                    {catProducts.map(p => (
-                      <div key={p.id} className="w-full">
-                         <ProductCard product={p} />
-                      </div>
-                    ))}
-                  </div>
-                </section>
+                <React.Fragment key={cat.id}>
+                  <section key={cat.id} className="mb-10 px-4">
+                    <div className="mb-4">
+                      <h3 className="font-headline font-black text-lg tracking-tight text-zinc-900 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-zinc-400" style={{ fontVariationSettings: "'FILL'1" }}>category</span>
+                        <span>{cat.label}</span>
+                      </h3>
+                    </div>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+                      {catProducts.map(p => (
+                        <div key={p.id} className="w-full">
+                           <ProductCard product={p} />
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                  {renderPromoSections("MIDDLE", cat.id)}
+                </React.Fragment>
               );
             })}
 
