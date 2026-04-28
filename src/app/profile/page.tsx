@@ -36,7 +36,17 @@ export default function ProfilePage() {
     }
   };
 
-  const menuSections = [
+  const menuSections: { 
+    title: string; 
+    items: { 
+      id: string; 
+      label: string; 
+      icon: string; 
+      color: string; 
+      href?: string; 
+      onClick?: () => void 
+    }[] 
+  }[] = [
     {
       title: "Your information",
       items: [
