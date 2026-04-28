@@ -283,7 +283,7 @@ export default function Home() {
                   </div>
                 )}
                 
-                <div className={`grid grid-cols-3 gap-2 sm:gap-3 relative z-10 ${section.isCompact ? 'auto-rows-[90px] sm:auto-rows-[120px]' : 'auto-rows-[140px] sm:auto-rows-[180px]'}`}>
+                <div className={`grid grid-cols-3 gap-2 sm:gap-3 relative z-10 ${section.isCompact ? 'auto-rows-[80px] sm:auto-rows-[110px]' : 'auto-rows-[100px] sm:auto-rows-[150px]'}`}>
                   {section.items.map((item, idx) => {
                     const cSpan = Math.min(item.colSpan || 1, 3);
                     const rSpan = Math.min(item.rowSpan || 1, 3);
