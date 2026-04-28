@@ -29,6 +29,7 @@ const AuthContext = createContext<AuthContextType>({
   role: "customer",
   userData: null,
   emailVerified: false,
+  refreshAuth: async () => {},
   signInAsGuest: async () => {},
   signOut: async () => {},
 });
