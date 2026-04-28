@@ -49,8 +49,8 @@ export default function ProfilePage() {
       title: "Support & more",
       items: [
         { id: 'help', label: "Need help (FAQs)", icon: "support_agent", color: "text-emerald-600 bg-emerald-50", href: "/help"},
-        { id: 'about', label: "About us", icon: "info", color: "text-cyan-600 bg-cyan-50", onClick: () => toast.success("BazaarBolt v2.0") },
-        { id: 'privacy', label: "Privacy policy", icon: "policy", color: "text-zinc-600 bg-zinc-100", onClick: () => toast.success("Privacy policy link coming soon...") }
+        { id: 'privacy', label: "Privacy policy", icon: "policy", color: "text-zinc-600 bg-zinc-100", href: "/privacypolicy" },
+        { id: 'terms', label: "Terms & conditions", icon: "gavel", color: "text-amber-600 bg-amber-50", href: "/terms" }
       ]
     }
   ];

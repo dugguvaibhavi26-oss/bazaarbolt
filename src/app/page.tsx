@@ -29,7 +29,7 @@ export default function Home() {
   const [addressForm, setAddressForm] = useState<Address>({
     line1: "",
     line2: "",
-    city: "",
+    city: "Chevella",
     pincode: "",
     landmark: ""
   });
@@ -114,6 +114,12 @@ export default function Home() {
 
   useEffect(() => {
     if (!authLoading && user) {
+      // Check for email verification first for non-anonymous users
+      if (!user.isAnonymous && !user.emailVerified) {
+        router.replace("/verify-email");
+        return;
+      }
+
       if (role === 'admin') router.replace("/admin");
       else if (role === 'rider') router.replace("/rider");
       else if (role === 'vendor') router.replace("/vendor");
@@ -744,7 +750,7 @@ export default function Home() {
                 )}
 
                 <div className="pt-4 border-t border-zinc-100">
-                  <button onClick={() => { setAddressForm({ line1: "", line2: "", city: "", pincode: "", landmark: "" }); /* logic to show form below */ }} className="flex items-center gap-2 text-primary font-black text-[10px] tracking-widest mb-4">
+                  <button onClick={() => { setAddressForm({ line1: "", line2: "", city: "Chevella", pincode: "", landmark: "" }); }} className="flex items-center gap-2 text-primary font-black text-[10px] tracking-widest mb-6">
                     <span className="material-symbols-outlined text-lg">add_circle</span>
                     Add a New Address
                   </button>
@@ -757,7 +763,7 @@ export default function Home() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">City</label>
-                        <input type="text" placeholder="e.g. Noida" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all placeholder:text-zinc-300" value={addressForm.city} onChange={e => setAddressForm({ ...addressForm, city: e.target.value })} />
+                        <input type="text" readOnly className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm text-zinc-500 cursor-not-allowed" value={addressForm.city} />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">Pincode</label>

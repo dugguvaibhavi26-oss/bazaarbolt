@@ -17,6 +17,8 @@ interface AuthContextType {
   loading: boolean;
   role: Role;
   userData: any | null;
+  emailVerified: boolean;
+  refreshAuth: () => Promise<void>;
   signInAsGuest: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -26,6 +28,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   role: "customer",
   userData: null,
+  emailVerified: false,
   signInAsGuest: async () => {},
   signOut: async () => {},
 });
@@ -38,12 +41,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<Role>("customer");
   const [userData, setUserData] = useState<any | null>(null);
+  const [emailVerified, setEmailVerified] = useState(false);
 
   useEffect(() => {
     let unsubscribeUserDoc: (() => void) | undefined;
     
     const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+      setEmailVerified(currentUser?.emailVerified || false);
       
       if (currentUser) {
         // Use onSnapshot for real-time profile updates
@@ -74,6 +79,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  const refreshAuth = async () => {
+    if (auth.currentUser) {
+      await auth.currentUser.reload();
+      setUser(auth.currentUser);
+      setEmailVerified(auth.currentUser.emailVerified);
+    }
+  };
+
   const signInAsGuest = async () => {
     try {
       await signInAnonymously(auth);
@@ -93,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, role, userData, signInAsGuest, signOut }}>
+    <AuthContext.Provider value={{ user, loading, role, userData, emailVerified, refreshAuth, signInAsGuest, signOut }}>
       {children}
     </AuthContext.Provider>
   );

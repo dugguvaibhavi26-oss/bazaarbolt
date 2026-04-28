@@ -27,6 +27,12 @@ function LoginContent() {
   // Redirect if already logged in and profile is complete
   useEffect(() => {
     if (!authLoading && user && !showProfileCompletion && !showServicePopup) {
+      // For non-anonymous users, check email verification
+      if (!user.isAnonymous && !user.emailVerified) {
+        router.push("/verify-email");
+        return;
+      }
+
       if (role === "admin") {
         if (redirectPath.startsWith("/admin")) router.push(redirectPath);
         else router.push("/admin");
@@ -49,29 +55,37 @@ function LoginContent() {
     }
   }, [user, role, authLoading, showProfileCompletion, showServicePopup, router, redirectPath]);
 
-  // Handle Google Auth Redirect Results (if popup failed previously)
+  // Handle Google Auth Redirect Results
   useEffect(() => {
     const handleRedirectResult = async () => {
       try {
+        // Only run if we are on the login page and not already loading auth
         const result = await getRedirectResult(auth);
         if (result && result.user) {
           const user = result.user;
           const userDoc = await getDoc(doc(db, "users", user.uid));
+          
           if (!userDoc.exists() || !userDoc.data()?.phoneNumber || !userDoc.data()?.name) {
             setShowProfileCompletion(true);
             setName(user.displayName || "");
             toast.success("Welcome! Please complete your profile.");
+          } else if (!user.emailVerified) {
+            router.push("/verify-email");
           } else {
+            // Already handled by useAuth effect for redirection, 
+            // but we show a success toast here for feedback.
             toast.success("Signed in with Google");
           }
         }
       } catch (error: any) {
-        console.error("Redirect Error:", error);
-        toast.error("Google sign-in failed. Please try again.");
+        console.error("Google Redirect Error:", error);
+        if (error.code !== 'auth/no-current-user') {
+          toast.error("Google sign-in failed. Please try again.");
+        }
       }
     };
     handleRedirectResult();
-  }, []);
+  }, [router]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,37 +138,48 @@ function LoginContent() {
     const toastId = toast.loading("Connecting Google...");
 
     try {
+      // Determine if we should use redirect or popup
+      // Mobile browsers and Capacitor/Native apps perform much better with Redirect
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isCapacitor = typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.();
+
+      if (isMobile || isCapacitor) {
+        toast.loading("Redirecting to Google...", { id: toastId });
+        await signInWithRedirect(auth, provider);
+        // Page will reload, useEffect will handle result
+        return;
+      }
+
+      // For Desktop, try Popup first
       let result;
       try {
         result = await signInWithPopup(auth, provider);
       } catch (popupError: any) {
-        if (
-          popupError.code === 'auth/popup-blocked' || 
-          popupError.code === 'auth/cancelled-popup-request' ||
-          popupError.code === 'auth/popup-closed-by-user' ||
-          popupError.code === 'auth/cross-origin-opener-policy-failure' ||
-          popupError.message?.includes('Cross-Origin-Opener-Policy')
-        ) {
-          toast.loading("Redirecting to secure login...", { id: toastId });
-          await signInWithRedirect(auth, provider);
-          return;
-        }
-        throw popupError;
+        console.warn("Popup blocked or failed, falling back to redirect:", popupError.code);
+        
+        // Fallback to redirect for ANY popup error (blocked, COOP, etc.)
+        toast.loading("Popup failed. Redirecting to secure login...", { id: toastId });
+        await signInWithRedirect(auth, provider);
+        return;
       }
 
-      const user = result.user;
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (!userDoc.exists() || !userDoc.data()?.phoneNumber || !userDoc.data()?.name) {
-        setShowProfileCompletion(true);
-        setName(user.displayName || "");
-        toast.success("Welcome! Please complete your profile.", { id: toastId });
-      } else {
-        toast.success("Signed in with Google", { id: toastId });
+      if (result?.user) {
+        const user = result.user;
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (!userDoc.exists() || !userDoc.data()?.phoneNumber || !userDoc.data()?.name) {
+          setShowProfileCompletion(true);
+          setName(user.displayName || "");
+          toast.success("Welcome! Please complete your profile.", { id: toastId });
+        } else {
+          toast.success("Signed in with Google", { id: toastId });
+          // Redirection will be handled by the main useEffect
+        }
       }
     } catch (error: any) {
       console.error("Google Auth Error:", error);
       toast.error(error.message || "Google sign-in failed", { id: toastId });
     } finally {
+      // If we used redirect, the page will reload soon, but we set loading false just in case
       setLoading(false);
     }
   };
