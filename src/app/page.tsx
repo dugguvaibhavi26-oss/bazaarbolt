@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useStore } from "@/store/useStore";
 import { collection, onSnapshot, query, where, doc, updateDoc, arrayUnion, getDocs, limit, orderBy, runTransaction } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Product, Address, Order } from "@/types";
+import { Product, Address, Order, PromoSection } from "@/types";
 import { mapOrder } from "@/lib/mappers";
 import Link from "next/link";
 import toast from "react-hot-toast";
