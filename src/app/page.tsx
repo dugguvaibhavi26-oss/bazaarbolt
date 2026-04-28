@@ -645,25 +645,39 @@ export default function Home() {
 
             {/* Grid Sections: Categories */}
             {filteredCategories.map(cat => {
-              const catProducts = filteredProducts.filter(p => p.category === cat.id || p.category === cat.label);
-              if (catProducts.length === 0) return null;
+              const allCatProducts = filteredProducts.filter(p => p.category === cat.id || p.category === cat.label);
+              if (allCatProducts.length === 0) return null;
+              
+              const displayedProducts = allCatProducts.slice(0, 12);
+              const hasMore = allCatProducts.length > 12;
 
               return (
                 <React.Fragment key={cat.id}>
                   <section key={cat.id} className="mb-10 px-4">
-                    <div className="mb-4">
+                    <div className="flex items-center justify-between mb-4">
                       <h3 className="font-headline font-black text-lg tracking-tight text-zinc-900 flex items-center gap-2">
                         <span className="material-symbols-outlined text-zinc-400" style={{ fontVariationSettings: "'FILL'1" }}>category</span>
                         <span>{cat.label}</span>
                       </h3>
                     </div>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
-                      {catProducts.map(p => (
+                      {displayedProducts.map(p => (
                         <div key={p.id} className="w-full">
                            <ProductCard product={p} />
                         </div>
                       ))}
                     </div>
+                    {hasMore && (
+                      <div className="mt-4">
+                        <Link 
+                          href={`/search?category=${cat.id}`} 
+                          className="w-full bg-white border border-zinc-100 py-3 rounded-2xl flex items-center justify-center gap-2 group hover:bg-zinc-50 transition-all active:scale-[0.98]"
+                        >
+                          <span className="text-[10px] font-black tracking-widest uppercase text-zinc-500 group-hover:text-primary transition-colors">View All {cat.label}</span>
+                          <span className="material-symbols-outlined text-[16px] text-zinc-300 group-hover:text-primary group-hover:translate-x-1 transition-all">arrow_forward</span>
+                        </Link>
+                      </div>
+                    )}
                   </section>
                   {renderPromoSections("MIDDLE", cat.id)}
                 </React.Fragment>
