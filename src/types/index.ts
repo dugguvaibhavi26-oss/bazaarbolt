@@ -36,6 +36,10 @@ export interface AppSettings {
     }
   };
   promoSections?: PromoSection[];
+  sectionSettings?: {
+    BB?: Partial<Omit<AppSettings, 'heroBanners' | 'promoSections' | 'sectionSettings'>>;
+    CAFE?: Partial<Omit<AppSettings, 'heroBanners' | 'promoSections' | 'sectionSettings'>>;
+  };
 }
 
 export interface Address {
@@ -56,7 +60,7 @@ export interface PromoSectionItem {
 
 export interface PromoSection {
   id: string;
-  type: "banner" | "grid" | "deal_row" | "sliding_row";
+  type: "banner" | "grid" | "deal_row" | "sliding_row" | "category_grid";
   section: "BB" | "CAFE";
   position?: "TOP" | "MIDDLE" | "BOTTOM" | "AFTER_HERO" | "AFTER_CATEGORIES" | "AFTER_BESTSELLERS" | "AFTER_NEW_ARRIVALS" | string;
   title?: string;
@@ -81,4 +85,5 @@ export interface PromoSection {
   iconUrl?: string;
   filterCategoryId?: string;
   filterSubcategory?: string;
+  filterType?: "BESTSELLERS" | "NEW_ARRIVALS" | "CATEGORY";
 }

@@ -30,6 +30,19 @@ export default function CheckoutPage() {
     landmark: ""
   });
 
+  const cartSection = (cart[0] as any)?.section || "BB";
+  const getVal = (key: string, defaultValue: any) => {
+    const override = settings?.sectionSettings?.[cartSection as "BB" | "CAFE"]?.[key as any];
+    return (override !== undefined && override !== null) ? override : (settings?.[key as any] ?? defaultValue);
+  };
+
+  const taxPercent = getVal("taxPercent", 5);
+  const deliveryFee = getVal("deliveryFee", 30);
+  const smallCartFee = getVal("smallCartFee", 15);
+  const smallCartThreshold = getVal("smallCartThreshold", 99);
+  const freeDeliveryThreshold = getVal("freeDeliveryThreshold", 499);
+  const handlingCharge = getVal("handlingCharge", 5);
+
   const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   let discountAmount = 0;
   if (activeCoupon) {
@@ -41,10 +54,10 @@ export default function CheckoutPage() {
     if (discountAmount > subtotal) discountAmount = subtotal;
   }
 
-  const tax = settings?.taxPercent ? ((subtotal - discountAmount) * settings.taxPercent) / 100 : 0;
-  const deliveryCharge = (subtotal >= 499) ? 0 : (settings?.deliveryFee || 30);
-  const smallCartCharge = (subtotal < 99) ? (settings?.smallCartFee || 15) : 0;
-  const handlingFee = settings?.handlingCharge || 5;
+  const tax = (subtotal - discountAmount) * (taxPercent / 100);
+  const deliveryCharge = (subtotal >= freeDeliveryThreshold) ? 0 : deliveryFee;
+  const smallCartCharge = (subtotal < smallCartThreshold) ? smallCartFee : 0;
+  const handlingFee = handlingCharge;
   const customChargesTotal = settings?.customCharges?.reduce((acc, c) => acc + c.amount, 0) || 0;
 
   const total = (subtotal - discountAmount) + tax + deliveryCharge + smallCartCharge + handlingFee + customChargesTotal;

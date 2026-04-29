@@ -102,6 +102,7 @@ export const mapSettings = (doc: DocumentSnapshot<DocumentData>): AppSettings =>
       discount: typeof data.coupon.discount === "number" ? data.coupon.discount : 0,
     } : { code: "", discount: 10 },
     notificationTemplates: data.notificationTemplates || {},
-    promoSections: Array.isArray(data.promoSections) ? data.promoSections : []
+    promoSections: Array.isArray(data.promoSections) ? data.promoSections : [],
+    sectionSettings: data.sectionSettings || { BB: {}, CAFE: {} }
   };
 };

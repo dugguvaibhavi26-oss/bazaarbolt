@@ -51,7 +51,7 @@ export default function CartPage() {
 
   return (
     <main className="bg-zinc-50 min-h-screen pb-44">
-      <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-3xl border-b border-zinc-100 flex flex-col pt-safe">
+      <header className="sticky top-0 w-full z-50 bg-white/95 backdrop-blur-3xl border-b border-zinc-100 flex flex-col pt-safe pb-2">
         <div className="flex items-center px-4 py-5 gap-3">
            <button onClick={() => router.back()} className="p-2 hover:bg-zinc-50 rounded-full transition-colors flex items-center">
              <span className="material-symbols-outlined text-zinc-900 font-bold">arrow_back</span>
@@ -64,7 +64,7 @@ export default function CartPage() {
         </div>
       </header>
 
-      <div className="pt-24 px-4 space-y-4 max-w-3xl mx-auto">
+      <div className="pt-6 px-4 space-y-4 max-w-3xl mx-auto">
         {cart.length === 0 ? (
           <div className="py-24 flex flex-col items-center justify-center text-center px-10">
             <div className="w-24 h-24 bg-zinc-100 rounded-[32px] flex items-center justify-center mb-8 rotate-12">

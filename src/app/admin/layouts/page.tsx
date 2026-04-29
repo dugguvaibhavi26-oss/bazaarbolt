@@ -79,6 +79,7 @@ export default function AdminLayouts() {
     position: "MIDDLE",
     title: "",
     iconUrl: "",
+    filterType: "CATEGORY",
     filterCategoryId: "",
     filterSubcategory: "",
     manualProductIds: [],
@@ -152,7 +153,7 @@ export default function AdminLayouts() {
   };
 
   const addPromoSection = () => {
-    if (newPromoSection.items.length === 0) {
+    if (newPromoSection.type !== "category_grid" && newPromoSection.items.length === 0) {
       toast.error("Please add at least one item to the section");
       return;
     }
@@ -224,6 +225,7 @@ export default function AdminLayouts() {
       position: "MIDDLE",
       title: "",
       iconUrl: "",
+      filterType: "CATEGORY",
       filterCategoryId: "",
       filterSubcategory: "",
       manualProductIds: [],
@@ -267,13 +269,25 @@ export default function AdminLayouts() {
               <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 uppercase">Carousel Banners</label>
               <div className="flex bg-zinc-100 p-1 rounded-xl w-full sm:w-auto">
                 <button 
-                  onClick={() => { setActiveBannerTab("BB"); setNewBanner(prev => ({...prev, section: "BB"})); setNewPromoSection(prev => ({...prev, section: "BB"})); }} 
+                  onClick={() => { 
+                    setActiveBannerTab("BB"); 
+                    setNewBanner(prev => ({...prev, section: "BB"})); 
+                    setNewPromoSection(prev => ({...prev, section: "BB"}));
+                    setNewUnderPriceStore(prev => ({...prev, section: "BB"}));
+                    setNewDynamicRow(prev => ({...prev, section: "BB"}));
+                  }} 
                   className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[8px] font-black tracking-widest uppercase transition-all ${activeBannerTab === "BB" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500"}`}
                 >
                   Bazaarbolt
                 </button>
                 <button 
-                  onClick={() => { setActiveBannerTab("CAFE"); setNewBanner(prev => ({...prev, section: "CAFE"})); setNewPromoSection(prev => ({...prev, section: "CAFE"})); }} 
+                  onClick={() => { 
+                    setActiveBannerTab("CAFE"); 
+                    setNewBanner(prev => ({...prev, section: "CAFE"})); 
+                    setNewPromoSection(prev => ({...prev, section: "CAFE"}));
+                    setNewUnderPriceStore(prev => ({...prev, section: "CAFE"}));
+                    setNewDynamicRow(prev => ({...prev, section: "CAFE"}));
+                  }} 
                   className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[8px] font-black tracking-widest uppercase transition-all ${activeBannerTab === "CAFE" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500"}`}
                 >
                   BB Cafe
@@ -400,6 +414,17 @@ export default function AdminLayouts() {
                   <input type="text" value={newUnderPriceStore.title} onChange={e => setNewUnderPriceStore({...newUnderPriceStore, title: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. UNDER 19 STORE" />
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Applied To Section</label>
+                  <select 
+                    value={newUnderPriceStore.section} 
+                    onChange={e => setNewUnderPriceStore({...newUnderPriceStore, section: e.target.value as "BB" | "CAFE"})} 
+                    className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
+                  >
+                    <option value="BB">BAZAAR BOLT</option>
+                    <option value="CAFE">BB CAFE</option>
+                  </select>
+                </div>
+                <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Max Price Limit (₹)</label>
                   <input type="number" value={newUnderPriceStore.priceLimit} onChange={e => setNewUnderPriceStore({...newUnderPriceStore, priceLimit: parseFloat(e.target.value) || 0})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase" />
                 </div>
@@ -423,15 +448,13 @@ export default function AdminLayouts() {
                   >
                     <option value="TOP">PAGE TOP</option>
                     <option value="AFTER_HERO">AFTER HERO BANNERS</option>
-                    <option value="AFTER_BESTSELLERS">AFTER BESTSELLERS</option>
-                    <option value="AFTER_NEW_ARRIVALS">AFTER NEW ARRIVALS</option>
                     <option value="AFTER_CATEGORIES">AFTER ALL CATEGORIES</option>
                     <option value="BOTTOM">PAGE BOTTOM</option>
                     <optgroup label="ANCHOR TO CATEGORY">
-                      {categories.map(c => <option key={c.id} value={`UNDER_${c.id}`}>UNDER {c.label}</option>)}
+                      {categories.filter(c => !c.section || c.section === activeBannerTab).map(c => <option key={c.id} value={`UNDER_${c.id}`}>UNDER {c.label}</option>)}
                     </optgroup>
                     <optgroup label="ANCHOR TO CUSTOM SECTIONS">
-                      {settings.promoSections?.filter(s => s.id !== newUnderPriceStore.id && s.title).map(s => (
+                      {settings.promoSections?.filter(s => s.id !== newUnderPriceStore.id && s.title && s.section === activeBannerTab).map(s => (
                         <option key={s.id} value={`UNDER_${s.id}`}>AFTER {s.title}</option>
                       ))}
                     </optgroup>
@@ -502,15 +525,45 @@ export default function AdminLayouts() {
                   <input type="text" value={newDynamicRow.title} onChange={e => setNewDynamicRow({...newDynamicRow, title: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. BESTSELLERS" />
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Applied To Section</label>
+                  <select 
+                    value={newDynamicRow.section} 
+                    onChange={e => setNewDynamicRow({...newDynamicRow, section: e.target.value as "BB" | "CAFE"})} 
+                    className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
+                  >
+                    <option value="BB">BAZAAR BOLT</option>
+                    <option value="CAFE">BB CAFE</option>
+                  </select>
+                </div>
+                <div className="space-y-1 lg:space-y-1.5 uppercase">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Filter Type</label>
+                  <select 
+                    value={newDynamicRow.filterType || "CATEGORY"} 
+                    onChange={e => {
+                      const type = e.target.value as any;
+                      setNewDynamicRow({...newDynamicRow, filterType: type});
+                      if (type !== 'CATEGORY') {
+                        setNewDynamicRow(prev => ({...prev, filterType: type, filterCategoryId: ""}));
+                      }
+                    }} 
+                    className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
+                  >
+                    <option value="CATEGORY">SPECIFIC CATEGORY</option>
+                    <option value="BESTSELLERS">BESTSELLERS</option>
+                    <option value="NEW_ARRIVALS">NEW ARRIVALS</option>
+                  </select>
+                </div>
+                <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Icon URL (Optional)</label>
                   <input type="text" value={newDynamicRow.iconUrl} onChange={e => setNewDynamicRow({...newDynamicRow, iconUrl: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase" placeholder="URL..." />
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
-                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Filter By Category</label>
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Target Category (If Type=Category)</label>
                   <select 
                     value={newDynamicRow.filterCategoryId || ""} 
+                    disabled={newDynamicRow.filterType !== 'CATEGORY'}
                     onChange={e => setNewDynamicRow({...newDynamicRow, filterCategoryId: e.target.value})} 
-                    className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
+                    className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase disabled:opacity-50"
                   >
                     <option value="">ALL CATEGORIES</option>
                     {categories.map(c => (
@@ -543,15 +596,13 @@ export default function AdminLayouts() {
                   >
                     <option value="TOP">PAGE TOP</option>
                     <option value="AFTER_HERO">AFTER HERO BANNERS</option>
-                    <option value="AFTER_BESTSELLERS">AFTER BESTSELLERS</option>
-                    <option value="AFTER_NEW_ARRIVALS">AFTER NEW ARRIVALS</option>
                     <option value="AFTER_CATEGORIES">AFTER ALL CATEGORIES</option>
                     <option value="BOTTOM">PAGE BOTTOM</option>
                     <optgroup label="ANCHOR TO CATEGORY">
-                      {categories.map(c => <option key={c.id} value={`UNDER_${c.id}`}>UNDER {c.label}</option>)}
+                      {categories.filter(c => !c.section || c.section === activeBannerTab).map(c => <option key={c.id} value={`UNDER_${c.id}`}>UNDER {c.label}</option>)}
                     </optgroup>
                     <optgroup label="ANCHOR TO CUSTOM SECTIONS">
-                      {settings.promoSections?.filter(s => s.id !== newDynamicRow.id && s.title).map(s => (
+                      {settings.promoSections?.filter(s => s.id !== newDynamicRow.id && s.title && s.section === activeBannerTab).map(s => (
                         <option key={s.id} value={`UNDER_${s.id}`}>AFTER {s.title}</option>
                       ))}
                     </optgroup>
@@ -598,9 +649,9 @@ export default function AdminLayouts() {
                     <div className="flex items-center gap-3">
                       {s.iconUrl && <img src={s.iconUrl} className="w-8 h-8 object-contain" alt="" />}
                       <div>
-                        <h4 className="font-headline font-black text-sm uppercase text-zinc-900">{s.title}</h4>
+                        <h4 className="font-headline font-black text-sm uppercase text-zinc-900">{s.title || (s.filterType === 'BESTSELLERS' ? 'Bestsellers' : s.filterType === 'NEW_ARRIVALS' ? 'New Arrivals' : 'Category Row')}</h4>
                         <p className="text-[8px] font-bold text-zinc-400 tracking-widest uppercase">
-                          {s.filterCategoryId ? `Category: ${categories.find(c => c.id === s.filterCategoryId)?.label}` : 'All Products'} • {s.afterCategoryId ? `After Category: ${categories.find(c => c.id === s.afterCategoryId)?.label}` : `Position: ${s.position}`}
+                          Type: {s.filterType || 'CATEGORY'} • {s.filterCategoryId ? `Category: ${categories.find(c => c.id === s.filterCategoryId)?.label}` : 'All Products'} • {s.afterCategoryId ? `After: ${categories.find(c => c.id === s.afterCategoryId)?.label}` : `Pos: ${s.position}`}
                         </p>
                       </div>
                     </div>
@@ -620,9 +671,21 @@ export default function AdminLayouts() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 uppercase">
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Section Type</label>
-                  <select value={newPromoSection.type} onChange={e => setNewPromoSection({...newPromoSection, type: e.target.value as "banner" | "grid"})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase">
+                  <select value={newPromoSection.type} onChange={e => setNewPromoSection({...newPromoSection, type: e.target.value as any})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase">
                     <option value="banner">Wide Banner</option>
                     <option value="grid">Grid Items</option>
+                    <option value="category_grid">Category Grid</option>
+                  </select>
+                </div>
+                <div className="space-y-1 lg:space-y-1.5 uppercase">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Applied To Section</label>
+                  <select 
+                    value={newPromoSection.section} 
+                    onChange={e => setNewPromoSection({...newPromoSection, section: e.target.value as "BB" | "CAFE"})} 
+                    className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
+                  >
+                    <option value="BB">BAZAAR BOLT</option>
+                    <option value="CAFE">BB CAFE</option>
                   </select>
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
@@ -641,15 +704,13 @@ export default function AdminLayouts() {
                   >
                     <option value="TOP">PAGE TOP</option>
                     <option value="AFTER_HERO">AFTER HERO BANNERS</option>
-                    <option value="AFTER_BESTSELLERS">AFTER BESTSELLERS</option>
-                    <option value="AFTER_NEW_ARRIVALS">AFTER NEW ARRIVALS</option>
                     <option value="AFTER_CATEGORIES">AFTER ALL CATEGORIES</option>
                     <option value="BOTTOM">PAGE BOTTOM</option>
                     <optgroup label="ANCHOR TO CATEGORY">
-                      {categories.map(c => <option key={c.id} value={`UNDER_${c.id}`}>UNDER {c.label}</option>)}
+                      {categories.filter(c => !c.section || c.section === activeBannerTab).map(c => <option key={c.id} value={`UNDER_${c.id}`}>UNDER {c.label}</option>)}
                     </optgroup>
                     <optgroup label="ANCHOR TO CUSTOM SECTIONS">
-                      {settings.promoSections?.filter(s => s.id !== newPromoSection.id && s.title).map(s => (
+                      {settings.promoSections?.filter(s => s.id !== newPromoSection.id && s.title && s.section === activeBannerTab).map(s => (
                         <option key={s.id} value={`UNDER_${s.id}`}>AFTER {s.title}</option>
                       ))}
                     </optgroup>
@@ -893,7 +954,7 @@ export default function AdminLayouts() {
             </div>
 
             <div className="space-y-4">
-              {(settings.promoSections || []).filter(s => s.type !== "deal_row").map((s, idx) => s.section === activeBannerTab ? (
+              {(settings.promoSections || []).filter(s => s.type !== "deal_row" && s.type !== "sliding_row").map((s, idx) => s.section === activeBannerTab ? (
                 <div key={s.id} className="relative rounded-2xl overflow-hidden border border-zinc-200 shadow-sm p-4" style={{ backgroundColor: s.bgColor }}>
                   <div className="flex justify-between items-start mb-3 relative z-10">
                     <h4 className="font-headline font-black text-sm uppercase" style={{ color: s.textColor }}>{s.title || `${s.type} Section`}</h4>

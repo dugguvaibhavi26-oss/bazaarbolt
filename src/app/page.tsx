@@ -217,16 +217,16 @@ export default function Home() {
           </div>
         </div>
         <div className="flex flex-col px-0.5 mt-0.5">
-          <div className="flex items-center gap-1 mb-0.5 h-3">
-            <span className="text-zinc-400 text-[8px] font-medium tracking-tight">1 Unit</span>
-            {product.stock < 10 && product.stock > 0 && <span className="text-orange-600 text-[8px] font-bold tracking-tight">Only {product.stock} Left</span>}
+          <div className="flex items-center gap-1 mb-0.5 h-3.5">
+            <span className="text-zinc-400 text-[9px] font-medium tracking-tight">1 Unit</span>
+            {product.stock < 10 && product.stock > 0 && <span className="text-orange-600 text-[9px] font-bold tracking-tight">Only {product.stock} Left</span>}
           </div>
-          <Link href={`/product/${product.id}`} className="text-[10px] font-bold text-zinc-900 leading-[1.15] mb-1 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
+          <Link href={`/product/${product.id}`} className="text-[12px] font-bold text-zinc-900 leading-[1.2] mb-1.5 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
             {product.name}
           </Link>
-          <div className="flex items-center gap-1">
-            <span className="text-[11px] font-black text-zinc-900 tracking-tighter">₹{product.price.toFixed(0)}</span>
-            <span className="text-[8px] text-zinc-400 line-through font-medium tracking-tight opacity-50">₹{(product.price * 1.25).toFixed(0)}</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[13px] font-black text-zinc-900 tracking-tighter">₹{product.price.toFixed(0)}</span>
+            <span className="text-[9px] text-zinc-400 line-through font-medium tracking-tight opacity-50">₹{(product.price * 1.25).toFixed(0)}</span>
           </div>
         </div>
       </div>
@@ -381,7 +381,16 @@ export default function Home() {
           }
         } else if (section.type === "sliding_row") {
           let rowProducts = filteredProducts;
-          if (section.filterCategoryId) {
+          
+          if (section.filterType === "BESTSELLERS") {
+            rowProducts = rowProducts.filter(p => p.isBestseller);
+          } else if (section.filterType === "NEW_ARRIVALS") {
+            rowProducts = [...rowProducts].sort((a, b) => {
+              const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+              const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+              return dateB - dateA;
+            }).slice(0, 30);
+          } else if (section.filterCategoryId) {
             rowProducts = rowProducts.filter(p => p.category === section.filterCategoryId || p.category === categories.find(c => c.id === section.filterCategoryId)?.label);
           }
           
@@ -399,14 +408,14 @@ export default function Home() {
                     {section.iconUrl ? (
                       <img src={section.iconUrl} className="w-6 h-6 object-contain" alt="" />
                     ) : (
-                      <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL'1" }}>local_fire_department</span>
+                      <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL'1" }}>{section.filterType === 'NEW_ARRIVALS' ? 'verified' : 'local_fire_department'}</span>
                     )}
-                    <span>{section.title}</span>
+                    <span>{section.title || (section.filterType === 'BESTSELLERS' ? 'Bestsellers' : section.filterType === 'NEW_ARRIVALS' ? 'New Arrivals' : 'Trending')}</span>
                   </h3>
                 </div>
                 <div className="flex overflow-x-auto hide-scrollbar gap-3 pb-4 pr-4 snap-x w-full pointer-events-auto">
                   {rowProducts.map(p => (
-                    <div key={p.id} className="min-w-[110px] max-w-[110px] snap-start shrink-0">
+                    <div key={p.id} className="min-w-[135px] max-w-[135px] snap-start shrink-0">
                       <ProductCard product={p} />
                     </div>
                   ))}
@@ -414,6 +423,21 @@ export default function Home() {
               </section>
             );
           }
+        } else if (section.type === "category_grid") {
+          content = (
+            <section key={section.id} className="mt-4 mb-8">
+              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-x-1 gap-y-6 px-2 justify-items-center">
+                {filteredCategories.map(cat => (
+                  <div key={cat.id} onClick={() => router.push(`/category/${cat.id}`)} className="flex flex-col items-center gap-2 cursor-pointer group w-full max-w-[85px]">
+                    <div className="w-[60px] h-[60px] rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center p-0 overflow-hidden flex-shrink-0 group-hover:border-primary transition-all shadow-sm">
+                      <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={cat.img} alt={cat.label} />
+                    </div>
+                    <span className="text-[10px] font-bold tracking-tight text-center text-zinc-900 group-hover:text-primary leading-tight w-full break-words min-h-[2.4em] flex items-center justify-center px-1">{cat.label}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
         } else {
           content = (
             <section key={section.id} className={section.type === "sliding_row" ? "mb-10 pl-4 w-full overflow-hidden" : "mb-12 px-4"}>
@@ -493,29 +517,28 @@ export default function Home() {
         <div className="pt-safe" />
         <div className="h-8 flex items-center overflow-hidden">
           <div className="flex whitespace-nowrap animate-marquee">
-            <span className="text-[10px] font-bold tracking-widest px-4">{settings?.announcement || "⚡️ Instant Delivery Available • Curated Premium Selections ⚡️"}</span>
-            <span className="text-[10px] font-bold tracking-widest px-4">{settings?.announcement || "⚡️ Instant Delivery Available • Curated Premium Selections ⚡️"}</span>
+            <span className="text-[13px] font-bold tracking-widest px-6">{(settings?.sectionSettings?.[activeSection]?.announcement || settings?.announcement) || "⚡️ Instant Delivery Available • Curated Premium Selections ⚡️"}</span>
+            <span className="text-[13px] font-bold tracking-widest px-6">{(settings?.sectionSettings?.[activeSection]?.announcement || settings?.announcement) || "⚡️ Instant Delivery Available • Curated Premium Selections ⚡️"}</span>
           </div>
         </div>
       </div>
 
-      <header className={`fixed top-[calc(theme(spacing.8)+max(env(safe-area-inset-top),2rem))] w-full z-50 transition-all border-b ${activeSection === 'CAFE' ? 'border-[#EAD8C0]/20' : 'border-zinc-100'}`}>
+      <header className={`fixed top-[calc(theme(spacing.8)+max(env(safe-area-inset-top),2.5rem))] w-full z-50 transition-all border-b ${activeSection === 'CAFE' ? 'border-[#EAD8C0]/20' : 'border-zinc-100'}`}>
         {/* Top area with neutral background */}
         <div className={`pt-4 px-4 flex flex-col transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]/80 backdrop-blur-xl' : 'bg-zinc-100'}`}>
           {/* Top Row: Address and Account */}
           <div className="flex items-center justify-between w-full mb-5">
-            <div className="flex flex-col cursor-pointer group" onClick={() => setIsAddressModalOpen(true)}>
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] font-black text-zinc-900 tracking-wider font-headline">Delivery in 10 minutes</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-xs font-extrabold font-headline tracking-tight text-zinc-900 truncate max-w-[220px]">{displayAddress}</span>
-                <span className="material-symbols-outlined text-zinc-900 text-[14px] font-bold">expand_more</span>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1 cursor-pointer group" onClick={() => setIsAddressModalOpen(true)}>
+                <span className="text-[14px] font-black text-zinc-900 tracking-tight uppercase group-hover:text-primary transition-colors">
+                  {displayAddress}
+                </span>
+                <span className="material-symbols-outlined text-[20px] text-zinc-900 font-bold group-hover:text-primary transition-colors">expand_more</span>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Link href={user ? "/profile" : "/login"} className="p-1.5 bg-black/5 rounded-full hover:bg-black/10 transition-colors">
-                <span className="material-symbols-outlined text-zinc-900 text-xl align-middle" style={{ fontVariationSettings: "'FILL'1" }}>{user ? 'account_circle' : 'login'}</span>
+            <div className="flex items-center">
+              <Link href={user ? "/profile" : "/login"} className="w-11 h-11 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-900 hover:bg-zinc-200 transition-all shadow-sm">
+                <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: "'FILL'1" }}>{user ? 'account_circle' : 'login'}</span>
               </Link>
             </div>
           </div>
@@ -524,30 +547,30 @@ export default function Home() {
           <div className="flex gap-2 overflow-x-auto hide-scrollbar items-end">
             <button
               onClick={() => setActiveSection("BB")}
-              className={`flex-shrink-0 px-6 py-3 text-[16px] font-black tracking-tighter transition-all flex items-center justify-center min-w-[100px] lowercase ${activeSection === "BB" ? "bg-white rounded-t-2xl shadow-[0_-4px_12px_rgba(0,0,0,0.03)]" : "bg-transparent opacity-50 hover:opacity-100"}`}
+              className={`flex-shrink-0 px-6 py-3 text-[20px] font-black tracking-tighter transition-all flex items-center justify-center min-w-[120px] lowercase ${activeSection === "BB" ? "bg-white rounded-t-2xl shadow-[0_-4px_12px_rgba(0,0,0,0.03)]" : "bg-transparent opacity-50 hover:opacity-100"}`}
             >
-              <span className="text-primary">bazaar</span><span className="text-zinc-900">bolt</span>
+              <span className="text-primary font-black">bazaar</span><span className="text-zinc-900 font-medium">bolt</span>
             </button>
             <button
               onClick={() => setActiveSection("CAFE")}
-              className={`flex-shrink-0 px-6 py-3 text-[16px] font-black tracking-tighter transition-all flex items-center justify-center min-w-[100px] lowercase ${activeSection === "CAFE" ? "bg-[#FAF7F2] border-t border-x border-[#EAD8C0]/30 rounded-t-2xl" : "bg-transparent opacity-50 hover:opacity-100"}`}
+              className={`flex-shrink-0 px-6 py-3 text-[20px] font-black tracking-tighter transition-all flex items-center justify-center min-w-[120px] lowercase ${activeSection === "CAFE" ? "bg-[#FAF7F2] border-t border-x border-[#EAD8C0]/30 rounded-t-2xl" : "bg-transparent opacity-50 hover:opacity-100"}`}
             >
-              <span className="text-[#8B5E3C]">bb&nbsp;</span><span className="text-[#2D1B14]">cafe</span>
+              <span className="text-[#8B5E3C] font-black">bb&nbsp;</span><span className="text-[#2D1B14] font-medium">cafe</span>
             </button>
           </div>
         </div>
 
         {/* Search Bar area with exact same bg as active tab to seamlessly connect */}
-        <div className={`px-4 py-3 border-b transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2] border-[#EAD8C0]/20' : 'bg-white border-zinc-100'}`}>
-          <div onClick={() => router.push(`/search?section=${activeSection}`)} className={`rounded-[12px] flex items-center px-4 py-3.5 gap-3 cursor-pointer shadow-sm border transition-all ${activeSection === 'CAFE' ? 'bg-[#FFFBF5] border-[#EAD8C0]/40' : 'bg-white border-zinc-200'}`}>
+        <div className={`px-4 py-4 border-b transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2] border-[#EAD8C0]/20' : 'bg-white border-zinc-100'}`}>
+          <div onClick={() => router.push(`/search?section=${activeSection}`)} className={`rounded-[20px] flex items-center px-4 py-3.5 gap-3 cursor-pointer shadow-sm border transition-all ${activeSection === 'CAFE' ? 'bg-[#FFFBF5] border-[#EAD8C0]/40' : 'bg-white border-zinc-200'}`}>
             <span className={`material-symbols-outlined text-xl font-bold ${activeSection === 'CAFE' ? 'text-[#8B5E3C]' : 'text-zinc-400'}`}>search</span>
-            <span className={`text-xs font-bold tracking-widest ${activeSection === 'CAFE' ? 'text-[#8B5E3C]/60' : 'text-zinc-400'}`}>Search For "{activeSection === "CAFE" ? "Cold Brew" : "Safai Abhiyaan"}"</span>
+            <span className={`text-[15px] font-bold tracking-tight ${activeSection === 'CAFE' ? 'text-[#8B5E3C]/60' : 'text-zinc-400'}`}>Search for "{activeSection === "CAFE" ? "Cold Brew" : "Safai Abhiyaan"}"</span>
           </div>
         </div>
       </header>
 
       <main className={`pt-[calc(280px+env(safe-area-inset-top,0px))] pb-16 overflow-x-hidden min-h-[100dvh] transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : 'bg-white'}`}>
-        {settings && settings.storeOpen === false ? (
+        {(settings?.sectionSettings?.[activeSection]?.storeOpen ?? settings?.storeOpen) === false ? (
           <section className="px-6 py-20 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-700">
             <h2 className="text-5xl font-headline font-black text-zinc-900 tracking-tighter leading-[0.8] mb-8">Currently <br /><span className="text-primary">Unavailable</span></h2>
             <p className="max-w-xs mx-auto text-[10px] font-bold text-zinc-400 tracking-[0.2em] leading-relaxed mb-12">We're Not Serving This Area At The Moment.</p>
@@ -557,18 +580,21 @@ export default function Home() {
             {/* Dynamic Promo Sections - VERY TOP */}
             {renderPromoSections("TOP")}
 
-            <section className="mt-4 mb-8">
-              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-x-1 gap-y-6 px-2 justify-items-center">
-                {filteredCategories.map(cat => (
-                  <div key={cat.id} onClick={() => router.push(`/category/${cat.id}`)} className="flex flex-col items-center gap-2 cursor-pointer group w-full max-w-[85px]">
-                    <div className="w-[60px] h-[60px] rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center p-0 overflow-hidden flex-shrink-0 group-hover:border-primary transition-all shadow-sm">
-                      <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={cat.img} alt={cat.label} />
+            {/* Falling back to default category grid if no custom category_grid is defined for this section */}
+            {(!settings?.promoSections || !settings.promoSections.some(s => s.section === activeSection && s.type === "category_grid")) && (
+              <section className="mt-8 mb-12">
+                <div className="grid grid-cols-4 gap-x-1 gap-y-10 px-1 justify-items-center max-w-4xl mx-auto">
+                  {filteredCategories.map(cat => (
+                    <div key={cat.id} onClick={() => router.push(`/category/${cat.id}`)} className="flex flex-col items-center gap-3 cursor-pointer group w-full">
+                      <div className="w-[92px] h-[92px] sm:w-[100px] sm:h-[100px] rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center p-0 overflow-hidden flex-shrink-0 group-hover:border-primary transition-all shadow-sm">
+                        <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={cat.img} alt={cat.label} />
+                      </div>
+                      <span className="text-[12px] sm:text-[13px] font-bold tracking-tight text-center text-zinc-900 group-hover:text-primary leading-none w-full break-words min-h-[1.5em] flex items-center justify-center px-0.5">{cat.label}</span>
                     </div>
-                    <span className="text-[10px] font-bold tracking-tight text-center text-zinc-900 group-hover:text-primary leading-tight w-full break-words min-h-[2.4em] flex items-center justify-center px-1">{cat.label}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
+                  ))}
+                </div>
+              </section>
+            )}
 
             <section className="px-4 mb-8">
               <div className={`relative w-full aspect-[21/12] rounded-[40px] overflow-hidden shadow-2xl transition-all duration-500 ${activeSection === 'CAFE' ? 'bg-[#EAD8C0]/20' : 'bg-zinc-100'}`}>
@@ -580,7 +606,7 @@ export default function Home() {
                   >
                     <img className="w-full h-full object-cover" src={banner.url} alt={banner.title} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-6">
-                      <p className="text-[10px] font-black tracking-widest text-white/70 mb-1">{banner.subtitle}</p>
+                      <p className="text-[12px] font-black tracking-widest text-white/70 mb-1">{banner.subtitle}</p>
                       <h2 className="text-2xl font-black text-white tracking-tighter leading-none">{banner.title}</h2>
                     </div>
                   </div>
@@ -597,92 +623,9 @@ export default function Home() {
 
             {/* Dynamic Promo Sections - MIDDLE */}
             {renderPromoSections("AFTER_HERO")}
-
-            {/* Sliding Sections: Bestsellers & New Arrivals */}
-            {[
-              {
-                title: activeSection === "CAFE" ? "Cafe Specials" : "Bestsellers",
-                icon: activeSection === "CAFE" ? "coffee" : "local_fire_department",
-                iconColor: activeSection === "CAFE" ? "text-[#8B5E3C]" : "text-orange-500",
-                products: filteredProducts.filter(p => p.isBestseller),
-                link: "/search"
-              },
-              {
-                title: activeSection === "CAFE" ? "Fresh Bakes" : "New Arrivals",
-                icon: activeSection === "CAFE" ? "bakery_dining" : "new_releases",
-                iconColor: activeSection === "CAFE" ? "text-[#8B5E3C]" : "text-blue-600",
-                products: [...filteredProducts].sort((a, b) => {
-                  const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-                  const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-                  return dateB - dateA;
-                }).slice(0, 30),
-                link: "/search"
-              }
-            ].filter(section => {
-              if (activeSection === "CAFE" && section.title === "Fresh Bakes") return false;
-              return section.products.length > 0;
-            }).map((section, idx) => (
-              <section key={idx} className="mb-10 pl-4 w-full overflow-hidden">
-                <div className="flex items-center justify-between mb-4 pr-4">
-                  <h3 className="font-headline font-black text-lg tracking-tight text-zinc-900 flex items-center gap-2">
-                    <span className={`material-symbols-outlined ${section.iconColor}`} style={{ fontVariationSettings: "'FILL'1" }}>{section.icon}</span>
-                    <span>{section.title}</span>
-                  </h3>
-                </div>
-                <div className="flex overflow-x-auto hide-scrollbar gap-3 pb-4 pr-4 snap-x w-full pointer-events-auto">
-                  {section.products.map(p => (
-                    <div key={p.id} className="min-w-[110px] max-w-[110px] snap-start shrink-0">
-                      <ProductCard product={p} />
-                    </div>
-                  ))}
-                </div>
-              </section>
-            ))}
-
-            {/* Dynamic Promo Sections - MIDDLE */}
+            {renderPromoSections("AFTER_BESTSELLERS")}
             {renderPromoSections("AFTER_NEW_ARRIVALS")}
             {renderPromoSections("MIDDLE")}
-
-            {/* Grid Sections: Categories */}
-            {filteredCategories.map(cat => {
-              const allCatProducts = filteredProducts.filter(p => p.category === cat.id || p.category === cat.label);
-              if (allCatProducts.length === 0) return null;
-              
-              const displayedProducts = allCatProducts.slice(0, 12);
-              const hasMore = allCatProducts.length > 12;
-
-              return (
-                <React.Fragment key={cat.id}>
-                  <section key={cat.id} className="mb-10 px-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-headline font-black text-lg tracking-tight text-zinc-900 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-zinc-400" style={{ fontVariationSettings: "'FILL'1" }}>category</span>
-                        <span>{cat.label}</span>
-                      </h3>
-                    </div>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
-                      {displayedProducts.map(p => (
-                        <div key={p.id} className="w-full">
-                           <ProductCard product={p} />
-                        </div>
-                      ))}
-                    </div>
-                    {hasMore && (
-                      <div className="mt-4">
-                        <Link 
-                          href={`/search?category=${cat.id}`} 
-                          className="w-full bg-white border border-zinc-100 py-3 rounded-2xl flex items-center justify-center gap-2 group hover:bg-zinc-50 transition-all active:scale-[0.98]"
-                        >
-                          <span className="text-[10px] font-black tracking-widest uppercase text-zinc-500 group-hover:text-primary transition-colors">View All {cat.label}</span>
-                          <span className="material-symbols-outlined text-[16px] text-zinc-300 group-hover:text-primary group-hover:translate-x-1 transition-all">arrow_forward</span>
-                        </Link>
-                      </div>
-                    )}
-                  </section>
-                  {renderPromoSections("MIDDLE", cat.id)}
-                </React.Fragment>
-              );
-            })}
 
             {/* Dynamic Promo Sections - BOTTOM */}
             {renderPromoSections("AFTER_CATEGORIES")}

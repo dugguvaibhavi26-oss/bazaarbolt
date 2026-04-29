@@ -120,28 +120,27 @@ export const useStore = create<StoreState>()(
       },
 
       initSettings: async () => {
-        const { settings } = get();
-        if (settings) return; // Fetch only once per session
-
-        set({ settingsLoading: true });
+        if ((get() as any).unsubscribeSettings) return;
+        
         const settingsRef = doc(db, "settings", "config");
         
-        try {
-          // Step 2 & 7: Cache-first
-          const docSnap = await getDoc(settingsRef);
-          logFirestoreRead("settings", 1);
-          
+        const unsub = onSnapshot(settingsRef, (docSnap) => {
+          logFirestoreRead("settings (sync)", 1);
           if (docSnap.exists()) {
             const data = mapSettings(docSnap);
             set({ settings: data, settingsLoading: false });
             if (data.primaryColor) {
               document.documentElement.style.setProperty('--primary', data.primaryColor);
             }
+          } else {
+            set({ settingsLoading: false });
           }
-        } catch (e) {
-          console.error("Settings error:", e);
+        }, (err) => {
+          console.error("Settings sync error:", err);
           set({ settingsLoading: false });
-        }
+        });
+
+        set({ unsubscribeSettings: unsub } as any);
       },
 
       // Optimized Catalog Sync with Real-time Updates
