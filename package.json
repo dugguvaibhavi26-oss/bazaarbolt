@@ -17,7 +17,6 @@
     "@capacitor/push-notifications": "^8.0.3",
     "@capacitor/screen-orientation": "^8.0.1",
     "@capacitor/splash-screen": "^8.0.1",
-    "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4",
     "firebase": "^10.14.1",
     "firebase-admin": "^13.8.0",
     "lucide-react": "^1.8.0",
