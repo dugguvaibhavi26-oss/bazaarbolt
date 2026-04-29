@@ -43,56 +43,43 @@ export default function CategoryPage() {
     const outOfStock = product.stock <= 0;
 
     return (
-      <div className={`flex flex-col gap-1.5 transition-all group ${outOfStock ? 'opacity-60 grayscale' : ''}`}>
-        <div className="relative aspect-square bg-[#F3F4F6] rounded-2xl overflow-hidden border border-zinc-100 cursor-pointer" onClick={() => router.push(`/product/${product.id}`)}>
-          <img className="w-full h-full p-2 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} />
+      <div className={`flex flex-col gap-1 transition-all group ${outOfStock ? 'opacity-60 grayscale' : ''}`}>
+        <div className="relative aspect-square bg-white rounded-lg sm:rounded-xl overflow-hidden border border-zinc-100 cursor-pointer shadow-sm" onClick={() => router.push(`/product/${product.id}`)}>
+          <img className="w-full h-full p-1 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} />
           <div className="absolute bottom-1 right-1">
             {outOfStock ? (
-              <div className="bg-red-50 border border-red-100 text-red-600 px-2 py-1 rounded-lg text-[8px] font-black shadow-sm">
+              <div className="bg-red-50 border border-red-100 text-red-600 px-1.5 py-0.5 rounded-md text-[7px] font-black uppercase">
                 Sold Out
               </div>
             ) : !cartItem ? (
               <button
                 onClick={(e) => { e.stopPropagation(); addToCart({ ...product, quantity: 1 }); }}
-                className="bg-white border-[1.5px] border-green-600 text-green-600 px-3 py-1 rounded-lg text-[10px] font-black shadow-lg active:scale-90 transition-all"
+                className="bg-white border-[1px] border-green-600 text-green-600 px-2 py-0.5 rounded-lg text-[8px] font-black hover:bg-green-600 hover:text-white transition-all active:scale-95"
               >
                 Add
               </button>
             ) : (
-              <div className="flex items-center bg-green-600 text-white rounded-lg px-1 py-1 shadow-lg h-7" onClick={e => e.stopPropagation()}>
-                <button onClick={() => updateQuantity(product.id, -1)} className="w-5 h-5 flex items-center justify-center hover:bg-black/10 rounded transition-colors">
-                  <span className="material-symbols-outlined text-[10px] font-bold">remove</span>
+              <div className="flex items-center bg-green-600 text-white rounded-lg px-0.5 py-0.5 shadow-md h-5" onClick={e => e.stopPropagation()}>
+                <button onClick={() => updateQuantity(product.id, -1)} className="w-3 h-3 flex items-center justify-center hover:bg-black/10 rounded transition-colors">
+                  <span className="material-symbols-outlined text-[7px] font-bold">remove</span>
                 </button>
-                <span className="w-4 text-center font-black text-[10px]">{cartItem.quantity}</span>
-                <button onClick={() => updateQuantity(product.id, 1)} disabled={cartItem.quantity >= product.stock} className="w-5 h-5 flex items-center justify-center hover:bg-black/10 rounded transition-colors">
-                  <span className="material-symbols-outlined text-[10px] font-bold">add</span>
+                <span className="w-2.5 text-center font-black text-[8px]">{cartItem.quantity}</span>
+                <button onClick={() => updateQuantity(product.id, 1)} disabled={cartItem.quantity >= product.stock} className="w-3 h-3 flex items-center justify-center hover:bg-black/10 rounded transition-colors">
+                  <span className="material-symbols-outlined text-[7px] font-bold">add</span>
                 </button>
               </div>
             )}
           </div>
         </div>
-        <div className="flex flex-col px-0.5">
-          <div className="flex gap-1 mb-1">
-            <span className="bg-zinc-100 text-zinc-500 text-[7px] font-bold px-1.5 py-0.5 rounded tracking-wider">1 Unit</span>
+        <div className="flex flex-col px-0.5 mt-0.5">
+          <div className="flex items-center gap-1 mb-0.5 h-3">
+            <span className="text-zinc-400 text-[7px] font-medium tracking-tight whitespace-nowrap">1 Unit</span>
           </div>
-          <Link href={`/product/${product.id}`} className="text-[10px] font-bold text-zinc-900 leading-[1.2] mb-1 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
+          <Link href={`/product/${product.id}`} className="text-[9.5px] font-bold text-zinc-900 leading-[1.1] mb-1 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
             {product.name}
           </Link>
-          {((product as any).section === "CAFE") && (
-            <p className="text-[7px] font-bold text-zinc-400 mb-1 leading-tight italic">Image for representation only</p>
-          )}
-          {(product.rating || 0) > 0 ? (
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <div className="flex items-center bg-[#f3f9f3] text-[#2d7d2d] px-1.5 py-0.5 rounded-md border border-[#e1eee1]">
-                <span className="text-[10px] font-black mr-0.5">{product.rating?.toFixed(1)}</span>
-                <span className="material-symbols-outlined text-[10px]" style={{fontVariationSettings: "'FILL'1"}}>star</span>
-              </div>
-              <span className="text-[9px] font-bold text-zinc-400">{product.ratingCount || 0} Ratings</span>
-            </div>
-          ) : null}
           <div className="flex items-center flex-wrap gap-x-1.5">
-            <span className="text-xs font-black text-zinc-900 tracking-tight">₹{product.price.toFixed(0)}</span>
-            <span className="text-[9px] text-zinc-400 line-through font-medium tracking-tight opacity-50">₹{(product.price * 1.25).toFixed(0)}</span>
+            <span className="text-[11px] font-black text-zinc-900 tracking-tighter">₹{product.price.toFixed(0)}</span>
           </div>
         </div>
       </div>
