@@ -645,12 +645,16 @@ export default function Home() {
 
 
 
-            <footer className="mt-8 px-6 pb-20 text-center">
-              <h2 className="font-headline font-black text-2xl text-zinc-900 tracking-tighter mb-4 opacity-40">Comfort in every cart</h2>
-              <div className="flex items-center justify-center gap-6 mb-4">
-                <div className="h-[1px] w-12 bg-zinc-200 opacity-40" />
-                <Logo size="sm" className="opacity-40" />
-                <div className="h-[1px] w-12 bg-zinc-200 opacity-40" />
+            <footer className="mt-20 px-8 pb-32 flex flex-col items-start text-left max-w-2xl mx-auto w-full">
+              <h2 className="font-headline font-black text-[42px] sm:text-[56px] text-zinc-400/80 tracking-tighter leading-[0.9] mb-8">
+                From<br />
+                Thought<br />
+                to doorstep.
+              </h2>
+              <div className="w-full h-[1.5px] bg-zinc-100 mb-8" />
+              <div className="flex items-center gap-1.5 opacity-40">
+                <span className="font-headline font-black text-xl text-zinc-900 tracking-tighter">bazaarbolt</span>
+                <span className="text-red-500 text-lg">❤️</span>
               </div>
             </footer>
           </>
