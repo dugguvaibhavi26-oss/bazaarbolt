@@ -494,7 +494,7 @@ export default function Home() {
                     <div className="w-[60px] h-[60px] rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center p-0 overflow-hidden flex-shrink-0 group-hover:border-primary transition-all shadow-sm">
                       <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={cat.img} alt={cat.label} />
                     </div>
-                    <span className="text-[10px] font-bold tracking-tight text-center text-zinc-600 leading-tight w-full break-words min-h-[2.4em] flex items-center justify-center px-1 uppercase">{cat.label}</span>
+                    <span className="text-[9.5px] font-bold tracking-tight text-center text-zinc-600 leading-[1.1] w-full break-words min-h-[2.2em] block px-1">{cat.label}</span>
                   </div>
                 ))}
               </div>
@@ -656,7 +656,7 @@ export default function Home() {
                       <div className="w-[64px] h-[64px] sm:w-[72px] sm:h-[72px] rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center p-0 overflow-hidden flex-shrink-0 group-hover:border-primary transition-all shadow-sm">
                         <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={cat.img} alt={cat.label} />
                       </div>
-                      <span className="text-[10px] sm:text-[11px] font-bold tracking-tight text-center text-zinc-600 leading-tight w-full break-words min-h-[2.4em] flex items-center justify-center px-0.5 uppercase">{cat.label}</span>
+                      <span className="text-[9.5px] sm:text-[11px] font-bold tracking-tight text-center text-zinc-600 leading-[1.1] w-full break-words min-h-[2.2em] block px-0.5">{cat.label}</span>
                     </div>
                   ))}
                 </div>
