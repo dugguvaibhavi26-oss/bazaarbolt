@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, addDoc, doc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, doc, updateDoc, writeBatch } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { Product } from "@/types";
 import { mapProduct, mapQuerySnapshot } from "@/lib/mappers";
@@ -58,12 +58,17 @@ export default function AdminProducts() {
         const dbCats = catSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
         // Auto-derive missing categories from products
-        const existingCatLabels = new Set(dbCats.map((c: any) => c.label?.toLowerCase() || c.id?.toLowerCase()));
+        const existingCatLabels = new Set<string>();
+        dbCats.forEach((c: any) => {
+          if (c.label) existingCatLabels.add(c.label.toLowerCase().trim());
+          if (c.id) existingCatLabels.add(c.id.toLowerCase().trim());
+        });
+        
         const missingCatsMap = new Map();
         
         prods.forEach(p => {
-          const catLabel = p.category;
-          if (catLabel && !existingCatLabels.has(catLabel.toLowerCase())) {
+          const catLabel = (p.category || "Uncategorized").trim();
+          if (!existingCatLabels.has(catLabel.toLowerCase())) {
             if (!missingCatsMap.has(catLabel.toLowerCase())) {
               missingCatsMap.set(catLabel.toLowerCase(), {
                 id: catLabel,
@@ -75,7 +80,10 @@ export default function AdminProducts() {
           }
         });
 
-        setCategories([...dbCats, ...Array.from(missingCatsMap.values())]);
+        const combinedCategories = [...dbCats, ...Array.from(missingCatsMap.values())];
+        const uniqueCategories = Array.from(new Map(combinedCategories.map(c => [c.id, c])).values());
+        
+        setCategories(uniqueCategories);
 
         const vendorSnap = await getDocs(collection(db, "users"));
         const vens = vendorSnap.docs
@@ -91,6 +99,46 @@ export default function AdminProducts() {
     }
     loadData();
   }, []);
+
+  const syncSections = async () => {
+    const toastId = toast.loading("Syncing product sections...");
+    try {
+      let updated = 0;
+      const batchLimit = 500;
+      let currentBatch = writeBatch(db);
+      let count = 0;
+
+      for (const p of products) {
+        const pCat = p.category?.toLowerCase().trim();
+        const cat = categories.find(c => 
+          c.id?.toLowerCase().trim() === pCat || 
+          c.label?.toLowerCase().trim() === pCat
+        );
+        
+        if (cat && cat.section && (p as any).section !== cat.section) {
+          const docRef = doc(db, "products", p.id);
+          currentBatch.update(docRef, { section: cat.section });
+          updated++;
+          count++;
+
+          if (count >= batchLimit) {
+            await currentBatch.commit();
+            currentBatch = writeBatch(db);
+            count = 0;
+          }
+        }
+      }
+
+      if (count > 0) await currentBatch.commit();
+      
+      toast.success(`Successfully synced ${updated} products to their correct sections!`, { id: toastId });
+      // Reload data
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to sync sections", { id: toastId });
+    }
+  };
 
   const downloadInventory = () => {
     const XLSX = require("xlsx");
@@ -303,7 +351,11 @@ export default function AdminProducts() {
     let matchesCategory = true;
     if (selectedCategory) {
       const cat = categories.find(c => c.id === selectedCategory);
-      matchesCategory = p.category === selectedCategory || (cat && p.category === cat.label);
+      const target = selectedCategory.toLowerCase().trim();
+      const catLabel = cat?.label?.toLowerCase().trim();
+      matchesCategory = p.category?.toLowerCase().trim() === target || 
+                        (cat && p.category?.toLowerCase().trim() === catLabel) ||
+                        (!p.category && target === "uncategorized");
     }
 
     return matchesSection && matchesSearch && matchesCategory;
@@ -350,7 +402,7 @@ export default function AdminProducts() {
                     <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Product Name</label>
                     <input type="text" required value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all" />
                   </div>
-                  <div>
+                   <div>
                     <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Category</label>
                     <select 
                       value={newProduct.category} 
@@ -360,12 +412,23 @@ export default function AdminProducts() {
                         setNewProduct({ 
                           ...newProduct, 
                           category: catId,
-                          section: cat?.section || "BB"
+                          section: (cat?.section || newProduct.section || "BB") as any
                         });
                       }} 
                       className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all"
                     >
                       {categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Section</label>
+                    <select 
+                      value={newProduct.section} 
+                      onChange={e => setNewProduct({ ...newProduct, section: e.target.value as any })} 
+                      className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all"
+                    >
+                      <option value="BB">BAZAARBOLT</option>
+                      <option value="CAFE">BB CAFE</option>
                     </select>
                   </div>
                   <div>
@@ -556,20 +619,28 @@ export default function AdminProducts() {
               placeholder="Search by name, category or vendor..."
               className="w-full bg-white border border-zinc-100 rounded-2xl py-3 pl-12 pr-4 text-xs font-bold shadow-sm focus:ring-2 ring-primary transition-all"
               value={searchTerm}
-              onChange={(e) => {
+onChange={(e) => {
                 setSearchTerm(e.target.value);
                 if (e.target.value) setViewMode("products");
               }}
             />
           </div>
-          <button onClick={downloadInventory} className="bg-white border-2 border-zinc-900 text-zinc-900 px-6 py-3.5 rounded-2xl font-black text-[10px] tracking-widest flex items-center gap-2 hover:bg-zinc-50 transition-all w-full sm:w-auto justify-center whitespace-nowrap uppercase">
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+          <button onClick={syncSections}
+            className="w-full sm:w-auto bg-white border border-zinc-200 text-zinc-400 px-6 py-3 lg:py-3.5 rounded-2xl font-black text-[9px] lg:text-[10px] tracking-widest hover:text-zinc-900 hover:border-zinc-900 transition-all flex items-center justify-center gap-2 uppercase"
+          >
+            <span className="material-symbols-outlined text-sm">sync_alt</span>
+            Sync Sections
+          </button>
+          <button onClick={downloadInventory} className="bg-white border border-zinc-200 text-zinc-400 px-6 py-3 lg:py-3.5 rounded-2xl font-black text-[9px] lg:text-[10px] tracking-widest hover:text-zinc-900 hover:border-zinc-900 transition-all flex items-center justify-center gap-2 uppercase">
             <span className="material-symbols-outlined text-sm">download</span>
             {selectedCategory ? `Export ${categories.find(c => c.id === selectedCategory)?.label}` : 'Export All'}
           </button>
-          <button onClick={startAdd} className="bg-zinc-900 text-white px-8 py-3.5 rounded-2xl font-black text-[10px] tracking-widest flex items-center gap-2 hover:bg-black shadow-xl active:scale-95 transition-all w-full sm:w-auto justify-center whitespace-nowrap uppercase">
+          <button onClick={startAdd} className="bg-zinc-900 text-white px-8 py-3 lg:py-3.5 rounded-2xl font-black text-[9px] lg:text-[10px] tracking-widest flex items-center justify-center gap-2 hover:bg-black shadow-xl active:scale-95 transition-all w-full sm:w-auto uppercase">
             <span className="material-symbols-outlined text-sm">add_circle</span>
             Add New
           </button>
+          </div>
         </div>
       </div>
 
@@ -601,7 +672,12 @@ export default function AdminProducts() {
               </div>
               <h4 className="font-headline font-black text-xs text-zinc-900 tracking-tight">{cat.label}</h4>
               <p className="text-[8px] font-black text-zinc-400 mt-1 uppercase tracking-widest">
-                {products.filter(p => (p.category === cat.id || p.category === cat.label) && ((p as any).section || "BB") === activeTab).length} Products
+                {products.filter(p => {
+                  const pCat = (p.category || "Uncategorized").toLowerCase().trim();
+                  const cId = cat.id?.toLowerCase().trim();
+                  const cLabel = cat.label?.toLowerCase().trim();
+                  return (pCat === cId || pCat === cLabel) && ((p as any).section || "BB") === activeTab;
+                }).length} Products
               </p>
             </button>
           ))}
