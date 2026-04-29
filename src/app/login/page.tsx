@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "firebase/auth";
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword 
+} from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -22,17 +25,11 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("redirect") || "/";
-  const { user, role, loading: authLoading } = useAuth();
+  const { user, role, loading: authLoading, isInitialized } = useAuth();
 
   // Redirect if already logged in and profile is complete
   useEffect(() => {
     if (!authLoading && user && !showProfileCompletion && !showServicePopup) {
-      // For non-anonymous users, check email verification
-      if (!user.isAnonymous && !user.emailVerified) {
-        router.push("/verify-email");
-        return;
-      }
-
       if (role === "admin") {
         if (redirectPath.startsWith("/admin")) router.push(redirectPath);
         else router.push("/admin");
@@ -55,37 +52,6 @@ function LoginContent() {
     }
   }, [user, role, authLoading, showProfileCompletion, showServicePopup, router, redirectPath]);
 
-  // Handle Google Auth Redirect Results
-  useEffect(() => {
-    const handleRedirectResult = async () => {
-      try {
-        // Only run if we are on the login page and not already loading auth
-        const result = await getRedirectResult(auth);
-        if (result && result.user) {
-          const user = result.user;
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          
-          if (!userDoc.exists() || !userDoc.data()?.phoneNumber || !userDoc.data()?.name) {
-            setShowProfileCompletion(true);
-            setName(user.displayName || "");
-            toast.success("Welcome! Please complete your profile.");
-          } else if (!user.emailVerified) {
-            router.push("/verify-email");
-          } else {
-            // Already handled by useAuth effect for redirection, 
-            // but we show a success toast here for feedback.
-            toast.success("Signed in with Google");
-          }
-        }
-      } catch (error: any) {
-        console.error("Google Redirect Error:", error);
-        if (error.code !== 'auth/no-current-user') {
-          toast.error("Google sign-in failed. Please try again.");
-        }
-      }
-    };
-    handleRedirectResult();
-  }, [router]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,58 +97,7 @@ function LoginContent() {
     }
   };
 
-  const handleGoogleAuth = async () => {
-    setLoading(true);
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-    const toastId = toast.loading("Connecting Google...");
 
-    try {
-      // Determine if we should use redirect or popup
-      // Mobile browsers and Capacitor/Native apps perform much better with Redirect
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      const isCapacitor = typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.();
-
-      if (isMobile || isCapacitor) {
-        toast.loading("Redirecting to Google...", { id: toastId });
-        await signInWithRedirect(auth, provider);
-        // Page will reload, useEffect will handle result
-        return;
-      }
-
-      // For Desktop, try Popup first
-      let result;
-      try {
-        result = await signInWithPopup(auth, provider);
-      } catch (popupError: any) {
-        console.warn("Popup blocked or failed, falling back to redirect:", popupError.code);
-        
-        // Fallback to redirect for ANY popup error (blocked, COOP, etc.)
-        toast.loading("Popup failed. Redirecting to secure login...", { id: toastId });
-        await signInWithRedirect(auth, provider);
-        return;
-      }
-
-      if (result?.user) {
-        const user = result.user;
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (!userDoc.exists() || !userDoc.data()?.phoneNumber || !userDoc.data()?.name) {
-          setShowProfileCompletion(true);
-          setName(user.displayName || "");
-          toast.success("Welcome! Please complete your profile.", { id: toastId });
-        } else {
-          toast.success("Signed in with Google", { id: toastId });
-          // Redirection will be handled by the main useEffect
-        }
-      }
-    } catch (error: any) {
-      console.error("Google Auth Error:", error);
-      toast.error(error.message || "Google sign-in failed", { id: toastId });
-    } finally {
-      // If we used redirect, the page will reload soon, but we set loading false just in case
-      setLoading(false);
-    }
-  };
 
   const handleCompleteProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -294,6 +209,17 @@ function LoginContent() {
     );
   }
 
+  if (!isInitialized || authLoading || (user && !showProfileCompletion && !showServicePopup)) {
+    return (
+      <div className="min-h-screen bg-zinc-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <span className="material-symbols-outlined animate-spin text-primary text-4xl font-bold">progress_activity</span>
+          <p className="text-[10px] font-black tracking-[0.2em] text-zinc-400 uppercase">Securing Session...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-zinc-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary rounded-full mix-blend-multiply filter blur-[128px] opacity-10 pointer-events-none"></div>
@@ -382,28 +308,6 @@ function LoginContent() {
               </button>
             </div>
           </form>
-
-          <div className="mt-8 flex items-center gap-4">
-            <div className="flex-1 h-[1px] bg-zinc-100"></div>
-            <span className="text-[9px] font-black text-zinc-300 tracking-[0.3em]">Bolt with</span>
-            <div className="flex-1 h-[1px] bg-zinc-100"></div>
-          </div>
-
-          <div className="mt-8">
-            <button
-              onClick={handleGoogleAuth}
-              disabled={loading}
-              className="w-full h-14 flex justify-center items-center gap-3 bg-white border border-zinc-100 rounded-2xl text-[10px] font-black text-zinc-600 hover:bg-zinc-50 transition-all active:scale-95 shadow-sm tracking-widest"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.26.81-.58z" />
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-              </svg>
-              <span>Google identity</span>
-            </button>
-          </div>
 
           <div className="mt-10 border-t border-zinc-100 pt-8">
             <p className="text-center text-[10px] font-black text-zinc-400 tracking-widest leading-none">

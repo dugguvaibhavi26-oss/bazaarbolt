@@ -114,12 +114,6 @@ export default function Home() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      // Check for email verification first for non-anonymous users
-      if (!user.isAnonymous && !user.emailVerified) {
-        router.replace("/verify-email");
-        return;
-      }
-
       if (role === 'admin') router.replace("/admin");
       else if (role === 'rider') router.replace("/rider");
       else if (role === 'vendor') router.replace("/vendor");
