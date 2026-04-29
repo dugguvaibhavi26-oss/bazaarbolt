@@ -569,7 +569,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className={`pt-[calc(280px+env(safe-area-inset-top,0px))] pb-16 overflow-x-hidden min-h-[100dvh] transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : 'bg-white'}`}>
+      <main className={`pt-[calc(210px+env(safe-area-inset-top,0px))] pb-16 overflow-x-hidden min-h-[100dvh] transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : 'bg-white'}`}>
         {(settings?.sectionSettings?.[activeSection]?.storeOpen ?? settings?.storeOpen) === false ? (
           <section className="px-6 py-20 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-700">
             <h2 className="text-5xl font-headline font-black text-zinc-900 tracking-tighter leading-[0.8] mb-8">Currently <br /><span className="text-primary">Unavailable</span></h2>
@@ -579,10 +579,10 @@ export default function Home() {
           <>
             {/* Dynamic Promo Sections - VERY TOP */}
             {renderPromoSections("TOP")}
-
+ 
             {/* Falling back to default category grid if no custom category_grid is defined for this section */}
             {(!settings?.promoSections || !settings.promoSections.some(s => s.section === activeSection && s.type === "category_grid")) && (
-              <section className="mt-8 mb-12">
+              <section className="mt-4 mb-10">
                 <div className="grid grid-cols-4 gap-x-1 gap-y-10 px-1 justify-items-center max-w-4xl mx-auto">
                   {filteredCategories.map(cat => (
                     <div key={cat.id} onClick={() => router.push(`/category/${cat.id}`)} className="flex flex-col items-center gap-2 cursor-pointer group w-full">
