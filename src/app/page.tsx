@@ -362,8 +362,8 @@ export default function Home() {
                     <div className="absolute bottom-0 left-0 right-0 h-4 bg-zinc-200/50" />
                     
                     {dealProducts.slice(0, 8).map(p => (
-                      <div key={p.id} className="min-w-[135px] max-w-[135px] snap-start shrink-0 h-full">
-                        <div className="bg-white rounded-2xl p-2 shadow-sm border border-zinc-100 flex flex-col h-full hover:shadow-md transition-shadow relative z-10">
+                      <div key={p.id} className="min-w-[105px] max-w-[105px] snap-start shrink-0 h-full">
+                        <div className="bg-white rounded-xl p-1 shadow-sm border border-zinc-100 flex flex-col h-full hover:shadow-md transition-shadow relative z-10">
                           <div className="absolute top-2 left-2 z-20">
                             <span className="bg-primary text-zinc-900 text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-sm border border-zinc-900/5">
                               ₹{p.price.toFixed(0)}
@@ -425,7 +425,7 @@ export default function Home() {
                 </div>
                 <div className="flex overflow-x-auto hide-scrollbar gap-3 pb-4 pr-4 snap-x w-full pointer-events-auto">
                   {rowProducts.map(p => (
-                    <div key={p.id} className="min-w-[135px] max-w-[135px] snap-start shrink-0">
+                    <div key={p.id} className="min-w-[105px] max-w-[105px] snap-start shrink-0">
                       <ProductCard product={p} />
                     </div>
                   ))}
