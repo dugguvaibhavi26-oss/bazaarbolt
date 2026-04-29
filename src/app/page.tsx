@@ -357,12 +357,12 @@ export default function Home() {
                   </div>
 
                   {/* Shop Shelf / Products Area */}
-                  <div className="flex-1 bg-[#F9F9F9] p-4 flex overflow-x-auto hide-scrollbar gap-4 items-center snap-x relative">
+                  <div className={section.layout === 'max4row' ? "flex-1 bg-[#F9F9F9] p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 relative" : "flex-1 bg-[#F9F9F9] p-4 flex overflow-x-auto hide-scrollbar gap-4 items-center snap-x relative"}>
                     {/* Shelf depth effect */}
-                    <div className="absolute bottom-0 left-0 right-0 h-4 bg-zinc-200/50" />
+                    {section.layout !== 'max4row' && <div className="absolute bottom-0 left-0 right-0 h-4 bg-zinc-200/50" />}
                     
-                    {dealProducts.slice(0, 8).map(p => (
-                      <div key={p.id} className="min-w-[105px] max-w-[105px] snap-start shrink-0 h-full">
+                    {(section.layout === 'max4row' ? dealProducts.slice(0, 8) : dealProducts.slice(0, 8)).map(p => (
+                      <div key={p.id} className={section.layout === 'max4row' ? "w-full" : "min-w-[105px] max-w-[105px] snap-start shrink-0 h-full"}>
                         <div className="bg-white rounded-xl p-1 shadow-sm border border-zinc-100 flex flex-col h-full hover:shadow-md transition-shadow relative z-10">
                           <div className="absolute top-2 left-2 z-20">
                             <span className="bg-primary text-zinc-900 text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-sm border border-zinc-900/5">
@@ -376,14 +376,25 @@ export default function Home() {
                       </div>
                     ))}
                     
-                    <div className="min-w-[100px] flex items-center justify-center snap-start shrink-0 pr-4">
-                      <Link href={`/deals/${section.priceLimit || 0}?section=${activeSection}`} className="group flex flex-col items-center gap-2">
-                        <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-zinc-900 shadow-lg active:scale-95 transition-all group-hover:bg-zinc-900 group-hover:text-white">
-                          <span className="material-symbols-outlined text-2xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    {section.layout !== 'max4row' ? (
+                      <div className="min-w-[100px] flex items-center justify-center snap-start shrink-0 pr-4">
+                        <Link href={`/deals/${section.priceLimit || 0}?section=${activeSection}`} className="group flex flex-col items-center gap-2">
+                          <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-zinc-900 shadow-lg active:scale-95 transition-all group-hover:bg-zinc-900 group-hover:text-white">
+                            <span className="material-symbols-outlined text-2xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                          </div>
+                          <span className="text-[9px] font-black tracking-widest uppercase text-zinc-400 group-hover:text-zinc-900 transition-colors">View All</span>
+                        </Link>
+                      </div>
+                    ) : (
+                      dealProducts.length > 8 && (
+                        <div className="col-span-2 sm:col-span-4 mt-2">
+                          <Link href={`/deals/${section.priceLimit || 0}?section=${activeSection}`} className="w-full bg-white border border-zinc-200 text-zinc-900 font-black text-[10px] tracking-widest uppercase py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-zinc-50 transition-colors shadow-sm">
+                            View All Deals
+                            <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                          </Link>
                         </div>
-                        <span className="text-[9px] font-black tracking-widest uppercase text-zinc-400 group-hover:text-zinc-900 transition-colors">View All</span>
-                      </Link>
-                    </div>
+                      )
+                    )}
                   </div>
                 </div>
               </section>
@@ -423,12 +434,24 @@ export default function Home() {
                     <span>{section.title || (section.filterType === 'BESTSELLERS' ? 'Bestsellers' : section.filterType === 'NEW_ARRIVALS' ? 'New Arrivals' : 'Trending')}</span>
                   </h3>
                 </div>
-                <div className="flex overflow-x-auto hide-scrollbar gap-3 pb-4 pr-4 snap-x w-full pointer-events-auto">
-                  {rowProducts.map(p => (
-                    <div key={p.id} className="min-w-[105px] max-w-[105px] snap-start shrink-0">
+                <div className={section.layout === 'max4row' ? "grid grid-cols-2 sm:grid-cols-4 gap-3 pb-4 pr-4 w-full" : "flex overflow-x-auto hide-scrollbar gap-3 pb-4 pr-4 snap-x w-full pointer-events-auto"}>
+                  {(section.layout === 'max4row' ? rowProducts.slice(0, 8) : rowProducts).map(p => (
+                    <div key={p.id} className={section.layout === 'max4row' ? "w-full" : "min-w-[105px] max-w-[105px] snap-start shrink-0"}>
                       <ProductCard product={p} />
                     </div>
                   ))}
+                  
+                  {section.layout === 'max4row' && rowProducts.length > 8 && (
+                    <div className="col-span-2 sm:col-span-4 mt-2">
+                      <Link 
+                        href={section.filterType === 'CATEGORY' ? `/category/${section.filterCategoryId}` : section.filterType === 'BESTSELLERS' ? `/bestsellers` : `/new-arrivals`} 
+                        className="w-full bg-white border border-zinc-200 text-zinc-900 font-black text-[10px] tracking-widest uppercase py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-zinc-50 transition-colors shadow-sm"
+                      >
+                        View All
+                        <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </section>
             );

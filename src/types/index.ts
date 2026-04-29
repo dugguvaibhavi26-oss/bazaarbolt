@@ -86,4 +86,5 @@ export interface PromoSection {
   filterCategoryId?: string;
   filterSubcategory?: string;
   filterType?: "BESTSELLERS" | "NEW_ARRIVALS" | "CATEGORY";
+  layout?: "max4row" | "sliding";
 }

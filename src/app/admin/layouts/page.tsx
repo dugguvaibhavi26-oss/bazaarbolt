@@ -70,7 +70,8 @@ export default function AdminLayouts() {
     sideBannerImageUrl: "",
     manualProductIds: [],
     items: [],
-    afterCategoryId: ""
+    afterCategoryId: "",
+    layout: "sliding"
   });
   const [newDynamicRow, setNewDynamicRow] = useState<PromoSection>({
     id: Date.now().toString(),
@@ -84,7 +85,8 @@ export default function AdminLayouts() {
     filterSubcategory: "",
     manualProductIds: [],
     items: [],
-    afterCategoryId: ""
+    afterCategoryId: "",
+    layout: "sliding"
   });
   const [newPromoItem, setNewPromoItem] = useState({ imageUrl: "", redirectUrl: "", label: "", colSpan: 1, rowSpan: 1 });
   const [promoRedirectType, setPromoRedirectType] = useState<"NONE" | "CATEGORY" | "PRODUCT" | "CUSTOM">("NONE");
@@ -204,7 +206,8 @@ export default function AdminLayouts() {
       sideBannerImageUrl: "",
       manualProductIds: [],
       items: [],
-      afterCategoryId: ""
+      afterCategoryId: "",
+      layout: "sliding"
     });
     toast.success("Under Price Store added locally!", { duration: 4000 });
   };
@@ -230,7 +233,8 @@ export default function AdminLayouts() {
       filterSubcategory: "",
       manualProductIds: [],
       items: [],
-      afterCategoryId: ""
+      afterCategoryId: "",
+      layout: "sliding"
     });
     toast.success("Dynamic Row added locally!", { duration: 4000 });
   };
@@ -425,6 +429,17 @@ export default function AdminLayouts() {
                   </select>
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Products Layout</label>
+                  <select 
+                    value={newUnderPriceStore.layout || "sliding"} 
+                    onChange={e => setNewUnderPriceStore({...newUnderPriceStore, layout: e.target.value as "max4row" | "sliding"})} 
+                    className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
+                  >
+                    <option value="sliding">SLIDING</option>
+                    <option value="max4row">MAX 4 ROW</option>
+                  </select>
+                </div>
+                <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Max Price Limit (₹)</label>
                   <input type="number" value={newUnderPriceStore.priceLimit} onChange={e => setNewUnderPriceStore({...newUnderPriceStore, priceLimit: parseFloat(e.target.value) || 0})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase" />
                 </div>
@@ -533,6 +548,17 @@ export default function AdminLayouts() {
                   >
                     <option value="BB">BAZAAR BOLT</option>
                     <option value="CAFE">BB CAFE</option>
+                  </select>
+                </div>
+                <div className="space-y-1 lg:space-y-1.5 uppercase">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Products Layout</label>
+                  <select 
+                    value={newDynamicRow.layout || "sliding"} 
+                    onChange={e => setNewDynamicRow({...newDynamicRow, layout: e.target.value as "max4row" | "sliding"})} 
+                    className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
+                  >
+                    <option value="sliding">SLIDING</option>
+                    <option value="max4row">MAX 4 ROW</option>
                   </select>
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
