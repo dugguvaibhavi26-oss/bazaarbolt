@@ -8,7 +8,6 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
-import { AdUnit } from "@/components/AdUnit";
 import { BottomNav } from "@/components/BottomNav";
 
 function SearchContent() {
@@ -208,9 +207,6 @@ function SearchContent() {
         )}
       </main>
 
-      <div className="px-4 mt-12 mb-8">
-        <AdUnit slotId="search-bottom-banner" className="m-0" />
-      </div>
     </div>
   );
 }

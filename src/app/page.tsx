@@ -10,7 +10,6 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { useAuth } from "@/components/AuthProvider";
 import { useRouter } from "next/navigation";
-import { AdUnit } from "@/components/AdUnit";
 import { BottomNav } from "@/components/BottomNav";
 import { Logo } from "@/components/Logo";
 import { Portal } from "@/components/Portal";
@@ -644,9 +643,7 @@ export default function Home() {
             {renderPromoSections("AFTER_CATEGORIES")}
             {renderPromoSections("BOTTOM")}
 
-            <section className="px-4 mb-8">
-              <AdUnit slotId="home-mid-banner" className="m-0" />
-            </section>
+
 
             <footer className="mt-8 px-6 pb-20 text-center">
               <h2 className="font-headline font-black text-2xl text-zinc-900 tracking-tighter mb-4 opacity-40">Comfort in every cart</h2>

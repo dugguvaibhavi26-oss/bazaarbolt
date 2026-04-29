@@ -6,7 +6,6 @@ import { db } from "@/lib/firebase";
 import { Order } from "@/types";
 import { useRouter } from "next/navigation";
 import { mapOrder } from "@/lib/mappers";
-import { AdUnit } from "@/components/AdUnit";
 
 export default function OrderTracking({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -276,9 +275,7 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
           )}
         </div>
 
-        <section className="mt-8">
-          <AdUnit slotId="order-detail-bottom" className="m-0" />
-        </section>
+
       </main>
       
       {order.items.some(i => i.unavailable) && (
