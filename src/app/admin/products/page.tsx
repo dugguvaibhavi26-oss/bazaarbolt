@@ -575,13 +575,13 @@ export default function AdminProducts() {
 
       <div className="flex bg-white p-1 rounded-2xl border border-zinc-100 shadow-sm overflow-x-auto hide-scrollbar">
         <button 
-          onClick={() => setActiveTab("BB")}
+          onClick={() => { setActiveTab("BB"); setViewMode("categories"); setSelectedCategory(null); }}
           className={`flex-1 lg:flex-none px-4 lg:px-6 py-2 lg:py-3 rounded-xl text-[9px] lg:text-[10px] font-black tracking-widest transition-all uppercase whitespace-nowrap ${activeTab === "BB" ? "bg-zinc-900 text-white shadow-md" : "bg-transparent text-zinc-500 hover:bg-zinc-50"}`}
         >
           BAZAARBOLT ({products.filter(p => ((p as any).section || 'BB') === 'BB').length})
         </button>
         <button 
-          onClick={() => setActiveTab("CAFE")}
+          onClick={() => { setActiveTab("CAFE"); setViewMode("categories"); setSelectedCategory(null); }}
           className={`flex-1 lg:flex-none px-4 lg:px-6 py-2 lg:py-3 rounded-xl text-[9px] lg:text-[10px] font-black tracking-widest transition-all uppercase whitespace-nowrap ${activeTab === "CAFE" ? "bg-zinc-900 text-white shadow-md" : "bg-transparent text-zinc-500 hover:bg-zinc-50"}`}
         >
           BB CAFE ({products.filter(p => (p as any).section === 'CAFE').length})
