@@ -54,18 +54,18 @@ export default function CategoryPage() {
             ) : !cartItem ? (
               <button
                 onClick={(e) => { e.stopPropagation(); addToCart({ ...product, quantity: 1 }); }}
-                className="bg-white border-[1px] border-green-600 text-green-600 px-1.5 py-0 rounded-md text-[7.5px] font-black hover:bg-green-600 hover:text-white transition-all active:scale-95 h-[18px] min-w-[32px]"
+                className="bg-white border border-green-600 text-green-600 px-2 py-0 rounded-md text-[9px] font-black hover:bg-green-600 hover:text-white transition-all active:scale-95 h-[22px] min-w-[44px] shadow-sm"
               >
                 Add
               </button>
             ) : (
-              <div className="flex items-center bg-green-600 text-white rounded-md px-0.5 py-0 shadow-md h-[18px]" onClick={e => e.stopPropagation()}>
-                <button onClick={() => updateQuantity(product.id, -1)} className="w-3 h-3 flex items-center justify-center hover:bg-black/10 rounded transition-colors">
-                  <span className="material-symbols-outlined text-[6px] font-bold">remove</span>
+              <div className="flex items-center bg-green-600 text-white rounded-md px-1 py-0 shadow-md h-[22px]" onClick={e => e.stopPropagation()}>
+                <button onClick={() => updateQuantity(product.id, -1)} className="w-5 h-full flex items-center justify-center hover:bg-black/10 rounded-sm transition-colors">
+                  <span className="material-symbols-outlined text-[10px] font-bold">remove</span>
                 </button>
-                <span className="w-2 text-center font-black text-[7.5px]">{cartItem.quantity}</span>
-                <button onClick={() => updateQuantity(product.id, 1)} disabled={cartItem.quantity >= product.stock} className="w-3 h-3 flex items-center justify-center hover:bg-black/10 rounded transition-colors">
-                  <span className="material-symbols-outlined text-[6px] font-bold">add</span>
+                <span className="w-4 text-center font-black text-[10px]">{cartItem.quantity}</span>
+                <button onClick={() => updateQuantity(product.id, 1)} disabled={cartItem.quantity >= product.stock} className="w-5 h-full flex items-center justify-center hover:bg-black/10 rounded-sm transition-colors">
+                  <span className="material-symbols-outlined text-[10px] font-bold">add</span>
                 </button>
               </div>
             )}
