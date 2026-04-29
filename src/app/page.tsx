@@ -615,15 +615,15 @@ export default function Home() {
             />
             <button
               onClick={() => setActiveSection("BB")}
-              className={`relative z-10 flex-1 py-2.5 text-[13px] font-black tracking-tight transition-colors duration-500 flex items-center justify-center gap-2 ${activeSection === "BB" ? "text-zinc-900" : "text-zinc-400"}`}
+              className={`relative z-10 flex-1 py-2.5 text-[13px] font-black tracking-tighter transition-colors duration-500 flex items-center justify-center ${activeSection === "BB" ? "text-zinc-900" : "text-zinc-400"}`}
             >
-              <span className={activeSection === 'BB' ? 'text-primary' : ''}>bazaar</span>bolt
+              <span className={activeSection === 'BB' ? 'text-primary' : ''}>bazaar</span>&nbsp;bolt
             </button>
             <button
               onClick={() => setActiveSection("CAFE")}
-              className={`relative z-10 flex-1 py-2.5 text-[13px] font-black tracking-tight transition-colors duration-500 flex items-center justify-center gap-2 ${activeSection === "CAFE" ? "text-[#2D1B14]" : "text-zinc-400"}`}
+              className={`relative z-10 flex-1 py-2.5 text-[13px] font-black tracking-tighter transition-colors duration-500 flex items-center justify-center ${activeSection === "CAFE" ? "text-[#2D1B14]" : "text-zinc-400"}`}
             >
-              bb<span className={activeSection === 'CAFE' ? 'text-[#8B5E3C]' : ''}>cafe</span>
+              bb&nbsp;<span className={activeSection === 'CAFE' ? 'text-[#8B5E3C]' : ''}>cafe</span>
             </button>
           </div>
 
