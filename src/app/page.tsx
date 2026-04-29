@@ -232,7 +232,20 @@ export default function Home() {
 
   const renderPromoSections = (pos: PromoSection['position'] | "TOP" | "MIDDLE" | "BOTTOM", anchoredTo?: string) => {
     return (settings?.promoSections || [])
-      .filter(s => s.section === activeSection && (s.position || "MIDDLE") === pos && (anchoredTo ? s.afterCategoryId === anchoredTo : !s.afterCategoryId))
+      .filter(s => {
+        const isMatchesSection = s.section === activeSection;
+        const isMatchesPosition = (s.position || "MIDDLE") === pos;
+        
+        // If anchoredTo is provided, we only want sections specifically anchored to that ID
+        if (anchoredTo) {
+          return isMatchesSection && isMatchesPosition && s.afterCategoryId === anchoredTo;
+        }
+        
+        // Root level call: render sections that have no anchor OR are anchored to something 
+        // that isn't another promo section (like a category ID)
+        const isAnchoredToAnotherPromoSection = settings?.promoSections?.some(other => other.id === s.afterCategoryId);
+        return isMatchesSection && isMatchesPosition && !isAnchoredToAnotherPromoSection;
+      })
       .map(section => {
         let content: React.ReactNode = null;
         const bgStyles: React.CSSProperties = {
