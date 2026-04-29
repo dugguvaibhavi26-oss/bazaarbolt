@@ -55,8 +55,27 @@ export default function AdminProducts() {
         setProducts(prods);
 
         const catSnap = await getDocs(collection(db, "categories"));
-        const cats = catSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setCategories(cats);
+        const dbCats = catSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Auto-derive missing categories from products
+        const existingCatLabels = new Set(dbCats.map((c: any) => c.label?.toLowerCase() || c.id?.toLowerCase()));
+        const missingCatsMap = new Map();
+        
+        prods.forEach(p => {
+          const catLabel = p.category;
+          if (catLabel && !existingCatLabels.has(catLabel.toLowerCase())) {
+            if (!missingCatsMap.has(catLabel.toLowerCase())) {
+              missingCatsMap.set(catLabel.toLowerCase(), {
+                id: catLabel,
+                label: catLabel,
+                section: (p as any).section || "BB",
+                img: "https://placehold.co/400x400?text=" + encodeURIComponent(catLabel)
+              });
+            }
+          }
+        });
+
+        setCategories([...dbCats, ...Array.from(missingCatsMap.values())]);
 
         const vendorSnap = await getDocs(collection(db, "users"));
         const vens = vendorSnap.docs

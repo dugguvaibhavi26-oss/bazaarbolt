@@ -357,11 +357,11 @@ export default function Home() {
                   </div>
 
                   {/* Shop Shelf / Products Area */}
-                  <div className={section.layout === 'max4row' ? "flex-1 bg-[#F9F9F9] p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 relative" : "flex-1 bg-[#F9F9F9] p-4 flex overflow-x-auto hide-scrollbar gap-4 items-center snap-x relative"}>
+                  <div className={section.layout === 'max4row' ? "flex-1 bg-[#F9F9F9] p-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 relative" : "flex-1 bg-[#F9F9F9] p-4 flex overflow-x-auto hide-scrollbar gap-4 items-center snap-x relative"}>
                     {/* Shelf depth effect */}
                     {section.layout !== 'max4row' && <div className="absolute bottom-0 left-0 right-0 h-4 bg-zinc-200/50" />}
                     
-                    {(section.layout === 'max4row' ? dealProducts.slice(0, 8) : dealProducts.slice(0, 8)).map(p => (
+                    {(section.layout === 'max4row' ? dealProducts.slice(0, 12) : dealProducts.slice(0, 8)).map(p => (
                       <div key={p.id} className={section.layout === 'max4row' ? "w-full" : "min-w-[105px] max-w-[105px] snap-start shrink-0 h-full"}>
                         <div className="bg-white rounded-xl p-1 shadow-sm border border-zinc-100 flex flex-col h-full hover:shadow-md transition-shadow relative z-10">
                           <div className="absolute top-2 left-2 z-20">
@@ -386,8 +386,8 @@ export default function Home() {
                         </Link>
                       </div>
                     ) : (
-                      dealProducts.length > 8 && (
-                        <div className="col-span-2 sm:col-span-4 mt-2">
+                      dealProducts.length > 12 && (
+                        <div className="col-span-3 sm:col-span-4 md:col-span-6 mt-2">
                           <Link href={`/deals/${section.priceLimit || 0}?section=${activeSection}`} className="w-full bg-white border border-zinc-200 text-zinc-900 font-black text-[10px] tracking-widest uppercase py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-zinc-50 transition-colors shadow-sm">
                             View All Deals
                             <span className="material-symbols-outlined text-sm">arrow_forward</span>
@@ -434,15 +434,15 @@ export default function Home() {
                     <span>{section.title || (section.filterType === 'BESTSELLERS' ? 'Bestsellers' : section.filterType === 'NEW_ARRIVALS' ? 'New Arrivals' : 'Trending')}</span>
                   </h3>
                 </div>
-                <div className={section.layout === 'max4row' ? "grid grid-cols-2 sm:grid-cols-4 gap-3 pb-4 pr-4 w-full" : "flex overflow-x-auto hide-scrollbar gap-3 pb-4 pr-4 snap-x w-full pointer-events-auto"}>
-                  {(section.layout === 'max4row' ? rowProducts.slice(0, 8) : rowProducts).map(p => (
+                <div className={section.layout === 'max4row' ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 pb-4 pr-4 w-full" : "flex overflow-x-auto hide-scrollbar gap-3 pb-4 pr-4 snap-x w-full pointer-events-auto"}>
+                  {(section.layout === 'max4row' ? rowProducts.slice(0, 12) : rowProducts).map(p => (
                     <div key={p.id} className={section.layout === 'max4row' ? "w-full" : "min-w-[105px] max-w-[105px] snap-start shrink-0"}>
                       <ProductCard product={p} />
                     </div>
                   ))}
                   
-                  {section.layout === 'max4row' && rowProducts.length > 8 && (
-                    <div className="col-span-2 sm:col-span-4 mt-2">
+                  {section.layout === 'max4row' && rowProducts.length > 12 && (
+                    <div className="col-span-3 sm:col-span-4 md:col-span-6 mt-2">
                       <Link 
                         href={section.filterType === 'CATEGORY' ? `/category/${section.filterCategoryId}` : section.filterType === 'BESTSELLERS' ? `/bestsellers` : `/new-arrivals`} 
                         className="w-full bg-white border border-zinc-200 text-zinc-900 font-black text-[10px] tracking-widest uppercase py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-zinc-50 transition-colors shadow-sm"
