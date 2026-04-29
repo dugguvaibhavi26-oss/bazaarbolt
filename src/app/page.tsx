@@ -189,28 +189,28 @@ export default function Home() {
 
     return (
       <div className={`flex flex-col gap-1 transition-all group ${outOfStock ? 'opacity-60 grayscale' : ''}`}>
-        <div className="relative aspect-square bg-white rounded-xl sm:rounded-2xl overflow-hidden border border-zinc-100 cursor-pointer shadow-sm" onClick={() => router.push(`/product/${product.id}`)}>
-          <img className="w-full h-full p-2.5 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} />
+        <div className="relative aspect-square bg-white rounded-lg sm:rounded-xl overflow-hidden border border-zinc-100 cursor-pointer shadow-sm" onClick={() => router.push(`/product/${product.id}`)}>
+          <img className="w-full h-full p-1.5 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} />
           <div className="absolute bottom-1 right-1">
             {outOfStock ? (
-              <div className="bg-red-50 border border-red-100 text-red-600 px-2 py-1 rounded-lg text-[8px] font-black uppercase">
+              <div className="bg-red-50 border border-red-100 text-red-600 px-1.5 py-0.5 rounded-md text-[7px] font-black uppercase">
                 Sold Out
               </div>
             ) : !cartItem ? (
               <button
                 onClick={(e) => { e.stopPropagation(); addToCart({ ...product, quantity: 1 }); }}
-                className="bg-white border-[1.2px] border-green-600 text-green-600 px-3 py-1 rounded-lg text-[9px] font-black hover:bg-green-600 hover:text-white transition-all active:scale-95"
+                className="bg-white border-[1.2px] border-green-600 text-green-600 px-2.5 py-1 rounded-lg text-[8.5px] font-black hover:bg-green-600 hover:text-white transition-all active:scale-95"
               >
                 Add
               </button>
             ) : (
-              <div className="flex items-center bg-green-600 text-white rounded-lg px-0.5 py-0.5 shadow-md h-6" onClick={e => e.stopPropagation()}>
-                <button onClick={() => updateQuantity(product.id, -1)} className="w-4 h-4 flex items-center justify-center hover:bg-black/10 rounded transition-colors">
-                  <span className="material-symbols-outlined text-[10px] font-bold">remove</span>
+              <div className="flex items-center bg-green-600 text-white rounded-lg px-0.5 py-0.5 shadow-md h-[22px]" onClick={e => e.stopPropagation()}>
+                <button onClick={() => updateQuantity(product.id, -1)} className="w-3.5 h-3.5 flex items-center justify-center hover:bg-black/10 rounded transition-colors">
+                  <span className="material-symbols-outlined text-[8px] font-bold">remove</span>
                 </button>
-                <span className="w-3 text-center font-black text-[9px]">{cartItem.quantity}</span>
-                <button onClick={() => updateQuantity(product.id, 1)} disabled={cartItem.quantity >= product.stock} className="w-4 h-4 flex items-center justify-center hover:bg-black/10 rounded transition-colors">
-                  <span className="material-symbols-outlined text-[10px] font-bold">add</span>
+                <span className="w-3 text-center font-black text-[8.5px]">{cartItem.quantity}</span>
+                <button onClick={() => updateQuantity(product.id, 1)} disabled={cartItem.quantity >= product.stock} className="w-3.5 h-3.5 flex items-center justify-center hover:bg-black/10 rounded transition-colors">
+                  <span className="material-symbols-outlined text-[8px] font-bold">add</span>
                 </button>
               </div>
             )}
@@ -218,15 +218,15 @@ export default function Home() {
         </div>
         <div className="flex flex-col px-0.5 mt-0.5">
           <div className="flex items-center gap-1 mb-0.5 h-3.5">
-            <span className="text-zinc-400 text-[9px] font-medium tracking-tight">1 Unit</span>
-            {product.stock < 10 && product.stock > 0 && <span className="text-orange-600 text-[9px] font-bold tracking-tight">Only {product.stock} Left</span>}
+            <span className="text-zinc-400 text-[8px] font-medium tracking-tight">1 Unit</span>
+            {product.stock < 10 && product.stock > 0 && <span className="text-orange-600 text-[8px] font-bold tracking-tight">Only {product.stock} Left</span>}
           </div>
-          <Link href={`/product/${product.id}`} className="text-[12px] font-bold text-zinc-900 leading-[1.2] mb-1.5 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
+          <Link href={`/product/${product.id}`} className="text-[11px] font-bold text-zinc-900 leading-[1.2] mb-1 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
             {product.name}
           </Link>
           <div className="flex items-center gap-1.5">
-            <span className="text-[13px] font-black text-zinc-900 tracking-tighter">₹{product.price.toFixed(0)}</span>
-            <span className="text-[9px] text-zinc-400 line-through font-medium tracking-tight opacity-50">₹{(product.price * 1.25).toFixed(0)}</span>
+            <span className="text-[12px] font-black text-zinc-900 tracking-tighter">₹{product.price.toFixed(0)}</span>
+            <span className="text-[8px] text-zinc-400 line-through font-medium tracking-tight opacity-50">₹{(product.price * 1.25).toFixed(0)}</span>
           </div>
         </div>
       </div>
@@ -340,38 +340,51 @@ export default function Home() {
           
           if (dealProducts.length > 0) {
             content = (
-              <section key={section.id} className="px-4 mb-10 w-full relative z-10">
-                <div className="bg-zinc-50 rounded-[32px] overflow-hidden border border-zinc-200 shadow-sm flex h-[280px] sm:h-[320px]">
-                  <div className="w-14 sm:w-16 bg-[#f3f9f3] border-r border-green-100 flex flex-col items-center justify-between py-6 relative overflow-hidden shrink-0">
-                    <div className="w-[1.5px] h-12 bg-green-200 rounded-full shrink-0" />
-                    <div className="flex-1 flex items-center justify-center w-full">
-                      <div className="rotate-[-90deg] whitespace-nowrap">
-                        <h3 className="text-[12px] sm:text-[15px] font-black tracking-[0.2em] uppercase text-green-950 leading-none italic drop-shadow-sm font-headline">
-                          {section.title || "UNDER 19 STORE"}
-                        </h3>
-                      </div>
+              <section key={section.id} className="px-4 mb-12 w-full relative group">
+                <div className="bg-white rounded-[32px] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-zinc-100 flex flex-col min-h-[280px] sm:min-h-[320px] transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)]">
+                  {/* Shop Header / Counter Top */}
+                  <div className="h-11 bg-[#00c04b] flex items-center justify-center relative overflow-hidden border-b border-black/5">
+                    {/* Decorative stall pattern */}
+                    <div className="absolute inset-0 opacity-10 flex">
+                       {[...Array(20)].map((_, i) => (
+                         <div key={i} className="w-8 h-full border-r border-black rotate-12" />
+                       ))}
                     </div>
-                    <div className="w-[1.5px] h-12 bg-green-200 rounded-full shrink-0" />
+                    <div className="relative z-10 flex items-center gap-3">
+                      <span className="w-2 h-2 rounded-full bg-zinc-900 animate-pulse" />
+                      <h3 className="text-zinc-900 text-base sm:text-lg font-headline font-black tracking-tighter uppercase italic">
+                        {section.title || (section.priceLimit ? `Under ${section.priceLimit} Store` : "Deals Corner")}
+                      </h3>
+                      <span className="w-2 h-2 rounded-full bg-zinc-900 animate-pulse" />
+                    </div>
                   </div>
-                  <div className="flex-1 flex overflow-x-auto hide-scrollbar gap-3 sm:gap-4 p-4 items-center snap-x">
-                    {dealProducts.map(p => (
-                      <div key={p.id} className={`${section.isCompact ? 'min-w-[130px] max-w-[130px]' : 'min-w-[150px] max-w-[150px]'} h-full snap-start shrink-0`}>
-                        <div className="bg-white rounded-2xl p-2.5 h-full shadow-sm border border-white flex flex-col">
-                          <div className="mb-2">
-                            <span className="bg-green-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm">
+
+                  {/* Shop Shelf / Products Area */}
+                  <div className="flex-1 bg-[#F9F9F9] p-4 flex overflow-x-auto hide-scrollbar gap-4 items-center snap-x relative">
+                    {/* Shelf depth effect */}
+                    <div className="absolute bottom-0 left-0 right-0 h-4 bg-zinc-200/50" />
+                    
+                    {dealProducts.slice(0, 8).map(p => (
+                      <div key={p.id} className="min-w-[135px] max-w-[135px] snap-start shrink-0 h-full">
+                        <div className="bg-white rounded-2xl p-2 shadow-sm border border-zinc-100 flex flex-col h-full hover:shadow-md transition-shadow relative z-10">
+                          <div className="absolute top-2 left-2 z-20">
+                            <span className="bg-primary text-zinc-900 text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-sm border border-zinc-900/5">
                               ₹{p.price.toFixed(0)}
                             </span>
                           </div>
-                          <div className="flex-1 min-h-0">
+                          <div className="flex-1 pt-4">
                             <ProductCard product={p} />
                           </div>
                         </div>
                       </div>
                     ))}
+                    
                     <div className="min-w-[100px] flex items-center justify-center snap-start shrink-0 pr-4">
-                      <Link href="/search" className="w-16 h-16 rounded-full bg-green-600 flex flex-col items-center justify-center text-white shadow-lg active:scale-95 transition-transform group">
-                        <span className="material-symbols-outlined text-2xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                        <span className="text-[7px] font-black tracking-widest uppercase">All</span>
+                      <Link href={`/deals/${section.priceLimit || 0}?section=${activeSection}`} className="group flex flex-col items-center gap-2">
+                        <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-zinc-900 shadow-lg active:scale-95 transition-all group-hover:bg-zinc-900 group-hover:text-white">
+                          <span className="material-symbols-outlined text-2xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                        </div>
+                        <span className="text-[9px] font-black tracking-widest uppercase text-zinc-400 group-hover:text-zinc-900 transition-colors">View All</span>
                       </Link>
                     </div>
                   </div>
@@ -569,7 +582,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className={`pt-[calc(210px+env(safe-area-inset-top,0px))] pb-16 overflow-x-hidden min-h-[100dvh] transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : 'bg-white'}`}>
+      <main className={`pt-[calc(235px+env(safe-area-inset-top,0px))] pb-16 overflow-x-hidden min-h-[100dvh] transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : 'bg-white'}`}>
         {(settings?.sectionSettings?.[activeSection]?.storeOpen ?? settings?.storeOpen) === false ? (
           <section className="px-6 py-20 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-700">
             <h2 className="text-5xl font-headline font-black text-zinc-900 tracking-tighter leading-[0.8] mb-8">Currently <br /><span className="text-primary">Unavailable</span></h2>
