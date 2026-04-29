@@ -517,13 +517,13 @@ export default function Home() {
         <div className="pt-safe" />
         <div className="h-8 flex items-center overflow-hidden">
           <div className="flex whitespace-nowrap animate-marquee">
-            <span className="text-[13px] font-bold tracking-widest px-6">{(settings?.sectionSettings?.[activeSection]?.announcement || settings?.announcement) || "⚡️ Instant Delivery Available • Curated Premium Selections ⚡️"}</span>
-            <span className="text-[13px] font-bold tracking-widest px-6">{(settings?.sectionSettings?.[activeSection]?.announcement || settings?.announcement) || "⚡️ Instant Delivery Available • Curated Premium Selections ⚡️"}</span>
+            <span className="text-[11px] font-bold tracking-widest px-5">{(settings?.sectionSettings?.[activeSection]?.announcement || settings?.announcement) || "⚡️ Instant Delivery Available • Curated Premium Selections ⚡️"}</span>
+            <span className="text-[11px] font-bold tracking-widest px-5">{(settings?.sectionSettings?.[activeSection]?.announcement || settings?.announcement) || "⚡️ Instant Delivery Available • Curated Premium Selections ⚡️"}</span>
           </div>
         </div>
       </div>
 
-      <header className={`fixed top-[calc(theme(spacing.8)+max(env(safe-area-inset-top),2.5rem))] w-full z-50 transition-all border-b ${activeSection === 'CAFE' ? 'border-[#EAD8C0]/20' : 'border-zinc-100'}`}>
+      <header className={`fixed top-[calc(theme(spacing.8)+max(env(safe-area-inset-top),2.2rem))] w-full z-50 transition-all border-b ${activeSection === 'CAFE' ? 'border-[#EAD8C0]/20' : 'border-zinc-100'}`}>
         {/* Top area with neutral background */}
         <div className={`pt-4 px-4 flex flex-col transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]/80 backdrop-blur-xl' : 'bg-zinc-100'}`}>
           {/* Top Row: Address and Account */}
@@ -547,13 +547,13 @@ export default function Home() {
           <div className="flex gap-2 overflow-x-auto hide-scrollbar items-end">
             <button
               onClick={() => setActiveSection("BB")}
-              className={`flex-shrink-0 px-6 py-3 text-[20px] font-black tracking-tighter transition-all flex items-center justify-center min-w-[120px] lowercase ${activeSection === "BB" ? "bg-white rounded-t-2xl shadow-[0_-4px_12px_rgba(0,0,0,0.03)]" : "bg-transparent opacity-50 hover:opacity-100"}`}
+              className={`flex-shrink-0 px-6 py-3 text-[17px] font-black tracking-tighter transition-all flex items-center justify-center min-w-[110px] lowercase ${activeSection === "BB" ? "bg-white rounded-t-2xl shadow-[0_-4px_12px_rgba(0,0,0,0.03)]" : "bg-transparent opacity-50 hover:opacity-100"}`}
             >
               <span className="text-primary font-black">bazaar</span><span className="text-zinc-900 font-medium">bolt</span>
             </button>
             <button
               onClick={() => setActiveSection("CAFE")}
-              className={`flex-shrink-0 px-6 py-3 text-[20px] font-black tracking-tighter transition-all flex items-center justify-center min-w-[120px] lowercase ${activeSection === "CAFE" ? "bg-[#FAF7F2] border-t border-x border-[#EAD8C0]/30 rounded-t-2xl" : "bg-transparent opacity-50 hover:opacity-100"}`}
+              className={`flex-shrink-0 px-6 py-3 text-[17px] font-black tracking-tighter transition-all flex items-center justify-center min-w-[110px] lowercase ${activeSection === "CAFE" ? "bg-[#FAF7F2] border-t border-x border-[#EAD8C0]/30 rounded-t-2xl" : "bg-transparent opacity-50 hover:opacity-100"}`}
             >
               <span className="text-[#8B5E3C] font-black">bb&nbsp;</span><span className="text-[#2D1B14] font-medium">cafe</span>
             </button>
@@ -562,9 +562,9 @@ export default function Home() {
 
         {/* Search Bar area with exact same bg as active tab to seamlessly connect */}
         <div className={`px-4 py-4 border-b transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2] border-[#EAD8C0]/20' : 'bg-white border-zinc-100'}`}>
-          <div onClick={() => router.push(`/search?section=${activeSection}`)} className={`rounded-[20px] flex items-center px-4 py-3.5 gap-3 cursor-pointer shadow-sm border transition-all ${activeSection === 'CAFE' ? 'bg-[#FFFBF5] border-[#EAD8C0]/40' : 'bg-white border-zinc-200'}`}>
+          <div onClick={() => router.push(`/search?section=${activeSection}`)} className={`rounded-[20px] flex items-center px-4 py-3 gap-3 cursor-pointer shadow-sm border transition-all ${activeSection === 'CAFE' ? 'bg-[#FFFBF5] border-[#EAD8C0]/40' : 'bg-white border-zinc-200'}`}>
             <span className={`material-symbols-outlined text-xl font-bold ${activeSection === 'CAFE' ? 'text-[#8B5E3C]' : 'text-zinc-400'}`}>search</span>
-            <span className={`text-[15px] font-bold tracking-tight ${activeSection === 'CAFE' ? 'text-[#8B5E3C]/60' : 'text-zinc-400'}`}>Search for "{activeSection === "CAFE" ? "Cold Brew" : "Safai Abhiyaan"}"</span>
+            <span className={`text-[13px] font-bold tracking-tight ${activeSection === 'CAFE' ? 'text-[#8B5E3C]/60' : 'text-zinc-400'}`}>Search for "{activeSection === "CAFE" ? "Cold Brew" : "Safai Abhiyaan"}"</span>
           </div>
         </div>
       </header>
@@ -585,11 +585,11 @@ export default function Home() {
               <section className="mt-8 mb-12">
                 <div className="grid grid-cols-4 gap-x-1 gap-y-10 px-1 justify-items-center max-w-4xl mx-auto">
                   {filteredCategories.map(cat => (
-                    <div key={cat.id} onClick={() => router.push(`/category/${cat.id}`)} className="flex flex-col items-center gap-3 cursor-pointer group w-full">
-                      <div className="w-[92px] h-[92px] sm:w-[100px] sm:h-[100px] rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center p-0 overflow-hidden flex-shrink-0 group-hover:border-primary transition-all shadow-sm">
+                    <div key={cat.id} onClick={() => router.push(`/category/${cat.id}`)} className="flex flex-col items-center gap-2.5 cursor-pointer group w-full">
+                      <div className="w-[76px] h-[76px] sm:w-[84px] sm:h-[84px] rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center p-0 overflow-hidden flex-shrink-0 group-hover:border-primary transition-all shadow-sm">
                         <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={cat.img} alt={cat.label} />
                       </div>
-                      <span className="text-[12px] sm:text-[13px] font-bold tracking-tight text-center text-zinc-900 group-hover:text-primary leading-none w-full break-words min-h-[1.5em] flex items-center justify-center px-0.5">{cat.label}</span>
+                      <span className="text-[11px] sm:text-[12px] font-bold tracking-tight text-center text-zinc-900 group-hover:text-primary leading-none w-full break-words min-h-[1.5em] flex items-center justify-center px-0.5">{cat.label}</span>
                     </div>
                   ))}
                 </div>
