@@ -638,7 +638,16 @@ export default function AdminLayouts() {
                 <div className="space-y-1 lg:space-y-1.5 uppercase sm:col-span-2">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase block">Featured Products (Optional - Overrides Category Filter)</label>
                   <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto bg-white border border-zinc-100 rounded-xl p-3">
-                    {products.filter(p => !newDynamicRow.filterCategoryId || p.category === newDynamicRow.filterCategoryId).map(p => (
+                    {products.filter(p => {
+                      if (!newDynamicRow.filterCategoryId) return true;
+                      const target = newDynamicRow.filterCategoryId.toLowerCase().trim();
+                      const pCat = p.category?.toLowerCase().trim();
+                      const pSub = p.subcategory?.toLowerCase().trim();
+                      const cat = categories.find(c => c.id === newDynamicRow.filterCategoryId);
+                      const catLabel = cat?.label?.toLowerCase().trim();
+                      
+                      return pCat === target || pCat === catLabel || pSub === target;
+                    }).map(p => (
                       <button
                         key={p.id}
                         type="button"

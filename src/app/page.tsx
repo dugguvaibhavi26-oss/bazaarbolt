@@ -425,7 +425,15 @@ export default function Home() {
               return dateB - dateA;
             }).slice(0, 30);
           } else if (section.filterCategoryId) {
-            rowProducts = rowProducts.filter(p => p.category === section.filterCategoryId || p.category === categories.find(c => c.id === section.filterCategoryId)?.label);
+            const target = section.filterCategoryId.toLowerCase().trim();
+            const cat = categories.find(c => c.id === section.filterCategoryId);
+            const catLabel = cat?.label?.toLowerCase().trim();
+            
+            rowProducts = rowProducts.filter(p => {
+              const pCat = p.category?.toLowerCase().trim();
+              const pSub = p.subcategory?.toLowerCase().trim();
+              return pCat === target || pCat === catLabel || pSub === target;
+            });
           }
           
           if (section.manualProductIds && section.manualProductIds.length > 0) {
