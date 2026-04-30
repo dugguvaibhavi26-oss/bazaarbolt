@@ -165,7 +165,7 @@ export default function AdminLayouts() {
     // Reset
     setNewPromoSection({
       id: Date.now().toString(),
-      type: "grid",
+      type: "banner",
       section: activeBannerTab,
       position: "MIDDLE",
       title: "",
@@ -174,15 +174,7 @@ export default function AdminLayouts() {
       textColor: "#000000",
       bgImageUrl: "",
       bgAnimation: "none",
-      isCompact: false,
-      buttonText: "Shop Now",
-      buttonColor: "#000000",
-      buttonTextColor: "#ffffff",
-      priceLimit: 99,
-      sideBannerImageUrl: "",
-      manualProductIds: [],
-      items: [],
-      afterCategoryId: ""
+      items: [{ imageUrl: "", redirectUrl: "" }]
     });
     toast.success("Section added locally. Remember to click 'Propagate Changes' to save!", { duration: 4000 });
   };
@@ -789,21 +781,7 @@ export default function AdminLayouts() {
                   </label>
                 </div>
 
-                {newPromoSection.type === "banner" && (
-                  <>
-                    <div className="space-y-1 lg:space-y-1.5 uppercase">
-                      <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Button Text</label>
-                      <input type="text" value={newPromoSection.buttonText} onChange={e => setNewPromoSection({...newPromoSection, buttonText: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. SHOP NOW" />
-                    </div>
-                    <div className="space-y-1 lg:space-y-1.5 uppercase">
-                      <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Button Color</label>
-                      <div className="flex items-center gap-2">
-                        <input type="color" value={newPromoSection.buttonColor} onChange={e => setNewPromoSection({...newPromoSection, buttonColor: e.target.value})} className="w-10 h-10 bg-white border border-zinc-100 rounded-xl cursor-pointer" />
-                        <input type="text" value={newPromoSection.buttonColor} onChange={e => setNewPromoSection({...newPromoSection, buttonColor: e.target.value})} className="flex-1 bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase" />
-                      </div>
-                    </div>
-                  </>
-                )}
+                {/* Shop Now button configuration removed as per user request */}
 
 
 

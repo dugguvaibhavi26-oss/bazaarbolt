@@ -280,13 +280,7 @@ export default function Home() {
                   className={`w-full h-full object-cover transition-transform duration-[20s] ease-linear ${section.bgAnimation === 'zoom' ? 'scale-110 group-hover:scale-100' : 'group-hover:scale-105'}`} 
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60"></div>
-                {section.buttonText && (
-                  <div className="absolute bottom-4 right-4 lg:bottom-8 lg:right-8 z-10">
-                    <div className="px-6 py-2.5 rounded-full font-black text-[10px] lg:text-xs tracking-widest uppercase shadow-2xl hover:scale-105 transition-transform" style={{ backgroundColor: section.buttonColor || "#000", color: section.buttonTextColor || "#fff" }}>
-                      {section.buttonText}
-                    </div>
-                  </div>
-                )}
+                {/* Shop Now button removed as per user request */}
               </div>
             </section>
           );
