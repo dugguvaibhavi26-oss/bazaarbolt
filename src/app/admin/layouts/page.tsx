@@ -36,7 +36,7 @@ export default function AdminLayouts() {
   const [saving, setSaving] = useState(false);
   const [newBanner, setNewBanner] = useState({
     url: "",
-    section: "BB" as "BB" | "CAFE",
+    section: "BB" as "BB" | "CAFE" | "MALL",
     title: "",
     subtitle: "",
     redirectUrl: ""
@@ -48,7 +48,7 @@ export default function AdminLayouts() {
   const [newPromoSection, setNewPromoSection] = useState<PromoSection>({
     id: Date.now().toString(),
     type: "grid",
-    section: "BB",
+    section: "BB" as "BB" | "CAFE" | "MALL",
     position: "MIDDLE",
     title: "",
     subtitle: "",
@@ -63,7 +63,7 @@ export default function AdminLayouts() {
   const [newUnderPriceStore, setNewUnderPriceStore] = useState<PromoSection>({
     id: Date.now().toString(),
     type: "deal_row",
-    section: "BB",
+    section: "BB" as "BB" | "CAFE" | "MALL",
     position: "MIDDLE",
     title: "",
     priceLimit: 19,
@@ -76,7 +76,7 @@ export default function AdminLayouts() {
   const [newDynamicRow, setNewDynamicRow] = useState<PromoSection>({
     id: Date.now().toString(),
     type: "sliding_row",
-    section: "BB",
+    section: "BB" as "BB" | "CAFE" | "MALL",
     position: "MIDDLE",
     title: "",
     iconUrl: "",
