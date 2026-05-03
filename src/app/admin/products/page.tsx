@@ -375,8 +375,11 @@ export default function AdminProducts() {
   const filteredProducts = products.filter(p => {
     const section = (p as any).section || 'BB';
     const matchesSection = section === activeTab;
+    
+    const productCategories = Array.isArray(p.category) ? p.category : [p.category || ""];
+
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          p.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          productCategories.some(c => c.toLowerCase().includes(searchTerm.toLowerCase())) ||
                           p.vendorId?.toLowerCase().includes(searchTerm.toLowerCase());
     
     let matchesCategory = true;
@@ -384,11 +387,10 @@ export default function AdminProducts() {
       const cat = categories.find(c => c.id === selectedCategory);
       const target = selectedCategory.toLowerCase().trim();
       const catLabel = cat?.label?.toLowerCase().trim();
-      const productCategories = Array.isArray(p.category) ? p.category : [p.category];
       
       matchesCategory = productCategories.some(c => 
         c?.toLowerCase().trim() === target || (catLabel && c?.toLowerCase().trim() === catLabel)
-      ) || (!p.category && target === "uncategorized");
+      ) || ((!p.category || (Array.isArray(p.category) && p.category.length === 0)) && target === "uncategorized");
     }
 
     return matchesSection && matchesSearch && matchesCategory;
