@@ -115,15 +115,24 @@ export default function AdminProducts() {
       let count = 0;
 
       for (const p of products) {
-        const pCat = p.category?.toLowerCase().trim();
-        const cat = categories.find(c => 
-          c.id?.toLowerCase().trim() === pCat || 
-          c.label?.toLowerCase().trim() === pCat
-        );
+        const pCats = Array.isArray(p.category) ? p.category : [p.category || ""];
         
-        if (cat && cat.section && (p as any).section !== cat.section) {
+        let matchingSection = null;
+        for (const catIdOrLabel of pCats) {
+          const lowerCat = catIdOrLabel.toLowerCase().trim();
+          const cat = categories.find(c => 
+            c.id?.toLowerCase().trim() === lowerCat || 
+            c.label?.toLowerCase().trim() === lowerCat
+          );
+          if (cat && cat.section) {
+            matchingSection = cat.section;
+            break;
+          }
+        }
+        
+        if (matchingSection && (p as any).section !== matchingSection) {
           const docRef = doc(db, "products", p.id);
-          currentBatch.update(docRef, { section: cat.section });
+          currentBatch.update(docRef, { section: matchingSection });
           updated++;
           count++;
 
