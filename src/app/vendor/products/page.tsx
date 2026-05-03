@@ -17,7 +17,7 @@ export default function VendorProducts() {
   const [filterCategory, setFilterCategory] = useState("ALL");
   const [filterStock0, setFilterStock0] = useState(false);
 
-  const categories = Array.from(new Set(products.map(p => p.category)));
+  const categories = Array.from(new Set(products.flatMap(p => Array.isArray(p.category) ? p.category : [p.category || ""])));
 
   useEffect(() => {
     if (!user) return;
@@ -59,9 +59,18 @@ export default function VendorProducts() {
   };
 
   const filteredProducts = products.filter(p => {
+    const categoryText = Array.isArray(p.category)
+      ? p.category.join(" ").toLowerCase()
+      : (p.category || "").toLowerCase();
+
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          p.category.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = filterCategory === "ALL" || p.category === filterCategory;
+                          categoryText.includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = filterCategory === "ALL" || 
+                            (Array.isArray(p.category) 
+                              ? p.category.includes(filterCategory) 
+                              : p.category === filterCategory);
+                              
     const matchesStock = !filterStock0 || p.stock === 0;
     
     return matchesSearch && matchesCategory && matchesStock;
@@ -132,7 +141,9 @@ export default function VendorProducts() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <span className={`w-2 h-2 rounded-full ${product.vendorAvailable && product.stock > 0 && product.adminActive ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                <p className="text-[10px] font-black text-zinc-400 tracking-widest uppercase truncate">{product.category}</p>
+                <p className="text-[10px] font-black text-zinc-400 tracking-widest uppercase truncate">
+                  {Array.isArray(product.category) ? product.category.join(', ') : product.category}
+                </p>
               </div>
               <h3 className="text-sm font-black text-zinc-900 truncate leading-tight mb-1">{product.name}</h3>
               <div className="flex items-center gap-3">
