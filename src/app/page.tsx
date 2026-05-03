@@ -351,65 +351,111 @@ export default function Home() {
           }
           
           if (dealProducts.length > 0) {
+            // Physics Sign Component (Compact)
+            const HangingPhysicsSign = ({ text }: { text: string }) => {
+              const [rotate, setRotate] = React.useState(0);
+              
+              React.useEffect(() => {
+                const handleMotion = (e: DeviceOrientationEvent) => {
+                  if (e.gamma) {
+                    setRotate(e.gamma / 4);
+                  }
+                };
+
+                const handleMouse = (e: MouseEvent) => {
+                  const x = (e.clientX / window.innerWidth - 0.5) * 12;
+                  setRotate(x);
+                };
+
+                window.addEventListener('deviceorientation', handleMotion);
+                window.addEventListener('mousemove', handleMouse);
+                return () => {
+                  window.removeEventListener('deviceorientation', handleMotion);
+                  window.removeEventListener('mousemove', handleMouse);
+                };
+              }, []);
+
+              return (
+                <div 
+                  className="relative z-20 transition-transform duration-700 ease-out"
+                  style={{ 
+                    transform: `rotate(${rotate}deg)`,
+                    transformOrigin: 'top center'
+                  }}
+                >
+                  {/* Fine Illustrative Threads */}
+                  <div className="absolute -top-16 left-0 right-0 flex justify-around px-8 pointer-events-none opacity-40">
+                    <div className="w-[1px] h-16 bg-emerald-900" />
+                    <div className="w-[1px] h-16 bg-emerald-900" />
+                  </div>
+                  
+                  {/* Compact Signboard */}
+                  <div className="bg-white border-b-4 border-emerald-600 px-6 py-2 rounded-xl shadow-lg flex flex-col items-center">
+                    <h3 className="text-zinc-900 font-headline font-black text-xl tracking-tighter uppercase leading-none">
+                      {text}
+                    </h3>
+                  </div>
+                </div>
+              );
+            };
+
             content = (
-              <section key={section.id} className="px-4 mb-12 w-full relative group">
-                <div className="bg-white rounded-[32px] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-zinc-100 flex flex-col min-h-[280px] sm:min-h-[320px] transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)]">
-                  {/* Shop Header / Counter Top */}
-                  <div className="h-11 bg-[#00c04b] flex items-center justify-center relative overflow-hidden border-b border-black/5">
-                    {/* Decorative stall pattern */}
-                    <div className="absolute inset-0 opacity-10 flex">
-                       {[...Array(20)].map((_, i) => (
-                         <div key={i} className="w-8 h-full border-r border-black rotate-12" />
-                       ))}
-                    </div>
-                    <div className="relative z-10 flex items-center gap-3">
-                      <span className="w-2 h-2 rounded-full bg-zinc-900 animate-pulse" />
-                      <h3 className="text-zinc-900 text-base sm:text-lg font-headline font-black tracking-tighter uppercase italic">
-                        {section.title || (section.priceLimit ? `Under ${section.priceLimit} Store` : "Deals Corner")}
-                      </h3>
-                      <span className="w-2 h-2 rounded-full bg-zinc-900 animate-pulse" />
-                    </div>
+              <section key={section.id} className="px-4 mb-8 w-full relative">
+                {/* Compact Physics Boutique Container */}
+                <div className="bg-[#ecfdf5] rounded-[32px] p-4 pb-8 border-b-4 border-emerald-100 shadow-xl overflow-hidden relative group">
+                  
+                  {/* Subtle Shop Pattern */}
+                  <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ 
+                    backgroundImage: 'linear-gradient(45deg, #065f46 25%, transparent 25%), linear-gradient(-45deg, #065f46 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #065f46 75%), linear-gradient(-45deg, transparent 75%, #065f46 75%)',
+                    backgroundSize: '32px 32px'
+                  }} />
+                  
+                  {/* Mini Scalloped Header */}
+                  <div className="absolute top-0 left-0 right-0 h-4 flex gap-0.5 px-1">
+                    {[...Array(20)].map((_, i) => (
+                      <div key={i} className="flex-1 h-full bg-emerald-600 rounded-b-full shadow-sm" />
+                    ))}
                   </div>
 
-                  {/* Shop Shelf / Products Area */}
-                  <div className={section.layout === 'max4row' ? "flex-1 bg-[#F9F9F9] p-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 relative" : "flex-1 bg-[#F9F9F9] p-4 flex overflow-x-auto hide-scrollbar gap-4 items-center snap-x relative"}>
-                    {/* Shelf depth effect */}
-                    {section.layout !== 'max4row' && <div className="absolute bottom-0 left-0 right-0 h-4 bg-zinc-200/50" />}
-                    
-                    {(section.layout === 'max4row' ? dealProducts.slice(0, 12) : dealProducts.slice(0, 8)).map(p => (
-                      <div key={p.id} className={section.layout === 'max4row' ? "w-full" : "min-w-[105px] max-w-[105px] snap-start shrink-0 h-full"}>
-                        <div className="bg-white rounded-xl p-1 shadow-sm border border-zinc-100 flex flex-col h-full hover:shadow-md transition-shadow relative z-10">
-                          <div className="absolute top-2 left-2 z-20">
-                            <span className="bg-primary text-zinc-900 text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-sm border border-zinc-900/5">
-                              ₹{p.price.toFixed(0)}
-                            </span>
+                  {/* Compact Interactive Sign */}
+                  <div className="flex flex-col items-center mb-10 pt-10">
+                    <HangingPhysicsSign text={`DEALS AT ₹${section.priceLimit || 99}`} />
+                  </div>
+
+                  {/* Compact Product Grid */}
+                  <div className="relative z-10">
+                    <div className={section.layout === 'max4row' ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 sm:gap-4" : "flex overflow-x-auto hide-scrollbar gap-4 items-stretch snap-x"}>
+                      {(section.layout === 'max4row' ? dealProducts.slice(0, 12) : dealProducts.slice(0, 15)).map((p, idx) => {
+                        const savings = p.mrp > p.price ? p.mrp - p.price : 0;
+                        return (
+                          <div key={p.id} className={section.layout === 'max4row' ? "w-full" : "min-w-[110px] max-w-[110px] snap-start shrink-0 h-full"}>
+                            <div className="flex flex-col h-full relative group/item animate-in fade-in slide-in-from-bottom-4 fill-mode-both">
+                              {/* Compact Price Tags */}
+                              <div className="absolute top-0 left-0 z-10 flex flex-col gap-0.5 pointer-events-none -ml-1 -mt-1">
+                                <div className="bg-emerald-600 text-white text-[8px] font-black px-2 py-0.5 rounded-br-lg rounded-tl-xl shadow-md border border-white/20">
+                                  ₹{p.price.toFixed(0)}
+                                </div>
+                                {savings > 0 && (
+                                  <div className="bg-white text-emerald-700 text-[7px] font-black px-1.5 py-0.5 rounded-full border border-emerald-100 shadow-sm">
+                                    ₹{savings.toFixed(0)} OFF
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div className="flex-1 bg-white rounded-2xl p-1 border border-emerald-50 hover:border-emerald-200 transition-all duration-500 shadow-sm">
+                                <ProductCard product={p} />
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex-1 pt-4">
-                            <ProductCard product={p} />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    
-                    {section.layout !== 'max4row' ? (
-                      <div className="min-w-[100px] flex items-center justify-center snap-start shrink-0 pr-4">
-                        <Link href={`/deals/${section.priceLimit || 0}?section=${activeSection}`} className="group flex flex-col items-center gap-2">
-                          <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-zinc-900 shadow-lg active:scale-95 transition-all group-hover:bg-zinc-900 group-hover:text-white">
-                            <span className="material-symbols-outlined text-2xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                          </div>
-                          <span className="text-[9px] font-black tracking-widest uppercase text-zinc-400 group-hover:text-zinc-900 transition-colors">View All</span>
+                        );
+                      })}
+                      
+                      <div className="min-w-[100px] flex items-center justify-center snap-start shrink-0 pr-2">
+                        <Link href={`/deals/${section.priceLimit || 0}?section=${activeSection}`} className="w-12 h-12 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow-lg hover:bg-emerald-700 transition-all group/more">
+                          <span className="material-symbols-outlined text-2xl group-hover/more:translate-x-1 transition-transform">arrow_forward</span>
                         </Link>
                       </div>
-                    ) : (
-                      dealProducts.length > 12 && (
-                        <div className="col-span-3 sm:col-span-4 md:col-span-6 mt-2">
-                          <Link href={`/deals/${section.priceLimit || 0}?section=${activeSection}`} className="w-full bg-white border border-zinc-200 text-zinc-900 font-black text-[10px] tracking-widest uppercase py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-zinc-50 transition-colors shadow-sm">
-                            View All Deals
-                            <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                          </Link>
-                        </div>
-                      )
-                    )}
+                    </div>
                   </div>
                 </div>
               </section>

@@ -77,17 +77,17 @@ function DealsContent() {
 
   return (
     <div className="bg-white min-h-screen relative overflow-x-hidden pb-44 text-zinc-900 font-body">
-      <header className="sticky top-0 z-50 bg-[#00c04b] pt-safe pb-4 px-4 shadow-lg border-b border-black/5">
-        <div className="pt-4 flex items-center gap-4">
-          <button onClick={() => router.back()} className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white backdrop-blur-md">
-            <span className="material-symbols-outlined">arrow_back</span>
+      <header className="sticky top-0 z-50 bg-white pt-safe px-4 border-b border-zinc-100 shadow-sm">
+        <div className="pt-4 pb-4 flex items-center gap-4">
+          <button onClick={() => router.back()} className="w-9 h-9 rounded-full bg-green-50 flex items-center justify-center text-green-600 active:scale-95 transition-all border border-green-100">
+            <span className="material-symbols-outlined text-lg">arrow_back</span>
           </button>
           <div className="flex flex-col">
-            <h1 className="text-white font-headline font-black text-xl tracking-tighter uppercase italic leading-none">
-              Under ₹{priceLimit} Store
+            <h1 className="text-zinc-900 font-headline font-black text-xl tracking-tighter uppercase leading-none">
+              Under <span className="text-green-600">₹{priceLimit}</span> Store
             </h1>
-            <p className="text-white/70 text-[10px] font-bold tracking-[0.2em] uppercase mt-1">
-              {dealProducts.length} Premium Items
+            <p className="text-zinc-400 text-[9px] font-black tracking-[0.2em] uppercase mt-1">
+              {dealProducts.length} Premium Selections
             </p>
           </div>
         </div>

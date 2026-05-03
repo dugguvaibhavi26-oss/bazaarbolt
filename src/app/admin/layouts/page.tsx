@@ -2,11 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, storage } from "@/lib/firebase";
 import toast from "react-hot-toast";
 import { mapSettings } from "@/lib/mappers";
-import { AppSettings, PromoSection } from "@/types";
+import { AppSettings, PromoSection, PromoSectionItem } from "@/types";
 import { useStore } from "@/store/useStore";
+import { BannerCropper } from "@/components/BannerCropper";
+import { Portal } from "@/components/Portal";
 
 export default function AdminLayouts() {
   const { categories, products, fetchCatalog } = useStore();
@@ -51,12 +54,6 @@ export default function AdminLayouts() {
     bgImageUrl: "",
     bgAnimation: "none",
     isCompact: false,
-    buttonText: "Shop Now",
-    buttonColor: "#000000",
-    buttonTextColor: "#ffffff",
-    priceLimit: 99,
-    sideBannerImageUrl: "",
-    manualProductIds: [],
     items: [],
     afterCategoryId: ""
   });
@@ -91,6 +88,12 @@ export default function AdminLayouts() {
   const [newPromoItem, setNewPromoItem] = useState({ imageUrl: "", redirectUrl: "", label: "", colSpan: 1, rowSpan: 1 });
   const [promoRedirectType, setPromoRedirectType] = useState<"NONE" | "CATEGORY" | "PRODUCT" | "CUSTOM">("NONE");
 
+  // Cropping State
+  const [isCropping, setIsCropping] = useState(false);
+  const [cropAspect, setCropAspect] = useState(21 / 9);
+  const [cropTarget, setCropTarget] = useState<"HERO" | "PROMO_ITEM">("HERO");
+  const [isUploading, setIsUploading] = useState(false);
+
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "settings", "config"), (docSnap) => {
       try {
@@ -119,6 +122,30 @@ export default function AdminLayouts() {
       toast.error("Failed to propagate settings", { id: toastId });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleCroppedImage = async (blob: Blob) => {
+    setIsCropping(false);
+    setIsUploading(true);
+    const toastId = toast.loading("Uploading processed asset...");
+
+    try {
+      const storageRef = ref(storage, `banners/${Date.now()}.jpg`);
+      await uploadBytes(storageRef, blob);
+      const url = await getDownloadURL(storageRef);
+
+      if (cropTarget === "HERO") {
+        setNewBanner({ ...newBanner, url });
+      } else {
+        setNewPromoItem({ ...newPromoItem, imageUrl: url });
+      }
+      toast.success("Asset ready!", { id: toastId });
+    } catch (err) {
+      console.error("Upload error:", err);
+      toast.error("Cloud sync failed", { id: toastId });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -294,7 +321,17 @@ export default function AdminLayouts() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 uppercase">
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Image URL</label>
-                  <input type="text" value={newBanner.url} onChange={e => setNewBanner({...newBanner, url: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="URL..." />
+                  <div className="flex gap-2">
+                    <input type="text" value={newBanner.url} onChange={e => setNewBanner({...newBanner, url: e.target.value})} className="flex-1 bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="URL..." />
+                    <button 
+                      type="button"
+                      onClick={() => { setCropAspect(21/9); setCropTarget("HERO"); setIsCropping(true); }}
+                      className="bg-zinc-900 text-white px-4 rounded-xl flex items-center justify-center hover:bg-black transition-all"
+                      title="Open Crop Tool"
+                    >
+                      <span className="material-symbols-outlined text-sm">crop</span>
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Section</label>
@@ -830,7 +867,20 @@ export default function AdminLayouts() {
                     )}
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                      <input type="text" value={newPromoItem.imageUrl} onChange={e => setNewPromoItem({...newPromoItem, imageUrl: e.target.value})} className="w-full bg-zinc-50 border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="Image URL..." />
+                      <div className="flex gap-2">
+                        <input type="text" value={newPromoItem.imageUrl} onChange={e => setNewPromoItem({...newPromoItem, imageUrl: e.target.value})} className="flex-1 bg-zinc-50 border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="Image URL..." />
+                        <button 
+                          type="button"
+                          onClick={() => { 
+                            setCropAspect(newPromoSection.type === 'banner' ? 21/9 : 1); 
+                            setCropTarget("PROMO_ITEM"); 
+                            setIsCropping(true); 
+                          }}
+                          className="bg-zinc-900 text-white px-4 rounded-xl flex items-center justify-center hover:bg-black transition-all"
+                        >
+                          <span className="material-symbols-outlined text-sm">crop</span>
+                        </button>
+                      </div>
                       <input type="text" value={newPromoItem.label} onChange={e => setNewPromoItem({...newPromoItem, label: e.target.value})} className="w-full bg-zinc-50 border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="Label / Price (e.g. ₹99)" />
                     </div>
                     
@@ -994,6 +1044,13 @@ export default function AdminLayouts() {
           </div>
         </div>
       </div>
+      {isCropping && (
+        <BannerCropper 
+          aspect={cropAspect}
+          onCropComplete={handleCroppedImage}
+          onCancel={() => setIsCropping(false)}
+        />
+      )}
     </div>
   );
 }
