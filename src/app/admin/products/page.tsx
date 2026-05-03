@@ -12,7 +12,7 @@ import { Portal } from "@/components/Portal";
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [activeTab, setActiveTab] = useState<"BB" | "CAFE">("BB");
+  const [activeTab, setActiveTab] = useState<"BB" | "CAFE" | "MALL">("BB");
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<any[]>([]);
   const [isAdding, setIsAdding] = useState(false);
@@ -29,7 +29,7 @@ export default function AdminProducts() {
     vendorAvailable: true,
     vendorId: "",
     mrp: 0,
-    section: "BB" as "BB" | "CAFE",
+    section: "BB" as "BB" | "CAFE" | "MALL",
     isBestseller: false,
     subcategory: [] as string[]
   });
@@ -157,7 +157,11 @@ export default function AdminProducts() {
 
   const downloadInventory = () => {
     const XLSX = require("xlsx");
-    const productsToExport = filteredProducts.filter(p => !selectedCategory || p.category === selectedCategory);
+    const productsToExport = filteredProducts.filter(p => {
+      if (!selectedCategory) return true;
+      const pCats = Array.isArray(p.category) ? p.category : [p.category || ""];
+      return pCats.includes(selectedCategory);
+    });
     
     const data = productsToExport.map(p => ({
       id: p.id,
@@ -473,6 +477,7 @@ export default function AdminProducts() {
                     >
                       <option value="BB">BAZAARBOLT</option>
                       <option value="CAFE">BB CAFE</option>
+                      <option value="MALL">BB MALL</option>
                     </select>
                   </div>
                   <div className="md:col-span-2">
@@ -612,7 +617,9 @@ export default function AdminProducts() {
                                 </div>
                               </td>
                               <td className="p-3">
-                                <span className="text-[8px] font-black text-zinc-500 ">{p.category}</span>
+                                <span className="text-[8px] font-black text-zinc-500 ">
+                                  {Array.isArray(p.category) ? p.category.join(', ') : p.category}
+                                </span>
                               </td>
                               <td className="p-3 text-right">
                                 <span className="text-[10px] font-black text-zinc-900 tracking-tighter">₹{p.price}</span>
@@ -735,10 +742,13 @@ onChange={(e) => {
               <h4 className="font-headline font-black text-xs text-zinc-900 tracking-tight">{cat.label}</h4>
               <p className="text-[8px] font-black text-zinc-400 mt-1 uppercase tracking-widest">
                 {products.filter(p => {
-                  const pCat = (p.category || "Uncategorized").toLowerCase().trim();
+                  const pCats = Array.isArray(p.category) ? p.category : [p.category || "Uncategorized"];
                   const cId = cat.id?.toLowerCase().trim();
                   const cLabel = cat.label?.toLowerCase().trim();
-                  return (pCat === cId || pCat === cLabel) && ((p as any).section || "BB") === activeTab;
+                  return pCats.some(pc => {
+                    const lowerPC = pc.toLowerCase().trim();
+                    return lowerPC === cId || lowerPC === cLabel;
+                  }) && ((p as any).section || "BB") === activeTab;
                 }).length} Products
               </p>
             </button>

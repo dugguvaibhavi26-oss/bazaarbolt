@@ -59,25 +59,37 @@ export const parseFile = async (file: File): Promise<Partial<Product>[]> => {
   }
 };
 
-export const validateProducts = (products: any[], defaultSection: "BB" | "CAFE" = "BB"): { valid: Partial<Product>[], invalid: any[] } => {
+export const validateProducts = (products: any[], defaultSection: "BB" | "CAFE" | "MALL" = "BB"): { valid: Partial<Product>[], invalid: any[] } => {
   const valid: Partial<Product>[] = [];
   const invalid: any[] = [];
 
   products.forEach((p, index) => {
     const name = p.name?.toString().trim();
     const price = parseFloat(p.price);
-    const category = p.category?.toString().trim();
+    const categoryRaw = p.category?.toString().trim();
     const stock = parseInt(p.stock) || 0;
     const image = p.image?.toString().trim() || "https://placehold.co/400x400?text=No+Image";
-    const section = (p.section?.toString().trim().toUpperCase() === "CAFE") ? "CAFE" : 
-                    (p.section?.toString().trim().toUpperCase() === "BB") ? "BB" : defaultSection;
+    
+    const sectionRaw = p.section?.toString().trim().toUpperCase();
+    const section = (sectionRaw === "CAFE") ? "CAFE" : 
+                    (sectionRaw === "MALL") ? "MALL" :
+                    (sectionRaw === "BB") ? "BB" : defaultSection;
 
-    if (name && !isNaN(price) && category) {
+    if (name && !isNaN(price) && categoryRaw) {
+      const category = categoryRaw.includes(",") 
+        ? categoryRaw.split(",").map((s: any) => s.trim()).filter(Boolean)
+        : categoryRaw;
+      
+      const subcategoryRaw = p.subcategory?.toString().trim();
+      const subcategory = subcategoryRaw 
+        ? (subcategoryRaw.includes(",") ? subcategoryRaw.split(",").map((s: any) => s.trim()).filter(Boolean) : subcategoryRaw)
+        : "";
+
       valid.push({
         id: p.id || undefined,
         name,
         price,
-        category,
+        category: category as any,
         image,
         stock,
         description: p.description?.toString().trim() || "",
@@ -85,7 +97,7 @@ export const validateProducts = (products: any[], defaultSection: "BB" | "CAFE" 
         section: section as any,
         vendorId: p.vendorId?.toString().trim() || "",
         mrp: parseFloat(p.mrp) || price,
-        subcategory: p.subcategory?.toString().trim() || ""
+        subcategory: subcategory as any
       });
     } else {
       invalid.push({ row: index + 2, data: p }); // index + 2 because CSV header is 1st row and it's 0-indexed
