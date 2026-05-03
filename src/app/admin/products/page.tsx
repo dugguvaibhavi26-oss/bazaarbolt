@@ -67,17 +67,23 @@ export default function AdminProducts() {
         const missingCatsMap = new Map();
         
         prods.forEach(p => {
-          const catLabel = (p.category || "Uncategorized").trim();
-          if (!existingCatLabels.has(catLabel.toLowerCase())) {
-            if (!missingCatsMap.has(catLabel.toLowerCase())) {
-              missingCatsMap.set(catLabel.toLowerCase(), {
-                id: catLabel,
-                label: catLabel,
-                section: (p as any).section || "BB",
-                img: "https://placehold.co/400x400?text=" + encodeURIComponent(catLabel)
-              });
+          const pCats = Array.isArray(p.category) ? p.category : [p.category || "Uncategorized"];
+          
+          pCats.forEach(catLabelRaw => {
+            const catLabel = catLabelRaw.trim();
+            const lowerLabel = catLabel.toLowerCase();
+            
+            if (!existingCatLabels.has(lowerLabel)) {
+              if (!missingCatsMap.has(lowerLabel)) {
+                missingCatsMap.set(lowerLabel, {
+                  id: catLabel,
+                  label: catLabel,
+                  section: (p as any).section || "BB",
+                  img: "https://placehold.co/400x400?text=" + encodeURIComponent(catLabel)
+                });
+              }
             }
-          }
+          });
         });
 
         const combinedCategories = [...dbCats, ...Array.from(missingCatsMap.values())];
