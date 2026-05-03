@@ -22,7 +22,7 @@ export default function Home() {
   const { user, role, loading: authLoading, userData } = useAuth();
   const router = useRouter();
 
-  const [activeSection, setActiveSection] = useState<"BB" | "CAFE">("BB");
+  const [activeSection, setActiveSection] = useState<"BB" | "CAFE" | "MALL">("BB");
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [addressForm, setAddressForm] = useState<Address>({
@@ -238,21 +238,20 @@ export default function Home() {
     );
   };
 
-  const renderPromoSections = (pos: PromoSection['position'] | "TOP" | "MIDDLE" | "BOTTOM", anchoredTo?: string) => {
+  const renderPromoSections = (pos: string, anchoredTo?: string) => {
     return (settings?.promoSections || [])
       .filter(s => {
-        const isMatchesSection = s.section === activeSection;
+        const isMatchesSection = s.section === activeSection || (!s.section && activeSection === "BB");
         const isMatchesPosition = (s.position || "MIDDLE") === pos;
         
-        // If anchoredTo is provided, we only want sections specifically anchored to that ID
         if (anchoredTo) {
-          return isMatchesSection && isMatchesPosition && s.afterCategoryId === anchoredTo;
+          return isMatchesSection && s.afterCategoryId === anchoredTo;
         }
         
-        // Root level call: render sections that have no anchor OR are anchored to something 
-        // that isn't another promo section (like a category ID)
-        const isAnchoredToAnotherPromoSection = settings?.promoSections?.some(other => other.id === s.afterCategoryId);
-        return isMatchesSection && isMatchesPosition && !isAnchoredToAnotherPromoSection;
+        // Root level call: render sections that are not anchored to a category OR another section
+        const isAnchoredToCategory = categories.some(c => c.id === s.afterCategoryId);
+        const isAnchoredToSection = settings?.promoSections?.some(other => other.id === s.afterCategoryId);
+        return isMatchesSection && isMatchesPosition && !isAnchoredToCategory && !isAnchoredToSection;
       })
       .map(section => {
         let content: React.ReactNode = null;
@@ -280,57 +279,55 @@ export default function Home() {
                   className={`w-full h-full object-cover transition-transform duration-[20s] ease-linear ${section.bgAnimation === 'zoom' ? 'scale-110 group-hover:scale-100' : 'group-hover:scale-105'}`} 
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60"></div>
-                {/* Shop Now button removed as per user request */}
               </div>
             </section>
           );
         } else if (section.type === "grid") {
           content = (
             <section key={section.id} className="px-3 mb-6">
-              <div className={containerClasses} style={bgStyles}>
-                {section.bgImageUrl && <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px] pointer-events-none" />}
+              <div className={`${containerClasses} relative`} style={bgStyles}>
+                <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 0)', backgroundSize: '24px 24px' }} />
                 
                 {section.title && (
-                  <div className={`relative z-10 ${section.isCompact ? 'mb-3' : 'mb-6 sm:mb-8'}`}>
-                    <h3 className={`font-headline font-black tracking-tighter uppercase drop-shadow-sm ${section.isCompact ? 'text-xl sm:text-2xl leading-none' : 'text-3xl sm:text-5xl'}`} style={{ color: section.textColor || "#18181b" }}>{section.title}</h3>
+                  <div className={`relative z-10 flex items-center gap-3 ${section.isCompact ? 'mb-4' : 'mb-8'}`}>
+                    <div className="w-1.5 h-6 rounded-full shadow-sm" style={{ backgroundColor: section.textColor || "#18181b" }} />
+                    <h3 className={`font-headline font-extrabold tracking-tight drop-shadow-md ${section.isCompact ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl'}`} style={{ color: section.textColor || "#18181b" }}>
+                      {section.title}
+                    </h3>
                   </div>
                 )}
                 
-                <div className={`grid grid-cols-3 gap-2 sm:gap-3 relative z-10 ${section.isCompact ? 'auto-rows-[80px] sm:auto-rows-[110px]' : 'auto-rows-[100px] sm:auto-rows-[150px]'}`}>
+                <div className={`grid grid-cols-3 gap-3 sm:gap-6 relative z-10 ${section.isCompact ? 'auto-rows-[130px] sm:auto-rows-[160px]' : 'auto-rows-[140px] sm:auto-rows-[200px]'}`}>
                   {section.items.map((item, idx) => {
                     const cSpan = Math.min(item.colSpan || 1, 3);
                     const rSpan = Math.min(item.rowSpan || 1, 3);
-                    
-                    const colSpanClass = {
-                      1: "col-span-1",
-                      2: "col-span-2",
-                      3: "col-span-3",
-                    }[cSpan] || "col-span-1";
-                    
-                    const rowSpanClass = {
-                      1: "row-span-1",
-                      2: "row-span-2",
-                      3: "row-span-3",
-                    }[rSpan] || "row-span-1";
+                    const colSpanClass = { 1: "col-span-1", 2: "col-span-2", 3: "col-span-3" }[cSpan] || "col-span-1";
+                    const rowSpanClass = { 1: "row-span-1", 2: "row-span-2", 3: "row-span-3" }[rSpan] || "row-span-1";
+
+                    const isPrice = item.label?.includes('₹');
 
                     return (
-                      <div key={idx} onClick={() => item.redirectUrl && router.push(item.redirectUrl)} className={`cursor-pointer group ${colSpanClass} ${rowSpanClass}`}>
-                        <div className={`w-full h-full rounded-xl sm:rounded-[20px] bg-white shadow-sm overflow-hidden group-hover:scale-[1.02] transition-all duration-300 relative border border-black/5 p-[1px]`}>
-                          <div className="w-full h-full rounded-lg sm:rounded-[14px] overflow-hidden bg-zinc-50 flex items-center justify-center relative">
-                            {item.imageUrl ? (
-                              <img src={item.imageUrl} alt={item.label || ""} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[10s]" />
-                            ) : (
-                              <div className="w-full h-full bg-black/5" />
-                            )}
-                            
-                            {item.label && (
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
-                            )}
-                          </div>
-                          
+                      <div key={idx} onClick={() => item.redirectUrl && router.push(item.redirectUrl)} className={`cursor-pointer group ${colSpanClass} ${rowSpanClass} relative`}>
+                        <div className="w-full h-full flex flex-col bg-white/10 backdrop-blur-md rounded-[32px] border-2 border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] group-hover:scale-[1.02] transition-all duration-500 overflow-hidden relative">
+                          {item.imageUrl ? (
+                            <img src={item.imageUrl} alt={item.label || ""} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                          ) : (
+                            <div className="absolute inset-0 w-full h-full bg-zinc-50" />
+                          )}
+
                           {item.label && (
-                            <div className="absolute bottom-2 left-2 right-2 z-10">
-                              <h4 className="text-white font-black text-[9px] sm:text-[11px] uppercase tracking-tight leading-none drop-shadow-md group-hover:text-primary transition-colors">{item.label}</h4>
+                            <div className="absolute top-0 left-0 right-0 p-4 z-10 bg-gradient-to-b from-black/50 via-transparent to-transparent">
+                              <h4 className="font-headline font-extrabold text-[10px] sm:text-[12px] tracking-tight leading-none text-white drop-shadow-lg transition-all group-hover:translate-x-1">
+                                {item.label.replace(/₹\d+/, '').trim()}
+                              </h4>
+                            </div>
+                          )}
+                          
+                          {isPrice && (
+                            <div className="absolute bottom-4 right-4 bg-zinc-900 text-white px-4 py-1.5 rounded-full shadow-2xl border border-white/20 transform rotate-[-2deg] group-hover:rotate-0 transition-transform z-20">
+                              <span className="text-[12px] sm:text-[14px] font-black tracking-tight font-headline">
+                                {item.label.match(/₹\d+/)?.[0]}
+                              </span>
                             </div>
                           )}
                         </div>
@@ -342,7 +339,31 @@ export default function Home() {
             </section>
           );
         } else if (section.type === "deal_row") {
-          let dealProducts = filteredProducts.filter(p => section.priceLimit ? p.price <= section.priceLimit : true);
+          let dealProducts = filteredProducts.filter(p => {
+            const matchesPrice = section.priceLimit ? p.price <= section.priceLimit : true;
+            if (!matchesPrice) return false;
+            if (!section.filterCategoryId) return true;
+            
+            const target = section.filterCategoryId.toLowerCase().trim();
+            const categoriesList = Array.isArray(p.category) ? p.category : [p.category];
+            const subcategoriesList = Array.isArray(p.subcategory) ? p.subcategory : [p.subcategory || ""];
+            const cat = categories.find(c => c.id === section.filterCategoryId);
+            const catLabel = cat?.label?.toLowerCase().trim();
+
+            const isCatMatch = categoriesList.some(c => c?.toLowerCase().trim() === target || c?.toLowerCase().trim() === catLabel);
+            const isSubMatch = subcategoriesList.some(sub => {
+              const pSub = sub?.toLowerCase().trim();
+              if (pSub === target) return true;
+              return categories.some(c => 
+                c.subcategories?.some((s: any) => {
+                  const sId = (typeof s === 'string' ? s : (s.id || s.label)).toLowerCase().trim();
+                  return sId === target && pSub === (typeof s === 'string' ? s : s.label).toLowerCase().trim();
+                })
+              );
+            });
+            
+            return isCatMatch || isSubMatch;
+          });
           
           if (section.manualProductIds && section.manualProductIds.length > 0) {
             const manualProds = section.manualProductIds.map(id => filteredProducts.find(p => p.id === id)).filter(Boolean) as typeof filteredProducts;
@@ -353,79 +374,41 @@ export default function Home() {
           if (dealProducts.length > 0) {
             content = (
               <section key={section.id} className="px-3 sm:px-4 mb-10 w-full relative">
-                {/* Final Compact Boutique Shopfront */}
                 <div className="bg-[#f2faf5] rounded-[32px] pt-16 pb-6 border-b-4 border-emerald-100 shadow-[0_25px_70px_rgba(0,0,0,0.08)] relative overflow-visible">
-                  
-                  {/* Precision Shop Awning */}
+                  {/* Decorative Elements */}
                   <div className="absolute top-0 left-0 right-0 z-50 pointer-events-none rounded-t-[32px] overflow-hidden">
-                    {/* Compact Roof Stripes */}
                     <div className="h-10 flex shadow-md">
-                      {[...Array(10)].map((_, i) => (
-                        <div key={i} className={`flex-1 h-full ${i % 2 === 0 ? 'bg-emerald-600' : 'bg-emerald-500'}`} />
-                      ))}
+                      {[...Array(10)].map((_, i) => <div key={i} className={`flex-1 h-full ${i % 2 === 0 ? 'bg-emerald-600' : 'bg-emerald-500'}`} />)}
                     </div>
-                    {/* Aligned Curved Bubbles */}
                     <div className="flex h-6 px-0.5">
-                      {[...Array(12)].map((_, i) => (
-                        <div key={i} className="flex-1 h-full bg-emerald-600 rounded-b-full shadow-inner border-t border-emerald-500/20 -mx-[1px]" />
-                      ))}
+                      {[...Array(12)].map((_, i) => <div key={i} className="flex-1 h-full bg-emerald-600 rounded-b-full shadow-inner border-t border-emerald-500/20 -mx-[1px]" />)}
                     </div>
                   </div>
-
-                  {/* Elite Miniature Hanging Assembly */}
                   <div className="absolute top-10 left-0 right-0 z-40 flex flex-col items-center pointer-events-none animate-sway">
-                    {/* Threads with Connection Points */}
                     <div className="w-16 h-8 flex justify-between px-6 relative">
-                      {[0, 1].map((i) => (
-                        <div key={i} className="w-[1.5px] h-full bg-emerald-950/50 relative" />
-                      ))}
+                      {[0, 1].map((i) => <div key={i} className="w-[1.5px] h-full bg-emerald-950/50 relative" />)}
                     </div>
-                    {/* Signboard with Holes */}
                     <div className="bg-white border-2 border-emerald-950 px-6 py-2 rounded-xl shadow-2xl pointer-events-auto -mt-1 relative overflow-visible">
-                      {/* Realistic Thread Holes */}
-                      <div className="absolute top-1 left-0 right-0 flex justify-between px-5 pointer-events-none">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-950/20 border border-emerald-950/10" />
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-950/20 border border-emerald-950/10" />
-                      </div>
                       <h3 className="text-emerald-950 font-headline font-black text-sm sm:text-base tracking-tighter uppercase leading-none px-2">
                         DEALS AT ₹{section.priceLimit || 99}
                       </h3>
                     </div>
                   </div>
-
-                  {/* High-Density Boutique Display Shelf */}
-                  <div className="relative z-10 px-3 sm:px-6 mt-10">
+                  {/* Products */}
+                  <div className="relative z-10 px-3 sm:px-6 mt-16">
                     <div className={section.layout === 'max4row' ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 sm:gap-4" : "flex overflow-x-auto hide-scrollbar gap-4 items-stretch snap-x"}>
-                      {(section.layout === 'max4row' ? dealProducts.slice(0, 12) : dealProducts.slice(0, 15)).map((p, idx) => {
-                        const savings = p.mrp > p.price ? p.mrp - p.price : 0;
-                        return (
-                          <div key={p.id} className={section.layout === 'max4row' ? "w-full" : "min-w-[110px] max-w-[110px] snap-start shrink-0 h-full"}>
-                            <div className="flex flex-col h-full relative group/item animate-in fade-in slide-in-from-bottom-4 fill-mode-both" style={{ animationDelay: `${idx * 80}ms` }}>
-                              {/* Pricing Badges */}
-                              <div className="absolute top-0 left-0 z-10 flex flex-col gap-0.5 pointer-events-none -ml-1 -mt-1">
-                                <div className="bg-emerald-600 text-white text-[8px] font-black px-2 py-0.5 rounded-br-lg rounded-tl-xl shadow-md border border-white/20">
-                                  ₹{p.price.toFixed(0)}
-                                </div>
-                                {savings > 0 && (
-                                  <div className="bg-white text-emerald-700 text-[7px] font-black px-1.5 py-0.5 rounded-full border border-emerald-100 shadow-sm">
-                                    ₹{savings.toFixed(0)} OFF
-                                  </div>
-                                )}
-                              </div>
-                              
-                              <div className="flex-1 bg-white rounded-2xl p-1 border border-emerald-50 hover:border-emerald-200 transition-all duration-500 shadow-sm">
-                                <ProductCard product={p} />
-                              </div>
+                      {(section.layout === 'max4row' ? dealProducts.slice(0, 12) : dealProducts.slice(0, 15)).map((p, idx) => (
+                        <div key={p.id} className={section.layout === 'max4row' ? "w-full" : "min-w-[110px] max-w-[110px] snap-start shrink-0 h-full"}>
+                          <div className="flex flex-col h-full relative group/item animate-in fade-in slide-in-from-bottom-4 fill-mode-both" style={{ animationDelay: `${idx * 80}ms` }}>
+                            <div className="absolute top-0 left-0 z-10 flex flex-col gap-0.5 pointer-events-none -ml-1 -mt-1">
+                              <div className="bg-emerald-600 text-white text-[8px] font-black px-2 py-0.5 rounded-br-lg rounded-tl-xl shadow-md border border-white/20">₹{p.price.toFixed(0)}</div>
+                            </div>
+                            <div className="flex-1 bg-white rounded-2xl p-1 border border-emerald-50 hover:border-emerald-200 transition-all duration-500 shadow-sm">
+                              <ProductCard product={p} />
                             </div>
                           </div>
-                        );
-                      })}
-                      
-                      <div className="min-w-[80px] flex items-center justify-center snap-start shrink-0 pr-2">
-                        <Link href={`/deals/${section.priceLimit || 0}?section=${activeSection}`} className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow-lg hover:bg-emerald-700 transition-all group/more">
-                          <span className="material-symbols-outlined text-xl group-hover/more:translate-x-1 transition-transform">arrow_forward</span>
-                        </Link>
-                      </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -434,43 +417,45 @@ export default function Home() {
           }
         } else if (section.type === "sliding_row") {
           let rowProducts = filteredProducts;
-          
           if (section.filterType === "BESTSELLERS") {
             rowProducts = rowProducts.filter(p => p.isBestseller);
           } else if (section.filterType === "NEW_ARRIVALS") {
-            rowProducts = [...rowProducts].sort((a, b) => {
-              const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-              const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-              return dateB - dateA;
-            }).slice(0, 30);
-          } else if (section.filterCategoryId) {
-            const target = section.filterCategoryId.toLowerCase().trim();
-            const cat = categories.find(c => c.id === section.filterCategoryId);
-            const catLabel = cat?.label?.toLowerCase().trim();
-            
-            rowProducts = rowProducts.filter(p => {
-              const pCat = p.category?.toLowerCase().trim();
-              const pSub = p.subcategory?.toLowerCase().trim();
-              return pCat === target || pCat === catLabel || pSub === target;
-            });
-          }
-          
-          if (section.manualProductIds && section.manualProductIds.length > 0) {
-            const manualProds = section.manualProductIds.map(id => filteredProducts.find(p => p.id === id)).filter(Boolean) as typeof filteredProducts;
-            const otherProds = rowProducts.filter(p => !section.manualProductIds?.includes(p.id));
-            rowProducts = [...manualProds, ...otherProds];
+            rowProducts = [...rowProducts].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 30);
           }
 
+          if (section.filterCategoryId) {
+            const target = section.filterCategoryId.toLowerCase().trim();
+            rowProducts = rowProducts.filter(p => {
+              const categoriesList = Array.isArray(p.category) ? p.category : [p.category];
+              const subcategoriesList = Array.isArray(p.subcategory) ? p.subcategory : [p.subcategory || ""];
+              const cat = categories.find(c => c.id === section.filterCategoryId);
+              const catLabel = cat?.label?.toLowerCase().trim();
+
+              const isCatMatch = categoriesList.some(c => c?.toLowerCase().trim() === target || c?.toLowerCase().trim() === catLabel);
+              const isSubMatch = subcategoriesList.some(sub => {
+                const pSub = sub?.toLowerCase().trim();
+                if (pSub === target) return true;
+                return categories.some(c => 
+                  c.subcategories?.some((s: any) => {
+                    const sId = (typeof s === 'string' ? s : (s.id || s.label)).toLowerCase().trim();
+                    const sLabel = (typeof s === 'string' ? s : s.label).toLowerCase().trim();
+                    return sId === target && pSub === sLabel;
+                  })
+                );
+              });
+              return isCatMatch || isSubMatch;
+            });
+          }
+          if (section.manualProductIds?.length) {
+            const manualProds = section.manualProductIds.map(id => filteredProducts.find(p => p.id === id)).filter(Boolean) as typeof filteredProducts;
+            rowProducts = [...manualProds, ...rowProducts.filter(p => !section.manualProductIds?.includes(p.id))];
+          }
           if (rowProducts.length > 0) {
             content = (
               <section key={section.id} className="mb-10 pl-4 w-full overflow-hidden">
-                <div className="flex items-center justify-between mb-4 pr-4">
-                  <h3 className="font-headline font-black text-lg tracking-tight text-zinc-900 flex items-center gap-2">
-                    {section.iconUrl ? (
-                      <img src={section.iconUrl} className="w-6 h-6 object-contain" alt="" />
-                    ) : (
-                      <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL'1" }}>{section.filterType === 'NEW_ARRIVALS' ? 'verified' : 'local_fire_department'}</span>
-                    )}
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-headline font-black text-[15px] lg:text-lg tracking-tight text-zinc-900 flex items-center gap-3">
+                    <span className="w-1.5 h-6 bg-primary rounded-full" />
                     <span>{section.title || (section.filterType === 'BESTSELLERS' ? 'Bestsellers' : section.filterType === 'NEW_ARRIVALS' ? 'New Arrivals' : 'Trending')}</span>
                   </h3>
                 </div>
@@ -480,18 +465,6 @@ export default function Home() {
                       <ProductCard product={p} />
                     </div>
                   ))}
-                  
-                  {section.layout === 'max4row' && rowProducts.length > 12 && (
-                    <div className="col-span-3 sm:col-span-4 md:col-span-6 mt-2">
-                      <Link 
-                        href={section.filterType === 'CATEGORY' ? `/category/${section.filterCategoryId}` : section.filterType === 'BESTSELLERS' ? `/bestsellers` : `/new-arrivals`} 
-                        className="w-full bg-white border border-zinc-200 text-zinc-900 font-black text-[10px] tracking-widest uppercase py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-zinc-50 transition-colors shadow-sm"
-                      >
-                        View All
-                        <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                      </Link>
-                    </div>
-                  )}
                 </div>
               </section>
             );
@@ -502,10 +475,10 @@ export default function Home() {
               <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-x-1 gap-y-6 px-2 justify-items-center">
                 {filteredCategories.map(cat => (
                   <div key={cat.id} onClick={() => router.push(`/category/${cat.id}`)} className="flex flex-col items-center gap-2 cursor-pointer group w-full max-w-[85px]">
-                    <div className="w-[60px] h-[60px] rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center p-0 overflow-hidden flex-shrink-0 group-hover:border-primary transition-all shadow-sm">
+                    <div className="w-[60px] h-[60px] rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center p-0 overflow-hidden group-hover:border-primary transition-all shadow-sm">
                       <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={cat.img} alt={cat.label} />
                     </div>
-                    <span className="text-[9.5px] font-bold tracking-tight text-center text-zinc-600 leading-[1.1] w-full break-words min-h-[2.2em] block px-1">{cat.label}</span>
+                    <span className="text-[9.5px] font-bold tracking-tight text-center text-zinc-600 leading-[1.1] w-full block px-1">{cat.label}</span>
                   </div>
                 ))}
               </div>
@@ -519,11 +492,6 @@ export default function Home() {
                    <div className="relative z-10 flex flex-col items-center text-center space-y-4">
                      {section.title && <h3 className="text-2xl sm:text-4xl font-black tracking-tighter uppercase" style={{ color: section.textColor }}>{section.title}</h3>}
                      {section.subtitle && <p className="text-sm sm:text-lg font-bold opacity-80 uppercase" style={{ color: section.textColor }}>{section.subtitle}</p>}
-                     {section.buttonText && (
-                       <button className="px-6 py-3 rounded-xl font-black text-xs tracking-widest uppercase transition-all hover:scale-105 active:scale-95 shadow-lg" style={{ backgroundColor: section.buttonColor, color: section.buttonTextColor }}>
-                         {section.buttonText}
-                       </button>
-                     )}
                    </div>
                  )}
                  {section.type === "grid" && (
@@ -531,22 +499,12 @@ export default function Home() {
                      {section.title && (
                        <div className="flex items-center justify-between">
                          <h3 className="text-xl sm:text-2xl font-black tracking-tight uppercase" style={{ color: section.textColor }}>{section.title}</h3>
-                         {section.subtitle && <span className="text-[10px] font-black tracking-widest opacity-60 uppercase" style={{ color: section.textColor }}>{section.subtitle}</span>}
                        </div>
                      )}
                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                        {section.items.map((item, i) => (
-                         <Link key={i} href={item.redirectUrl || "#"} 
-                           className={`relative overflow-hidden rounded-2xl group shadow-md hover:shadow-xl transition-all duration-300 ${
-                             item.colSpan === 2 ? 'col-span-2' : 'col-span-1'
-                           } ${item.rowSpan === 2 ? 'row-span-2 aspect-[1/2]' : 'aspect-square'}`}
-                         >
-                           <img src={item.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={item.label || ""} />
-                           {item.label && (
-                             <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-                               <span className="text-[10px] font-black text-white tracking-widest uppercase">{item.label}</span>
-                             </div>
-                           )}
+                         <Link key={i} href={item.redirectUrl || "#"} className={`relative overflow-hidden rounded-2xl group shadow-md hover:shadow-xl transition-all duration-300 ${item.colSpan === 2 ? 'col-span-2' : 'col-span-1'} ${item.rowSpan === 2 ? 'row-span-2 aspect-[1/2]' : 'aspect-square'}`}>
+                           <img src={item.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
                          </Link>
                        ))}
                      </div>
@@ -563,7 +521,7 @@ export default function Home() {
             {renderPromoSections("MIDDLE", section.id)}
           </React.Fragment>
         );
-    });
+      });
   };
 
   if (settingsLoading) {
@@ -585,8 +543,8 @@ export default function Home() {
   }
 
   return (
-    <div className={`min-h-screen relative transition-colors duration-700 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : 'bg-white'}`}>
-      <div className={`fixed top-0 left-0 w-full flex flex-col z-[60] transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#2D1B14] text-[#EAD8C0]' : 'bg-black text-white'}`}>
+    <div className={`min-h-screen relative transition-colors duration-700 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : activeSection === 'MALL' ? 'bg-zinc-50' : 'bg-white'}`}>
+      <div className={`fixed top-0 left-0 w-full flex flex-col z-[60] transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#2D1B14] text-[#EAD8C0]' : activeSection === 'MALL' ? 'bg-black text-white' : 'bg-black text-white'}`}>
         <div className="pt-safe" />
         <div className="h-8 flex items-center overflow-hidden">
           <div className="flex whitespace-nowrap animate-marquee">
@@ -596,57 +554,67 @@ export default function Home() {
         </div>
       </div>
 
-      <header className={`fixed top-[calc(theme(spacing.8)+max(env(safe-area-inset-top),2rem))] w-full z-50 transition-all duration-700 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]/90' : 'bg-white/90'} backdrop-blur-xl border-b ${activeSection === 'CAFE' ? 'border-[#EAD8C0]/20' : 'border-zinc-100'}`}>
+      <header className={`fixed top-[calc(theme(spacing.8)+max(env(safe-area-inset-top),2rem))] w-full z-50 transition-all duration-700 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]/90' : activeSection === 'MALL' ? 'bg-indigo-50/90' : 'bg-white/90'} backdrop-blur-xl border-b ${activeSection === 'CAFE' ? 'border-[#EAD8C0]/20' : activeSection === 'MALL' ? 'border-indigo-100' : 'border-zinc-100'}`}>
         <div className="px-4 py-3">
           {/* Top Row: Address and Account */}
           <div className="flex items-center justify-between w-full mb-4">
             <div className="flex items-center gap-2 cursor-pointer group" onClick={() => setIsAddressModalOpen(true)}>
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${activeSection === 'CAFE' ? 'bg-[#8B5E3C]/10 text-[#8B5E3C]' : 'bg-primary/10 text-primary'}`}>
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${activeSection === 'CAFE' ? 'bg-[#8B5E3C]/10 text-[#8B5E3C]' : activeSection === 'MALL' ? 'bg-indigo-600/10 text-indigo-600' : 'bg-primary/10 text-primary'}`}>
                 <span className="material-symbols-outlined text-[16px] font-bold">location_on</span>
               </div>
               <div className="flex flex-col">
-                <span className={`text-[8px] font-black tracking-[0.2em] uppercase transition-colors ${activeSection === 'CAFE' ? 'text-[#8B5E3C]/60' : 'text-zinc-400'}`}>Delivery to</span>
+                <span className={`text-[8px] font-black tracking-[0.2em] uppercase transition-colors ${activeSection === 'CAFE' ? 'text-[#8B5E3C]/60' : activeSection === 'MALL' ? 'text-indigo-600/60' : 'text-zinc-400'}`}>Delivery to</span>
                 <div className="flex items-center gap-0.5">
-                  <span className={`text-[11px] font-bold tracking-tight transition-colors line-clamp-1 max-w-[180px] ${activeSection === 'CAFE' ? 'text-[#2D1B14]' : 'text-zinc-900'}`}>
+                  <span className={`text-[11px] font-bold tracking-tight transition-colors line-clamp-1 max-w-[180px] ${activeSection === 'CAFE' ? 'text-[#2D1B14]' : activeSection === 'MALL' ? 'text-zinc-900' : 'text-zinc-900'}`}>
                     {displayAddress}
                   </span>
-                  <span className={`material-symbols-outlined text-[16px] transition-colors ${activeSection === 'CAFE' ? 'text-[#8B5E3C]' : 'text-zinc-400'}`}>expand_more</span>
+                  <span className={`material-symbols-outlined text-[16px] transition-colors ${activeSection === 'CAFE' ? 'text-[#8B5E3C]' : activeSection === 'MALL' ? 'text-indigo-600' : 'text-zinc-400'}`}>expand_more</span>
                 </div>
               </div>
             </div>
-            <Link href={user ? "/profile" : "/login"} className={`w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm ${activeSection === 'CAFE' ? 'bg-[#EAD8C0]/30 text-[#2D1B14]' : 'bg-zinc-100 text-zinc-900'} hover:scale-105 active:scale-95`}>
+            <Link href={user ? "/profile" : "/login"} className={`w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm ${activeSection === 'CAFE' ? 'bg-[#EAD8C0]/30 text-[#2D1B14]' : activeSection === 'MALL' ? 'bg-white border border-zinc-100 text-zinc-900' : 'bg-zinc-100 text-zinc-900'} hover:scale-105 active:scale-95`}>
               <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL'1" }}>{user ? 'account_circle' : 'login'}</span>
             </Link>
           </div>
 
           {/* New Premium Segmented Tabs */}
-          <div className={`relative p-1 rounded-2xl flex items-center transition-all duration-500 mb-4 ${activeSection === 'CAFE' ? 'bg-[#EAD8C0]/20' : 'bg-zinc-100'}`}>
+          <div className={`relative p-1 rounded-2xl flex items-center transition-all duration-500 mb-4 ${activeSection === 'CAFE' ? 'bg-[#EAD8C0]/20' : activeSection === 'MALL' ? 'bg-indigo-100/50' : 'bg-zinc-100'}`}>
             <div 
-              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-xl transition-all duration-500 ease-out shadow-sm ${activeSection === 'BB' ? 'left-1 bg-white' : 'left-[calc(50%+2px)] bg-[#FAF7F2]'}`}
+              className={`absolute top-1 bottom-1 w-[calc(33.33%-4px)] rounded-xl transition-all duration-500 ease-out shadow-sm ${
+                activeSection === 'BB' ? 'left-1 bg-white' : 
+                activeSection === 'CAFE' ? 'left-[calc(33.33%+1px)] bg-[#FAF7F2]' : 
+                'left-[calc(66.66%+1px)] bg-white'
+              }`}
             />
             <button
               onClick={() => setActiveSection("BB")}
-              className={`relative z-10 flex-1 py-2.5 text-[13px] font-black tracking-tighter transition-colors duration-500 flex items-center justify-center ${activeSection === "BB" ? "text-zinc-900" : "text-zinc-400"}`}
+              className={`relative z-10 flex-1 py-2.5 text-[10px] font-black tracking-tighter transition-colors duration-500 flex items-center justify-center ${activeSection === "BB" ? "text-zinc-900" : "text-zinc-400"}`}
             >
-              <span className={activeSection === 'BB' ? 'text-primary' : ''}>bazaar</span>&nbsp;bolt
+              <span className={activeSection === 'BB' ? 'text-primary' : ''}>BAZAAR</span>&nbsp;BOLT
             </button>
             <button
               onClick={() => setActiveSection("CAFE")}
-              className={`relative z-10 flex-1 py-2.5 text-[13px] font-black tracking-tighter transition-colors duration-500 flex items-center justify-center ${activeSection === "CAFE" ? "text-[#2D1B14]" : "text-zinc-400"}`}
+              className={`relative z-10 flex-1 py-2.5 text-[10px] font-black tracking-tighter transition-colors duration-500 flex items-center justify-center ${activeSection === "CAFE" ? "text-[#2D1B14]" : "text-zinc-400"}`}
             >
-              bb&nbsp;<span className={activeSection === 'CAFE' ? 'text-[#8B5E3C]' : ''}>cafe</span>
+              BB&nbsp;<span className={activeSection === 'CAFE' ? 'text-[#8B5E3C]' : ''}>CAFE</span>
+            </button>
+            <button
+              onClick={() => setActiveSection("MALL")}
+              className={`relative z-10 flex-1 py-2.5 text-[10px] font-black tracking-tighter transition-colors duration-500 flex items-center justify-center ${activeSection === "MALL" ? "text-zinc-900" : "text-zinc-500"}`}
+            >
+              BB&nbsp;<span className={activeSection === 'MALL' ? 'text-indigo-500' : ''}>MALL</span>
             </button>
           </div>
 
           {/* Search Bar area */}
-          <div onClick={() => router.push(`/search?section=${activeSection}`)} className={`rounded-xl flex items-center px-4 py-3 gap-3 cursor-pointer shadow-sm border transition-all ${activeSection === 'CAFE' ? 'bg-white/50 border-[#EAD8C0]/30' : 'bg-zinc-50 border-zinc-100'}`}>
-            <span className={`material-symbols-outlined text-[18px] font-bold ${activeSection === 'CAFE' ? 'text-[#8B5E3C]' : 'text-zinc-400'}`}>search</span>
-            <span className={`text-[12px] font-bold tracking-tight ${activeSection === 'CAFE' ? 'text-[#8B5E3C]/60' : 'text-zinc-400'}`}>Search "{activeSection === "CAFE" ? "Cold Brew" : "Grocery & More"}"</span>
+          <div onClick={() => router.push(`/search?section=${activeSection}`)} className={`rounded-xl flex items-center px-4 py-3 gap-3 cursor-pointer shadow-sm border transition-all ${activeSection === 'CAFE' ? 'bg-white/50 border-[#EAD8C0]/30' : activeSection === 'MALL' ? 'bg-white/80 border-indigo-100' : 'bg-zinc-50 border-zinc-100'}`}>
+            <span className={`material-symbols-outlined text-[18px] font-bold ${activeSection === 'CAFE' ? 'text-[#8B5E3C]' : activeSection === 'MALL' ? 'text-indigo-500' : 'text-zinc-400'}`}>search</span>
+            <span className={`text-[12px] font-bold tracking-tight ${activeSection === 'CAFE' ? 'text-[#8B5E3C]/60' : activeSection === 'MALL' ? 'text-zinc-900/60' : 'text-zinc-400'}`}>Search "{activeSection === "CAFE" ? "Cold Brew" : activeSection === "MALL" ? "Fashion & Trends" : "Grocery & More"}"</span>
           </div>
         </div>
       </header>
 
-      <main className={`pt-[calc(230px+env(safe-area-inset-top,0px))] pb-16 overflow-x-hidden min-h-[100dvh] transition-colors duration-700 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : 'bg-white'}`}>
+      <main className={`pt-[calc(230px+env(safe-area-inset-top,0px))] pb-16 overflow-x-hidden min-h-[100dvh] transition-colors duration-700 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : activeSection === 'MALL' ? 'bg-zinc-50' : 'bg-white'}`}>
         <div className={`transition-all duration-500 ease-in-out ${isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
         {(settings?.sectionSettings?.[activeSection]?.storeOpen ?? settings?.storeOpen) === false ? (
           <section className="px-6 py-20 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-700">
@@ -843,6 +811,6 @@ export default function Home() {
           </div>
         </Portal>
       )}
-    </div>
+      </div>
   );
 }

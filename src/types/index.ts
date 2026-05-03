@@ -5,7 +5,7 @@ export type Role = "customer" | "admin" | "rider" | "vendor";
 
 export interface HeroBanner {
   url: string;
-  section: "BB" | "CAFE";
+  section: "BB" | "CAFE" | "MALL";
   title?: string;
   subtitle?: string;
   redirectUrl?: string;
@@ -39,6 +39,7 @@ export interface AppSettings {
   sectionSettings?: {
     BB?: Partial<Omit<AppSettings, 'heroBanners' | 'promoSections' | 'sectionSettings'>>;
     CAFE?: Partial<Omit<AppSettings, 'heroBanners' | 'promoSections' | 'sectionSettings'>>;
+    MALL?: Partial<Omit<AppSettings, 'heroBanners' | 'promoSections' | 'sectionSettings'>>;
   };
 }
 
@@ -61,7 +62,7 @@ export interface PromoSectionItem {
 export interface PromoSection {
   id: string;
   type: "banner" | "grid" | "deal_row" | "sliding_row" | "category_grid";
-  section: "BB" | "CAFE";
+  section: "BB" | "CAFE" | "MALL";
   position?: "TOP" | "MIDDLE" | "BOTTOM" | "AFTER_HERO" | "AFTER_CATEGORIES" | "AFTER_BESTSELLERS" | "AFTER_NEW_ARRIVALS" | string;
   title?: string;
   subtitle?: string;

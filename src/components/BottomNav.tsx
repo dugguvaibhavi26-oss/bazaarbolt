@@ -22,7 +22,6 @@ export const BottomNav = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMoving, setIsMoving] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
-  const lastScrollY = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -49,7 +48,6 @@ export const BottomNav = () => {
           left: activeElement.offsetLeft,
           width: activeElement.offsetWidth,
         });
-        // Reset moving state after animation
         const timer = setTimeout(() => setIsMoving(false), 600);
         return () => clearTimeout(timer);
       }
@@ -58,7 +56,7 @@ export const BottomNav = () => {
     updateIndicator();
     window.addEventListener('resize', updateIndicator);
     return () => window.removeEventListener('resize', updateIndicator);
-  }, [pathname, navItems.length]); // added navItems.length so it recalculates if items change
+  }, [pathname, navItems.length]);
 
   const isCartPillVisible = !isVisible && cartCount > 0;
 
@@ -71,7 +69,6 @@ export const BottomNav = () => {
             onClick={() => router.push('/cart')} 
             className="pointer-events-auto w-full bg-[#318b18] text-white shadow-2xl rounded-[24px] lg:rounded-full p-2.5 lg:p-3 flex items-center justify-between active:scale-95 transition-transform"
           >
-            {/* Left: Overlapping product images */}
             <div className="flex items-center -space-x-4 pl-1">
               {cart.slice(0, 3).map((item, idx) => (
                 <div key={idx} className="w-12 h-12 rounded-full bg-white border-[1.5px] border-[#318b18] overflow-hidden flex-shrink-0 z-[3] relative">
@@ -79,14 +76,10 @@ export const BottomNav = () => {
                 </div>
               ))}
             </div>
-
-            {/* Center: Text */}
             <div className="flex flex-col items-center flex-1">
               <span className="font-headline font-black text-lg tracking-tight leading-none mb-0.5">View cart</span>
               <span className="text-[10px] font-bold tracking-[0.15em] uppercase opacity-90">{cartCount} ITEMS</span>
             </div>
-
-            {/* Right: Chevron */}
             <div className="pr-4">
               <span className="material-symbols-outlined text-3xl font-bold">chevron_right</span>
             </div>
@@ -133,7 +126,7 @@ export const BottomNav = () => {
                       }`}
                       style={{ fontVariationSettings: isActive ? "'FILL'1" : "'FILL'0" }}
                     >
-                      {item.label === 'Helpdesk' ? 'support_agent' : item.icon}
+                      {item.icon}
                     </span>
                     
                     {item.label === "Cart" && cartCount > 0 && !isActive && (

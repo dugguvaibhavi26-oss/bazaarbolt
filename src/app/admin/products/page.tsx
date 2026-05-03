@@ -21,7 +21,7 @@ export default function AdminProducts() {
     name: "",
     price: 0,
     image: "",
-    category: "",
+    category: [] as string[],
     description: "",
     stock: 100,
     active: true,
@@ -31,7 +31,7 @@ export default function AdminProducts() {
     mrp: 0,
     section: "BB" as "BB" | "CAFE",
     isBestseller: false,
-    subcategory: ""
+    subcategory: [] as string[]
   });
 
   const [uploadMode, setUploadMode] = useState<"manual" | "bulk">("manual");
@@ -191,7 +191,7 @@ export default function AdminProducts() {
         name: "", 
         price: 0, 
         image: "", 
-        category: categories[0]?.id || "", 
+        category: [], 
         description: "", 
         stock: 100, 
         active: true, 
@@ -201,7 +201,7 @@ export default function AdminProducts() {
         mrp: 0,
         section: "BB", 
         isBestseller: false, 
-        subcategory: "" 
+        subcategory: [] 
       });
       setIsAdding(false);
       setEditingProduct(null);
@@ -212,13 +212,14 @@ export default function AdminProducts() {
 
   const startEdit = (product: Product) => {
     setEditingProduct(product);
-    const categoryId = categories.find(c => c.id === product.category || c.label === product.category)?.id || product.category;
+    const categoriesList = Array.isArray(product.category) ? product.category : [product.category];
+    const subcategoriesList = Array.isArray(product.subcategory) ? product.subcategory : [product.subcategory || ""];
 
     setNewProduct({
       name: product.name,
       price: product.price,
       image: product.image,
-      category: categoryId,
+      category: categoriesList,
       description: product.description || "",
       stock: product.stock,
       active: product.active,
@@ -228,14 +229,29 @@ export default function AdminProducts() {
       mrp: product.mrp || product.price,
       section: (product as any).section || "BB",
       isBestseller: product.isBestseller || false,
-      subcategory: product.subcategory || ""
+      subcategory: subcategoriesList.filter(Boolean)
     });
     setIsAdding(true);
   };
 
   const startAdd = () => {
     setEditingProduct(null);
-    setNewProduct(prev => ({ ...prev, section: activeTab }));
+    setNewProduct({
+      name: "",
+      price: 0,
+      image: "",
+      category: [],
+      description: "",
+      stock: 100,
+      active: true,
+      adminActive: true,
+      vendorAvailable: true,
+      vendorId: "",
+      mrp: 0,
+      section: activeTab,
+      isBestseller: false,
+      subcategory: []
+    });
     setIsAdding(true);
   };
 
@@ -353,9 +369,11 @@ export default function AdminProducts() {
       const cat = categories.find(c => c.id === selectedCategory);
       const target = selectedCategory.toLowerCase().trim();
       const catLabel = cat?.label?.toLowerCase().trim();
-      matchesCategory = p.category?.toLowerCase().trim() === target || 
-                        (cat && p.category?.toLowerCase().trim() === catLabel) ||
-                        (!p.category && target === "uncategorized");
+      const productCategories = Array.isArray(p.category) ? p.category : [p.category];
+      
+      matchesCategory = productCategories.some(c => 
+        c?.toLowerCase().trim() === target || (catLabel && c?.toLowerCase().trim() === catLabel)
+      ) || (!p.category && target === "uncategorized");
     }
 
     return matchesSection && matchesSearch && matchesCategory;
@@ -367,8 +385,8 @@ export default function AdminProducts() {
     <div className="space-y-6 lg:space-y-10 pb-32">
       {isAdding && (
         <Portal>
-          <div className="fixed inset-0 z-[9999] bg-zinc-950/60 backdrop-blur-md flex items-center justify-center p-4">
-            <div className="bg-white w-full max-w-2xl rounded-[32px] lg:rounded-[40px] p-6 lg:p-10 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300">
+          <div className="fixed inset-0 z-[9999] bg-zinc-950/60 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-white w-full max-w-2xl rounded-[32px] lg:rounded-[40px] p-6 lg:p-10 shadow-2xl relative my-auto animate-in zoom-in-95 duration-300">
             <div className="absolute top-0 right-0 p-10 opacity-5 -z-10 hidden lg:block">
               <span className="material-symbols-outlined text-[140px]">inventory</span>
             </div>
@@ -396,29 +414,38 @@ export default function AdminProducts() {
             </div>
 
             {uploadMode === "manual" || editingProduct ? (
-              <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6 max-h-[70vh] lg:max-h-none overflow-y-auto lg:overflow-visible px-1 custom-scrollbar">
+              <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6 px-1">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                   <div className="md:col-span-2">
                     <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Product Name</label>
                     <input type="text" required value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all" />
                   </div>
-                   <div>
-                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Category</label>
-                    <select 
-                      value={newProduct.category} 
-                      onChange={e => {
-                        const catId = e.target.value;
-                        const cat = categories.find(c => c.id === catId);
-                        setNewProduct({ 
-                          ...newProduct, 
-                          category: catId,
-                          section: (cat?.section || newProduct.section || "BB") as any
-                        });
-                      }} 
-                      className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all"
-                    >
-                      {categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
-                    </select>
+                  <div className="md:col-span-2">
+                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Categories</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-zinc-50 p-3 lg:p-4 rounded-xl lg:rounded-2xl max-h-[150px] overflow-y-auto custom-scrollbar">
+                      {categories.map(c => (
+                        <label key={c.id} className="flex items-center gap-2 cursor-pointer group hover:bg-zinc-100 p-1 rounded-lg transition-colors">
+                          <input 
+                            type="checkbox" 
+                            checked={newProduct.category.includes(c.id)} 
+                            onChange={e => {
+                              const checked = e.target.checked;
+                              let updated = checked 
+                                ? [...newProduct.category, c.id]
+                                : newProduct.category.filter(id => id !== c.id);
+                              
+                              setNewProduct({ 
+                                ...newProduct, 
+                                category: updated,
+                                section: (categories.find(cat => cat.id === updated[0])?.section || newProduct.section || "BB") as any
+                              });
+                            }}
+                            className="w-4 h-4 text-primary focus:ring-primary border-zinc-300 rounded"
+                          />
+                          <span className="text-[10px] font-bold text-zinc-600 group-hover:text-zinc-900 transition-colors uppercase">{c.label}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                   <div>
                     <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Section</label>
@@ -431,18 +458,36 @@ export default function AdminProducts() {
                       <option value="CAFE">BB CAFE</option>
                     </select>
                   </div>
-                  <div>
-                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Subcategory</label>
-                    <select 
-                      value={newProduct.subcategory} 
-                      onChange={e => setNewProduct({ ...newProduct, subcategory: e.target.value })} 
-                      className="w-full bg-zinc-50 border-none rounded-xl lg:rounded-2xl p-3 lg:p-4 font-bold text-xs lg:text-sm focus:ring-2 ring-primary transition-all"
-                    >
-                      <option value="">None</option>
-                      {categories.find(c => c.id === newProduct.category)?.subcategories?.map((sub: any) => (
-                        <option key={sub.id || sub} value={sub.label || sub}>{sub.label || sub}</option>
-                      ))}
-                    </select>
+                  <div className="md:col-span-2">
+                    <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Subcategories</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-zinc-50 p-3 lg:p-4 rounded-xl lg:rounded-2xl max-h-[150px] overflow-y-auto custom-scrollbar">
+                      {newProduct.category.map(catId => {
+                        const cat = categories.find(c => c.id === catId);
+                        return cat?.subcategories?.map((sub: any) => {
+                          const subLabel = typeof sub === 'string' ? sub : sub.label;
+                          return (
+                            <label key={`${catId}-${subLabel}`} className="flex items-center gap-2 cursor-pointer group hover:bg-zinc-100 p-1 rounded-lg transition-colors">
+                              <input 
+                                type="checkbox" 
+                                checked={newProduct.subcategory.includes(subLabel)} 
+                                onChange={e => {
+                                  const checked = e.target.checked;
+                                  const updated = checked 
+                                    ? [...newProduct.subcategory, subLabel]
+                                    : newProduct.subcategory.filter(s => s !== subLabel);
+                                  setNewProduct({ ...newProduct, subcategory: updated });
+                                }}
+                                className="w-4 h-4 text-emerald-500 focus:ring-emerald-500 border-zinc-300 rounded"
+                              />
+                              <span className="text-[10px] font-bold text-zinc-500 group-hover:text-zinc-900 transition-colors uppercase">{subLabel}</span>
+                            </label>
+                          );
+                        });
+                      })}
+                      {newProduct.category.length === 0 && (
+                        <p className="col-span-full text-[9px] font-bold text-zinc-400 text-center py-4 uppercase">Select a category first</p>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 mb-1.5 block uppercase">Price (₹)</label>

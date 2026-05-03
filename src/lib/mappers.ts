@@ -18,7 +18,7 @@ export const mapProduct = (doc: DocumentSnapshot<DocumentData>): Product => {
     price: typeof data.price === "number" ? data.price : 0,
     mrp: typeof data.mrp === "number" ? data.mrp : (typeof data.price === "number" ? data.price : 0),
     image: typeof data.image === "string" ? data.image : "https://via.placeholder.com/150",
-    category: typeof data.category === "string" ? data.category : "uncategorized",
+    category: Array.isArray(data.category) ? data.category : (typeof data.category === "string" ? data.category : "uncategorized"),
     description: typeof data.description === "string" ? data.description : undefined,
     stock: typeof data.stock === "number" ? data.stock : 0,
     active: typeof data.active === "boolean" ? data.active : false,
@@ -32,7 +32,7 @@ export const mapProduct = (doc: DocumentSnapshot<DocumentData>): Product => {
     rating: typeof data.rating === "number" ? data.rating : 0,
     ratingCount: typeof data.ratingCount === "number" ? data.ratingCount : 0,
     isBestseller: typeof data.isBestseller === "boolean" ? data.isBestseller : false,
-    subcategory: typeof data.subcategory === "string" ? data.subcategory : ""
+    subcategory: Array.isArray(data.subcategory) ? data.subcategory : (typeof data.subcategory === "string" ? data.subcategory : "")
   };
 };
 

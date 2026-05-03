@@ -4,7 +4,7 @@ export interface Product {
   price: number;
   mrp: number;
   image: string;
-  category: string;
+  category: string | string[];
   description?: string;
   stock: number;
   active: boolean;
@@ -16,7 +16,7 @@ export interface Product {
   isDeleted?: boolean;
   createdAt?: string;
   section?: "BB" | "CAFE";
-  subcategory?: string;
+  subcategory?: string | string[];
   rating?: number;
   ratingCount?: number;
   isBestseller?: boolean;

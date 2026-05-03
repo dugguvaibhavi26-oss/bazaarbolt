@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { doc, onSnapshot, setDoc } from "firebase/firestore";
+import { doc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "@/lib/firebase";
 import toast from "react-hot-toast";
@@ -28,7 +28,9 @@ export default function AdminLayouts() {
     customCharges: [],
     codEnabled: true,
     coupon: { code: "", discount: 0 },
-    notificationTemplates: {}
+    notificationTemplates: {},
+    promoSections: [],
+    sectionSettings: { BB: {}, CAFE: {} }
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -39,7 +41,8 @@ export default function AdminLayouts() {
     subtitle: "",
     redirectUrl: ""
   });
-  const [activeBannerTab, setActiveBannerTab] = useState<"BB" | "CAFE">("BB");
+  const [activeBannerTab, setActiveBannerTab] = useState<"BB" | "CAFE" | "MALL">("BB");
+  const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
   const [bannerRedirectType, setBannerRedirectType] = useState<"NONE" | "CATEGORY" | "PRODUCT" | "CUSTOM">("NONE");
 
   const [newPromoSection, setNewPromoSection] = useState<PromoSection>({
@@ -99,6 +102,9 @@ export default function AdminLayouts() {
       try {
         if (docSnap.exists()) {
           setSettings(mapSettings(docSnap));
+        } else {
+          // Initialize with defaults if doc doesn't exist
+          setSettings(prev => ({ ...prev, promoSections: [] }));
         }
       } catch (e) {
         console.error("Settings mapping error:", e);
@@ -141,27 +147,44 @@ export default function AdminLayouts() {
         setNewPromoItem({ ...newPromoItem, imageUrl: url });
       }
       toast.success("Asset ready!", { id: toastId });
-    } catch (err) {
-      console.error("Upload error:", err);
-      toast.error("Cloud sync failed", { id: toastId });
+    } catch (err: any) {
+      console.error("Firebase Storage Error:", err);
+      if (err.code === 'storage/retry-limit-exceeded') {
+        toast.error("Upload timed out. Check your connection or Storage Rules.", { id: toastId });
+      } else if (err.code === 'storage/unauthorized') {
+        toast.error("Permission denied. Check Storage Rules in Console.", { id: toastId });
+      } else {
+        toast.error(`Upload failed: ${err.message}`, { id: toastId });
+      }
     } finally {
       setIsUploading(false);
     }
   };
 
-  const addBanner = () => {
+  const addBanner = async () => {
     if (!newBanner.url) return;
-    const currentBanners = settings.heroBanners || [];
-    setSettings({ ...settings, heroBanners: [...currentBanners, { ...newBanner }] });
-    // Reset but keep the current section
-    setNewBanner({ url: "", section: activeBannerTab, title: "", subtitle: "", redirectUrl: "" });
-    setBannerRedirectType("NONE");
-    toast.success("Banner added locally. Remember to click 'Propagate Changes' to save!", { duration: 4000 });
+    const tid = toast.loading("Saving banner...");
+    try {
+      const currentBanners = settings.heroBanners || [];
+      const updatedBanners = [...currentBanners, { ...newBanner }];
+      await setDoc(doc(db, "settings", "config"), { heroBanners: updatedBanners }, { merge: true });
+      setNewBanner({ url: "", section: activeBannerTab, title: "", subtitle: "", redirectUrl: "" });
+      setBannerRedirectType("NONE");
+      toast.success("Banner added!", { id: tid });
+    } catch (e) {
+      toast.error("Failed to save banner", { id: tid });
+    }
   };
 
-  const removeBanner = (index: number) => {
-    const updated = (settings.heroBanners || []).filter((_, i) => i !== index);
-    setSettings({ ...settings, heroBanners: updated });
+  const removeBanner = async (index: number) => {
+    const tid = toast.loading("Removing banner...");
+    try {
+      const updated = (settings.heroBanners || []).filter((_, i) => i !== index);
+      await setDoc(doc(db, "settings", "config"), { heroBanners: updated }, { merge: true });
+      toast.success("Banner removed", { id: tid });
+    } catch (e) {
+      toast.error("Failed to remove banner", { id: tid });
+    }
   };
 
   const addPromoItem = () => {
@@ -181,86 +204,189 @@ export default function AdminLayouts() {
     }));
   };
 
-  const addPromoSection = () => {
-    if (newPromoSection.type !== "category_grid" && newPromoSection.items.length === 0) {
-      toast.error("Please add at least one item to the section");
+  const addPromoSection = async () => {
+    const tid = toast.loading(editingSectionId ? "Updating section..." : "Adding section...");
+    try {
+      const sectionData = { ...newPromoSection, section: activeBannerTab, id: editingSectionId || Date.now().toString() };
+      let updatedSections = [...(settings.promoSections || [])];
+
+      if (editingSectionId) {
+        updatedSections = updatedSections.map(s => s.id === editingSectionId ? sectionData : s);
+      } else {
+        updatedSections.push(sectionData);
+      }
+
+      await setDoc(doc(db, "settings", "config"), { promoSections: updatedSections }, { merge: true });
+      setSettings(prev => ({ ...prev, promoSections: updatedSections }));
+      
+      toast.success(editingSectionId ? "Section updated!" : "Section added!", { id: tid });
+      setNewPromoSection({
+        id: Date.now().toString(),
+        type: "grid",
+        section: activeBannerTab,
+        position: "MIDDLE",
+        title: "",
+        subtitle: "",
+        bgColor: "#ffffff",
+        textColor: "#000000",
+        bgImageUrl: "",
+        bgAnimation: "none",
+        isCompact: false,
+        items: [],
+        afterCategoryId: ""
+      });
+      setEditingSectionId(null);
+    } catch (e) {
+      console.error("Save error:", e);
+      toast.error("Failed to save section", { id: tid });
+    }
+  };
+
+  const addDynamicRow = async () => {
+    if (!newDynamicRow.title && newDynamicRow.filterType === 'CATEGORY' && !newDynamicRow.filterCategoryId) {
+      toast.error("Please provide a title or select a category");
       return;
     }
-    const currentSections = settings.promoSections || [];
-    setSettings({ ...settings, promoSections: [...currentSections, { ...newPromoSection, id: Date.now().toString() }] });
-    
-    // Reset
-    setNewPromoSection({
-      id: Date.now().toString(),
-      type: "banner",
-      section: activeBannerTab,
-      position: "MIDDLE",
+
+    const tid = toast.loading(editingSectionId ? "Updating section..." : "Adding section...");
+    try {
+      const sectionData = { ...newDynamicRow, section: activeBannerTab, id: editingSectionId || Date.now().toString() };
+      let updatedSections = [...(settings.promoSections || [])];
+
+      if (editingSectionId) {
+        updatedSections = updatedSections.map(s => s.id === editingSectionId ? sectionData : s);
+      } else {
+        updatedSections.push(sectionData);
+      }
+
+      await setDoc(doc(db, "settings", "config"), { promoSections: updatedSections }, { merge: true });
+      setSettings(prev => ({ ...prev, promoSections: updatedSections }));
+
+      toast.success(editingSectionId ? "Section updated!" : "Section added!", { id: tid });
+      setNewDynamicRow({
+        id: Date.now().toString(),
+        type: "sliding_row",
+        section: activeBannerTab,
+        position: "MIDDLE",
+        title: "",
+        iconUrl: "",
+        filterType: "CATEGORY",
+        filterCategoryId: "",
+        filterSubcategory: "",
+        manualProductIds: [],
+        items: [],
+        afterCategoryId: "",
+        layout: "sliding"
+      });
+      setEditingSectionId(null);
+    } catch (e) {
+      console.error("Save error:", e);
+      toast.error("Failed to save section", { id: tid });
+    }
+  };
+
+  const addUnderPriceStore = async () => {
+    if (!newUnderPriceStore.title) {
+      toast.error("Please provide a title");
+      return;
+    }
+
+    const tid = toast.loading(editingSectionId ? "Updating section..." : "Adding section...");
+    try {
+      const sectionData = { ...newUnderPriceStore, section: activeBannerTab, id: editingSectionId || Date.now().toString() };
+      let updatedSections = [...(settings.promoSections || [])];
+
+      if (editingSectionId) {
+        updatedSections = updatedSections.map(s => s.id === editingSectionId ? sectionData : s);
+      } else {
+        updatedSections.push(sectionData);
+      }
+
+      await setDoc(doc(db, "settings", "config"), { promoSections: updatedSections }, { merge: true });
+      setSettings(prev => ({ ...prev, promoSections: updatedSections }));
+
+      toast.success(editingSectionId ? "Section updated!" : "Section added!", { id: tid });
+      setNewUnderPriceStore({
+        id: Date.now().toString(),
+        type: "deal_row",
+        section: activeBannerTab,
+        position: "MIDDLE",
+        title: "",
+        priceLimit: 19,
+        sideBannerImageUrl: "",
+        manualProductIds: [],
+        items: [],
+        afterCategoryId: "",
+        layout: "sliding",
+        filterCategoryId: ""
+      });
+      setEditingSectionId(null);
+    } catch (e) {
+      console.error("Save error:", e);
+      toast.error("Failed to save section", { id: tid });
+    }
+  };
+
+  const startEditSection = (section: PromoSection) => {
+    setEditingSectionId(section.id);
+    const sanitized = {
       title: "",
       subtitle: "",
       bgColor: "#ffffff",
       textColor: "#000000",
       bgImageUrl: "",
       bgAnimation: "none",
-      items: [{ imageUrl: "", redirectUrl: "" }]
-    });
-    toast.success("Section added locally. Remember to click 'Propagate Changes' to save!", { duration: 4000 });
-  };
-
-  const addUnderPriceStore = () => {
-    if (!newUnderPriceStore.title) {
-      toast.error("Please enter a title for the store");
-      return;
-    }
-    const currentSections = settings.promoSections || [];
-    setSettings({ ...settings, promoSections: [...currentSections, { ...newUnderPriceStore, id: Date.now().toString() }] });
-    
-    // Reset
-    setNewUnderPriceStore({
-      id: Date.now().toString(),
-      type: "deal_row",
-      section: activeBannerTab,
-      position: "MIDDLE",
-      title: "",
-      priceLimit: 19,
-      sideBannerImageUrl: "",
-      manualProductIds: [],
-      items: [],
       afterCategoryId: "",
-      layout: "sliding"
-    });
-    toast.success("Under Price Store added locally!", { duration: 4000 });
-  };
-
-  const addDynamicRow = () => {
-    if (!newDynamicRow.title) {
-      toast.error("Please enter a title for the row");
-      return;
-    }
-    const currentSections = settings.promoSections || [];
-    setSettings({ ...settings, promoSections: [...currentSections, { ...newDynamicRow, id: Date.now().toString() }] });
-    
-    // Reset
-    setNewDynamicRow({
-      id: Date.now().toString(),
-      type: "sliding_row",
-      section: activeBannerTab,
-      position: "MIDDLE",
-      title: "",
-      iconUrl: "",
-      filterType: "CATEGORY",
-      filterCategoryId: "",
-      filterSubcategory: "",
-      manualProductIds: [],
       items: [],
-      afterCategoryId: "",
-      layout: "sliding"
-    });
-    toast.success("Dynamic Row added locally!", { duration: 4000 });
+      manualProductIds: [],
+      ...section
+    };
+    if (section.type === 'sliding_row' || section.type === 'deal_row') {
+      setNewDynamicRow(sanitized as any);
+    } else {
+      setNewPromoSection(sanitized as any);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const removePromoSection = (id: string) => {
-    const updated = (settings.promoSections || []).filter((s) => s.id !== id);
-    setSettings({ ...settings, promoSections: updated });
+  const removePromoSection = async (id: string) => {
+    const tid = toast.loading("Removing section...");
+    try {
+      const updated = (settings.promoSections || []).filter((s) => s.id !== id);
+      await setDoc(doc(db, "settings", "config"), { promoSections: updated }, { merge: true });
+      toast.success("Section removed", { id: tid });
+    } catch (e) {
+      toast.error("Failed to remove section", { id: tid });
+    }
+  };
+
+  const moveSection = async (id: string, direction: 'up' | 'down') => {
+    const allSections = [...(settings.promoSections || [])];
+    const platformSections = allSections.filter(s => s.section === activeBannerTab);
+    
+    const currentIndex = platformSections.findIndex(s => s.id === id);
+    if (currentIndex === -1) return;
+    
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= platformSections.length) return;
+    
+    const movingSectionId = platformSections[currentIndex].id;
+    const neighborSectionId = platformSections[targetIndex].id;
+    
+    // Swap them in the GLOBAL array
+    const globalIdx1 = allSections.findIndex(s => s.id === movingSectionId);
+    const globalIdx2 = allSections.findIndex(s => s.id === neighborSectionId);
+    
+    const temp = allSections[globalIdx1];
+    allSections[globalIdx1] = allSections[globalIdx2];
+    allSections[globalIdx2] = temp;
+
+    try {
+      await setDoc(doc(db, "settings", "config"), { promoSections: allSections }, { merge: true });
+    } catch (e) {
+      console.error("Reorder error:", e);
+      toast.error("Failed to reorder");
+    }
   };
 
   if (loading) return (
@@ -271,7 +397,8 @@ export default function AdminLayouts() {
   );
 
   return (
-    <div className="max-w-4xl space-y-6 lg:space-y-8 pb-32">
+    <>
+      <div className="max-w-4xl space-y-6 lg:space-y-8 pb-32">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h3 className="text-xl lg:text-2xl font-black text-zinc-900 tracking-tight">Layouts & Banners</h3>
@@ -315,6 +442,18 @@ export default function AdminLayouts() {
                 >
                   BB Cafe
                 </button>
+                <button 
+                  onClick={() => { 
+                    setActiveBannerTab("MALL"); 
+                    setNewBanner(prev => ({...prev, section: "MALL"})); 
+                    setNewPromoSection(prev => ({...prev, section: "MALL"}));
+                    setNewUnderPriceStore(prev => ({...prev, section: "MALL"}));
+                    setNewDynamicRow(prev => ({...prev, section: "MALL"}));
+                  }} 
+                  className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[8px] font-black tracking-widest uppercase transition-all ${activeBannerTab === "MALL" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500"}`}
+                >
+                  BB Mall
+                </button>
               </div>
             </div>
             <div className="space-y-4 mb-4 bg-zinc-50 p-4 lg:p-6 rounded-[24px] lg:rounded-[32px] border border-zinc-100 uppercase">
@@ -338,7 +477,7 @@ export default function AdminLayouts() {
                   <select 
                     value={newBanner.section} 
                     onChange={e => {
-                      const val = e.target.value as "BB" | "CAFE";
+                      const val = e.target.value as "BB" | "CAFE" | "MALL";
                       setNewBanner({...newBanner, section: val});
                       setActiveBannerTab(val);
                     }} 
@@ -346,6 +485,7 @@ export default function AdminLayouts() {
                   >
                     <option value="BB">BAZAAR BOLT</option>
                     <option value="CAFE">BB CAFE</option>
+                    <option value="MALL">BB MALL</option>
                   </select>
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
@@ -450,11 +590,12 @@ export default function AdminLayouts() {
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Applied To Section</label>
                   <select 
                     value={newUnderPriceStore.section} 
-                    onChange={e => setNewUnderPriceStore({...newUnderPriceStore, section: e.target.value as "BB" | "CAFE"})} 
+                    onChange={e => setNewUnderPriceStore({...newUnderPriceStore, section: e.target.value as "BB" | "CAFE" | "MALL"})} 
                     className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
                   >
                     <option value="BB">BAZAAR BOLT</option>
                     <option value="CAFE">BB CAFE</option>
+                    <option value="MALL">BB MALL</option>
                   </select>
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
@@ -477,15 +618,38 @@ export default function AdminLayouts() {
                   <input type="text" value={newUnderPriceStore.sideBannerImageUrl} onChange={e => setNewUnderPriceStore({...newUnderPriceStore, sideBannerImageUrl: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase" placeholder="URL..." />
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Filter By Category (Optional)</label>
+                  <select 
+                    value={newUnderPriceStore.filterCategoryId || ""} 
+                    onChange={e => setNewUnderPriceStore({...newUnderPriceStore, filterCategoryId: e.target.value})} 
+                    className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
+                  >
+                    <option value="">ALL CATEGORIES</option>
+                    {categories.map(c => (
+                      <React.Fragment key={c.id}>
+                        <option value={c.id}>{c.label}</option>
+                        {c.subcategories && Array.isArray(c.subcategories) && c.subcategories.map((sub: any) => {
+                          const subLabel = typeof sub === 'string' ? sub : sub.label;
+                          const subId = typeof sub === 'string' ? sub : (sub.id || sub.label);
+                          return (
+                            <option key={`${c.id}_${subId}`} value={subId}>— {subLabel} ({c.label})</option>
+                          );
+                        })}
+                      </React.Fragment>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Place Under Category</label>
                   <select 
-                    value={newUnderPriceStore.afterCategoryId ? `UNDER_${newUnderPriceStore.afterCategoryId}` : (newUnderPriceStore.position || "MIDDLE")} 
+                    value={newUnderPriceStore.afterCategoryId || newUnderPriceStore.position || "MIDDLE"} 
                     onChange={e => {
                       const val = e.target.value;
-                      if (val.startsWith("UNDER_")) {
-                        setNewUnderPriceStore({...newUnderPriceStore, afterCategoryId: val.replace("UNDER_", ""), position: "MIDDLE"});
-                      } else {
+                      const staticPositions = ["TOP", "AFTER_HERO", "AFTER_CATEGORIES", "BOTTOM", "MIDDLE"];
+                      if (staticPositions.includes(val)) {
                         setNewUnderPriceStore({...newUnderPriceStore, position: val as any, afterCategoryId: ""});
+                      } else {
+                        setNewUnderPriceStore({...newUnderPriceStore, afterCategoryId: val, position: "MIDDLE"});
                       }
                     }} 
                     className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
@@ -495,11 +659,13 @@ export default function AdminLayouts() {
                     <option value="AFTER_CATEGORIES">AFTER ALL CATEGORIES</option>
                     <option value="BOTTOM">PAGE BOTTOM</option>
                     <optgroup label="ANCHOR TO CATEGORY">
-                      {categories.filter(c => !c.section || c.section === activeBannerTab).map(c => <option key={c.id} value={`UNDER_${c.id}`}>UNDER {c.label}</option>)}
+                      {categories.filter(c => !c.section || c.section === activeBannerTab).map(c => (
+                        <option key={c.id} value={c.id}>UNDER {c.label}</option>
+                      ))}
                     </optgroup>
-                    <optgroup label="ANCHOR TO CUSTOM SECTIONS">
-                      {settings.promoSections?.filter(s => s.id !== newUnderPriceStore.id && s.title && s.section === activeBannerTab).map(s => (
-                        <option key={s.id} value={`UNDER_${s.id}`}>AFTER {s.title}</option>
+                    <optgroup label="ANCHOR TO SECTIONS">
+                      {settings.promoSections?.filter(s => s.section === activeBannerTab && s.id !== newUnderPriceStore.id).map(s => (
+                        <option key={s.id} value={s.id}>AFTER {s.title || (s.filterType === 'BESTSELLERS' ? 'Bestsellers' : s.filterType === 'NEW_ARRIVALS' ? 'New Arrivals' : `${s.type} Section`)}</option>
                       ))}
                     </optgroup>
                   </select>
@@ -566,17 +732,18 @@ export default function AdminLayouts() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 uppercase">
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Section Title</label>
-                  <input type="text" value={newDynamicRow.title} onChange={e => setNewDynamicRow({...newDynamicRow, title: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. BESTSELLERS" />
+                  <input type="text" value={newDynamicRow.title || ""} onChange={e => setNewDynamicRow({...newDynamicRow, title: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. BESTSELLERS" />
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Applied To Section</label>
                   <select 
                     value={newDynamicRow.section} 
-                    onChange={e => setNewDynamicRow({...newDynamicRow, section: e.target.value as "BB" | "CAFE"})} 
+                    onChange={e => setNewDynamicRow({...newDynamicRow, section: e.target.value as "BB" | "CAFE" | "MALL"})} 
                     className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
                   >
                     <option value="BB">BAZAAR BOLT</option>
                     <option value="CAFE">BB CAFE</option>
+                    <option value="MALL">BB MALL</option>
                   </select>
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
@@ -597,9 +764,6 @@ export default function AdminLayouts() {
                     onChange={e => {
                       const type = e.target.value as any;
                       setNewDynamicRow({...newDynamicRow, filterType: type});
-                      if (type !== 'CATEGORY') {
-                        setNewDynamicRow(prev => ({...prev, filterType: type, filterCategoryId: ""}));
-                      }
                     }} 
                     className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
                   >
@@ -608,17 +772,13 @@ export default function AdminLayouts() {
                     <option value="NEW_ARRIVALS">NEW ARRIVALS</option>
                   </select>
                 </div>
-                <div className="space-y-1 lg:space-y-1.5 uppercase">
-                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Icon URL (Optional)</label>
-                  <input type="text" value={newDynamicRow.iconUrl} onChange={e => setNewDynamicRow({...newDynamicRow, iconUrl: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase" placeholder="URL..." />
-                </div>
+
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Target Category (If Type=Category)</label>
                   <select 
                     value={newDynamicRow.filterCategoryId || ""} 
-                    disabled={newDynamicRow.filterType !== 'CATEGORY'}
                     onChange={e => setNewDynamicRow({...newDynamicRow, filterCategoryId: e.target.value})} 
-                    className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase disabled:opacity-50"
+                    className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
                   >
                     <option value="">ALL CATEGORIES</option>
                     {categories.map(c => (
@@ -638,13 +798,14 @@ export default function AdminLayouts() {
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Placement</label>
                   <select 
-                    value={newDynamicRow.afterCategoryId ? `UNDER_${newDynamicRow.afterCategoryId}` : (newDynamicRow.position || "MIDDLE")} 
+                    value={newDynamicRow.afterCategoryId || newDynamicRow.position || "MIDDLE"} 
                     onChange={e => {
                       const val = e.target.value;
-                      if (val.startsWith("UNDER_")) {
-                        setNewDynamicRow({...newDynamicRow, afterCategoryId: val.replace("UNDER_", ""), position: "MIDDLE"});
-                      } else {
+                      const staticPositions = ["TOP", "AFTER_HERO", "AFTER_CATEGORIES", "BOTTOM", "MIDDLE"];
+                      if (staticPositions.includes(val)) {
                         setNewDynamicRow({...newDynamicRow, position: val as any, afterCategoryId: ""});
+                      } else {
+                        setNewDynamicRow({...newDynamicRow, afterCategoryId: val, position: "MIDDLE"});
                       }
                     }} 
                     className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
@@ -654,11 +815,13 @@ export default function AdminLayouts() {
                     <option value="AFTER_CATEGORIES">AFTER ALL CATEGORIES</option>
                     <option value="BOTTOM">PAGE BOTTOM</option>
                     <optgroup label="ANCHOR TO CATEGORY">
-                      {categories.filter(c => !c.section || c.section === activeBannerTab).map(c => <option key={c.id} value={`UNDER_${c.id}`}>UNDER {c.label}</option>)}
+                      {categories.filter(c => !c.section || c.section === activeBannerTab).map(c => (
+                        <option key={c.id} value={c.id}>UNDER {c.label}</option>
+                      ))}
                     </optgroup>
-                    <optgroup label="ANCHOR TO CUSTOM SECTIONS">
-                      {settings.promoSections?.filter(s => s.id !== newDynamicRow.id && s.title && s.section === activeBannerTab).map(s => (
-                        <option key={s.id} value={`UNDER_${s.id}`}>AFTER {s.title}</option>
+                    <optgroup label="ANCHOR TO SECTIONS">
+                      {settings.promoSections?.filter(s => s.section === activeBannerTab && s.id !== newDynamicRow.id).map(s => (
+                        <option key={s.id} value={s.id}>AFTER {s.title || (s.filterType === 'BESTSELLERS' ? 'Bestsellers' : s.filterType === 'NEW_ARRIVALS' ? 'New Arrivals' : `${s.type} Section`)}</option>
                       ))}
                     </optgroup>
                   </select>
@@ -674,8 +837,17 @@ export default function AdminLayouts() {
                       const pSub = p.subcategory?.toLowerCase().trim();
                       const cat = categories.find(c => c.id === newDynamicRow.filterCategoryId);
                       const catLabel = cat?.label?.toLowerCase().trim();
-                      
-                      return pCat === target || pCat === catLabel || pSub === target;
+
+                      const isCatMatch = pCat === target || pCat === catLabel;
+                      const isSubMatch = pSub === target || categories.some(c => 
+                        c.subcategories?.some((sub: any) => {
+                          const sId = (typeof sub === 'string' ? sub : (sub.id || sub.label)).toLowerCase().trim();
+                          const sLabel = (typeof sub === 'string' ? sub : sub.label).toLowerCase().trim();
+                          return sId === target && pSub === sLabel;
+                        })
+                      );
+
+                      return isCatMatch || isSubMatch;
                     }).map(p => (
                       <button
                         key={p.id}
@@ -701,17 +873,38 @@ export default function AdminLayouts() {
                   </div>
                 </div>
               </div>
-              <button onClick={addDynamicRow} className="w-full bg-primary text-zinc-900 py-3 lg:py-4 rounded-xl font-black text-[9px] lg:text-[10px] tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/10 uppercase mt-2">
-                Add Section Row
+              <button onClick={addDynamicRow} className={`w-full py-3 lg:py-4 rounded-xl font-black text-[9px] lg:text-[10px] tracking-widest active:scale-95 transition-all shadow-lg uppercase mt-2 ${editingSectionId ? 'bg-zinc-900 text-white' : 'bg-primary text-zinc-900'}`}>
+                {editingSectionId ? 'Update Section Row' : 'Add Section Row'}
               </button>
+              {editingSectionId && (
+                <button onClick={() => { 
+                  setEditingSectionId(null); 
+                  setNewDynamicRow({
+                    id: Date.now().toString(),
+                    type: "sliding_row",
+                    section: activeBannerTab,
+                    position: "MIDDLE",
+                    title: "",
+                    iconUrl: "",
+                    filterType: "CATEGORY",
+                    filterCategoryId: "",
+                    filterSubcategory: "",
+                    manualProductIds: [],
+                    items: [],
+                    afterCategoryId: "",
+                    layout: "sliding"
+                  }); 
+                }} className="w-full bg-zinc-100 text-zinc-400 py-3 rounded-xl font-black text-[9px] uppercase mt-2">
+                  Cancel Edit
+                </button>
+              )}
             </div>
 
             <div className="space-y-4">
-              {(settings.promoSections || []).filter(s => s.type === "sliding_row").map((s) => s.section === activeBannerTab ? (
+              {(settings.promoSections || []).filter(s => s.type === "sliding_row" || s.type === "deal_row").map((s) => (s.section === activeBannerTab || (!s.section && activeBannerTab === "BB")) ? (
                 <div key={s.id} className="relative rounded-2xl overflow-hidden border border-zinc-200 shadow-sm p-4 bg-zinc-50">
                   <div className="flex justify-between items-start mb-3 relative z-10">
                     <div className="flex items-center gap-3">
-                      {s.iconUrl && <img src={s.iconUrl} className="w-8 h-8 object-contain" alt="" />}
                       <div>
                         <h4 className="font-headline font-black text-sm uppercase text-zinc-900">{s.title || (s.filterType === 'BESTSELLERS' ? 'Bestsellers' : s.filterType === 'NEW_ARRIVALS' ? 'New Arrivals' : 'Category Row')}</h4>
                         <p className="text-[8px] font-bold text-zinc-400 tracking-widest uppercase">
@@ -719,14 +912,26 @@ export default function AdminLayouts() {
                         </p>
                       </div>
                     </div>
-                    <button onClick={() => removePromoSection(s.id)} className="bg-red-50 text-red-500 hover:bg-red-500 hover:text-white p-1.5 rounded-lg transition-colors">
-                      <span className="material-symbols-outlined text-sm">delete</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => moveSection(s.id, 'up')} className="p-1.5 rounded-lg bg-zinc-100 text-zinc-500 hover:bg-zinc-200 transition-colors">
+                        <span className="material-symbols-outlined text-sm">arrow_upward</span>
+                      </button>
+                      <button onClick={() => moveSection(s.id, 'down')} className="p-1.5 rounded-lg bg-zinc-100 text-zinc-500 hover:bg-zinc-200 transition-colors">
+                        <span className="material-symbols-outlined text-sm">arrow_downward</span>
+                      </button>
+                      <button onClick={() => startEditSection(s)} className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-colors">
+                        <span className="material-symbols-outlined text-sm">edit</span>
+                      </button>
+                      <button onClick={() => removePromoSection(s.id)} className="bg-red-50 text-red-500 hover:bg-red-500 hover:text-white p-1.5 rounded-lg transition-colors">
+                        <span className="material-symbols-outlined text-sm">delete</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : null)}
             </div>
           </div>
+
           <div className="pt-6 border-t border-zinc-100">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 lg:mb-4">
               <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 uppercase">Other Promotional Layout Sections</label>
@@ -745,23 +950,25 @@ export default function AdminLayouts() {
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Applied To Section</label>
                   <select 
                     value={newPromoSection.section} 
-                    onChange={e => setNewPromoSection({...newPromoSection, section: e.target.value as "BB" | "CAFE"})} 
+                    onChange={e => setNewPromoSection({...newPromoSection, section: e.target.value as "BB" | "CAFE" | "MALL"})} 
                     className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
                   >
                     <option value="BB">BAZAAR BOLT</option>
                     <option value="CAFE">BB CAFE</option>
+                    <option value="MALL">BB MALL</option>
                   </select>
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Display Placement</label>
                   <select 
-                    value={newPromoSection.afterCategoryId ? `UNDER_${newPromoSection.afterCategoryId}` : (newPromoSection.position || "MIDDLE")} 
+                    value={newPromoSection.afterCategoryId || newPromoSection.position || "MIDDLE"} 
                     onChange={e => {
                       const val = e.target.value;
-                      if (val.startsWith("UNDER_")) {
-                        setNewPromoSection({...newPromoSection, afterCategoryId: val.replace("UNDER_", ""), position: "MIDDLE"});
-                      } else {
+                      const staticPositions = ["TOP", "AFTER_HERO", "AFTER_CATEGORIES", "BOTTOM", "MIDDLE"];
+                      if (staticPositions.includes(val)) {
                         setNewPromoSection({...newPromoSection, position: val as any, afterCategoryId: ""});
+                      } else {
+                        setNewPromoSection({...newPromoSection, afterCategoryId: val, position: "MIDDLE"});
                       }
                     }} 
                     className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
@@ -771,11 +978,13 @@ export default function AdminLayouts() {
                     <option value="AFTER_CATEGORIES">AFTER ALL CATEGORIES</option>
                     <option value="BOTTOM">PAGE BOTTOM</option>
                     <optgroup label="ANCHOR TO CATEGORY">
-                      {categories.filter(c => !c.section || c.section === activeBannerTab).map(c => <option key={c.id} value={`UNDER_${c.id}`}>UNDER {c.label}</option>)}
+                      {categories.filter(c => !c.section || c.section === activeBannerTab).map(c => (
+                        <option key={c.id} value={c.id}>UNDER {c.label}</option>
+                      ))}
                     </optgroup>
-                    <optgroup label="ANCHOR TO CUSTOM SECTIONS">
-                      {settings.promoSections?.filter(s => s.id !== newPromoSection.id && s.title && s.section === activeBannerTab).map(s => (
-                        <option key={s.id} value={`UNDER_${s.id}`}>AFTER {s.title}</option>
+                    <optgroup label="ANCHOR TO SECTIONS">
+                      {settings.promoSections?.filter(s => s.section === activeBannerTab && s.id !== newPromoSection.id).map(s => (
+                        <option key={s.id} value={s.id}>AFTER {s.title || `${s.type} Section`}</option>
                       ))}
                     </optgroup>
                   </select>
@@ -813,14 +1022,10 @@ export default function AdminLayouts() {
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 flex items-end pb-3">
                   <label className="flex items-center gap-3 cursor-pointer group">
-                    <input type="checkbox" checked={newPromoSection.isCompact} onChange={e => setNewPromoSection({...newPromoSection, isCompact: e.target.checked})} className="w-5 h-5 rounded-md border-zinc-300 text-primary focus:ring-primary" />
+                    <input type="checkbox" checked={newPromoSection.isCompact} onChange={e => setNewPromoSection({...newPromoSection, isCompact: e.target.checked})} className="w-5 h-5 rounded-md border-zinc-300 text-indigo-600 focus:ring-indigo-500" />
                     <span className="text-[9px] lg:text-[10px] font-black text-zinc-400 uppercase tracking-widest group-hover:text-zinc-900 transition-colors">Compact Layout</span>
                   </label>
                 </div>
-
-                {/* Shop Now button configuration removed as per user request */}
-
-
 
                 {newPromoSection.type !== "deal_row" && (
                   <div className="sm:col-span-2 space-y-2 mt-4 p-4 border border-zinc-200 rounded-2xl bg-white">
@@ -837,7 +1042,7 @@ export default function AdminLayouts() {
                               { imageUrl: "", redirectUrl: "", label: "", colSpan: 1, rowSpan: 1 },
                               { imageUrl: "", redirectUrl: "", label: "", colSpan: 1, rowSpan: 1 }
                             ]});
-                          }} className="bg-white border border-zinc-200 p-2 rounded-xl text-[8px] font-bold text-zinc-600 hover:border-primary hover:text-primary transition-all text-center">
+                          }} className="bg-white border border-zinc-200 p-2 rounded-xl text-[8px] font-bold text-zinc-600 hover:border-indigo-600 hover:text-indigo-600 transition-all text-center">
                             Hero Left + 4 Grid
                           </button>
                           <button type="button" onClick={() => {
@@ -847,7 +1052,7 @@ export default function AdminLayouts() {
                               { imageUrl: "", redirectUrl: "", label: "", colSpan: 1, rowSpan: 1 },
                               { imageUrl: "", redirectUrl: "", label: "", colSpan: 1, rowSpan: 1 }
                             ]});
-                          }} className="bg-white border border-zinc-200 p-2 rounded-xl text-[8px] font-bold text-zinc-600 hover:border-primary hover:text-primary transition-all text-center">
+                          }} className="bg-white border border-zinc-200 p-2 rounded-xl text-[8px] font-bold text-zinc-600 hover:border-indigo-600 hover:text-indigo-600 transition-all text-center">
                             4 Equal Squares
                           </button>
                           <button type="button" onClick={() => {
@@ -856,7 +1061,7 @@ export default function AdminLayouts() {
                               { imageUrl: "", redirectUrl: "", label: "", colSpan: 1, rowSpan: 1 },
                               { imageUrl: "", redirectUrl: "", label: "", colSpan: 1, rowSpan: 1 }
                             ]});
-                          }} className="bg-white border border-zinc-200 p-2 rounded-xl text-[8px] font-bold text-zinc-600 hover:border-primary hover:text-primary transition-all text-center">
+                          }} className="bg-white border border-zinc-200 p-2 rounded-xl text-[8px] font-bold text-zinc-600 hover:border-indigo-600 hover:text-indigo-600 transition-all text-center">
                             Hero Top + 2 Grid
                           </button>
                           <button type="button" onClick={() => setNewPromoSection({...newPromoSection, items: []})} className="bg-white border border-zinc-200 p-2 rounded-xl text-[8px] font-bold text-red-500 hover:bg-red-50 transition-all text-center">
@@ -897,7 +1102,6 @@ export default function AdminLayouts() {
                       </div>
                     )}
                     
-                    {/* Redirect selector for promo item */}
                     <div className="space-y-2">
                       <label className="text-[8px] font-black text-zinc-400 ml-1 uppercase block">Redirect On Click</label>
                       <div className="flex bg-zinc-100 p-1 rounded-xl mb-2 overflow-x-auto hide-scrollbar">
@@ -1011,19 +1215,30 @@ export default function AdminLayouts() {
                 </div>
               )}
 
-              <button onClick={addPromoSection} className="w-full bg-primary text-zinc-900 py-3 lg:py-4 rounded-xl font-black text-[9px] lg:text-[10px] tracking-widest active:scale-95 transition-all shadow-lg shadow-primary/10 uppercase mt-4">
+              <button onClick={addPromoSection} className="w-full bg-indigo-600 text-white py-3 lg:py-4 rounded-xl font-black text-[9px] lg:text-[10px] tracking-widest active:scale-95 transition-all shadow-lg shadow-indigo-500/10 uppercase mt-4">
                 Save Promotional Section
               </button>
             </div>
 
             <div className="space-y-4">
-              {(settings.promoSections || []).filter(s => s.type !== "deal_row" && s.type !== "sliding_row").map((s, idx) => s.section === activeBannerTab ? (
+              {(settings.promoSections || []).filter(s => s.type !== "deal_row" && s.type !== "sliding_row").map((s, idx) => (s.section === activeBannerTab || (!s.section && activeBannerTab === "BB")) ? (
                 <div key={s.id} className="relative rounded-2xl overflow-hidden border border-zinc-200 shadow-sm p-4" style={{ backgroundColor: s.bgColor }}>
                   <div className="flex justify-between items-start mb-3 relative z-10">
                     <h4 className="font-headline font-black text-sm uppercase" style={{ color: s.textColor }}>{s.title || `${s.type} Section`}</h4>
-                    <button onClick={() => removePromoSection(s.id)} className="bg-red-50 text-red-500 hover:bg-red-500 hover:text-white p-1.5 rounded-lg transition-colors">
-                      <span className="material-symbols-outlined text-sm">delete</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => moveSection(s.id, 'up')} className="p-1.5 rounded-lg bg-black/10 text-inherit hover:bg-black/20 transition-colors">
+                        <span className="material-symbols-outlined text-sm">arrow_upward</span>
+                      </button>
+                      <button onClick={() => moveSection(s.id, 'down')} className="p-1.5 rounded-lg bg-black/10 text-inherit hover:bg-black/20 transition-colors">
+                        <span className="material-symbols-outlined text-sm">arrow_downward</span>
+                      </button>
+                      <button onClick={() => startEditSection(s)} className="p-1.5 rounded-lg bg-black/10 text-inherit hover:bg-black/20 transition-colors">
+                        <span className="material-symbols-outlined text-sm">edit</span>
+                      </button>
+                      <button onClick={() => removePromoSection(s.id)} className="bg-red-500/20 text-red-600 hover:bg-red-600 hover:text-white p-1.5 rounded-lg transition-colors">
+                        <span className="material-symbols-outlined text-sm">delete</span>
+                      </button>
+                    </div>
                   </div>
                   <div className="flex gap-2 overflow-x-auto relative z-10">
                     {s.items.map((item, i) => (
@@ -1051,6 +1266,7 @@ export default function AdminLayouts() {
           onCancel={() => setIsCropping(false)}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }

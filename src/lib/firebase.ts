@@ -18,7 +18,7 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({ tabManager: persistentSingleTabManager({}) })
+  experimentalForceLongPolling: true, // Forces HTTP long polling instead of gRPC, which bypasses many firewalls
 });
 const storage = getStorage(app);
 
