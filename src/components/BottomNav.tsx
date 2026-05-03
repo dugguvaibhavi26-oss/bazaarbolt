@@ -77,8 +77,8 @@ export const BottomNav = () => {
               ))}
             </div>
             <div className="flex flex-col items-start flex-1 ml-4">
-              <span className="font-headline font-black text-sm tracking-tight leading-none mb-0.5">View cart</span>
-              <span className="text-[9px] font-black tracking-widest uppercase opacity-80">{cartCount} {cartCount === 1 ? 'ITEM' : 'ITEMS'}</span>
+              <span className="font-headline font-bold text-sm tracking-tight leading-none mb-0.5">View cart</span>
+              <span className="text-[9px] font-bold tracking-widest uppercase opacity-80">{cartCount} {cartCount === 1 ? 'ITEM' : 'ITEMS'}</span>
             </div>
             <div className="pr-2 flex items-center">
               <span className="material-symbols-outlined text-2xl font-bold">arrow_forward</span>

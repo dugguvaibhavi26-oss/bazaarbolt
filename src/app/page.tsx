@@ -225,13 +225,13 @@ export default function Home() {
         </div>
         <div className="flex flex-col px-1 pt-1">
           <div className="flex items-center gap-1 h-3">
-            <span className="text-zinc-400 text-[9px] font-bold tracking-tight whitespace-nowrap">1 unit</span>
+            <span className="text-zinc-400 text-[9px] font-semibold tracking-tight whitespace-nowrap">1 unit</span>
           </div>
-          <Link href={`/product/${product.id}`} className="text-[11px] font-black text-zinc-900 leading-[1.2] mb-1 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
+          <Link href={`/product/${product.id}`} className="text-[11px] font-bold text-zinc-900 leading-[1.2] mb-1 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
             {product.name}
           </Link>
           <div className="flex items-center gap-1 mt-auto">
-            <span className="text-xs font-black text-zinc-900 tracking-tighter">₹{product.price.toFixed(0)}</span>
+            <span className="text-xs font-bold text-zinc-900 tracking-tighter">₹{product.price.toFixed(0)}</span>
           </div>
         </div>
       </div>
