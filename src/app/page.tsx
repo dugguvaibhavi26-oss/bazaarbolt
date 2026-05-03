@@ -351,86 +351,57 @@ export default function Home() {
           }
           
           if (dealProducts.length > 0) {
-            // Physics Sign Component (Compact)
-            const HangingPhysicsSign = ({ text }: { text: string }) => {
-              const [rotate, setRotate] = React.useState(0);
-              
-              React.useEffect(() => {
-                const handleMotion = (e: DeviceOrientationEvent) => {
-                  if (e.gamma) {
-                    setRotate(e.gamma / 4);
-                  }
-                };
-
-                const handleMouse = (e: MouseEvent) => {
-                  const x = (e.clientX / window.innerWidth - 0.5) * 12;
-                  setRotate(x);
-                };
-
-                window.addEventListener('deviceorientation', handleMotion);
-                window.addEventListener('mousemove', handleMouse);
-                return () => {
-                  window.removeEventListener('deviceorientation', handleMotion);
-                  window.removeEventListener('mousemove', handleMouse);
-                };
-              }, []);
-
-              return (
-                <div 
-                  className="relative z-20 transition-transform duration-700 ease-out"
-                  style={{ 
-                    transform: `rotate(${rotate}deg)`,
-                    transformOrigin: 'top center'
-                  }}
-                >
-                  {/* Fine Illustrative Threads */}
-                  <div className="absolute -top-16 left-0 right-0 flex justify-around px-8 pointer-events-none opacity-40">
-                    <div className="w-[1px] h-16 bg-emerald-900" />
-                    <div className="w-[1px] h-16 bg-emerald-900" />
-                  </div>
-                  
-                  {/* Compact Signboard */}
-                  <div className="bg-white border-b-4 border-emerald-600 px-6 py-2 rounded-xl shadow-lg flex flex-col items-center">
-                    <h3 className="text-zinc-900 font-headline font-black text-xl tracking-tighter uppercase leading-none">
-                      {text}
-                    </h3>
-                  </div>
-                </div>
-              );
-            };
-
             content = (
-              <section key={section.id} className="px-4 mb-8 w-full relative">
-                {/* Compact Physics Boutique Container */}
-                <div className="bg-[#ecfdf5] rounded-[32px] p-4 pb-8 border-b-4 border-emerald-100 shadow-xl overflow-hidden relative group">
+              <section key={section.id} className="px-3 sm:px-4 mb-10 w-full relative">
+                {/* Final Compact Boutique Shopfront */}
+                <div className="bg-[#f2faf5] rounded-[32px] pt-16 pb-6 border-b-4 border-emerald-100 shadow-[0_25px_70px_rgba(0,0,0,0.08)] relative overflow-visible">
                   
-                  {/* Subtle Shop Pattern */}
-                  <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ 
-                    backgroundImage: 'linear-gradient(45deg, #065f46 25%, transparent 25%), linear-gradient(-45deg, #065f46 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #065f46 75%), linear-gradient(-45deg, transparent 75%, #065f46 75%)',
-                    backgroundSize: '32px 32px'
-                  }} />
-                  
-                  {/* Mini Scalloped Header */}
-                  <div className="absolute top-0 left-0 right-0 h-4 flex gap-0.5 px-1">
-                    {[...Array(20)].map((_, i) => (
-                      <div key={i} className="flex-1 h-full bg-emerald-600 rounded-b-full shadow-sm" />
-                    ))}
+                  {/* Precision Shop Awning */}
+                  <div className="absolute top-0 left-0 right-0 z-50 pointer-events-none rounded-t-[32px] overflow-hidden">
+                    {/* Compact Roof Stripes */}
+                    <div className="h-10 flex shadow-md">
+                      {[...Array(10)].map((_, i) => (
+                        <div key={i} className={`flex-1 h-full ${i % 2 === 0 ? 'bg-emerald-600' : 'bg-emerald-500'}`} />
+                      ))}
+                    </div>
+                    {/* Aligned Curved Bubbles */}
+                    <div className="flex h-6 px-0.5">
+                      {[...Array(12)].map((_, i) => (
+                        <div key={i} className="flex-1 h-full bg-emerald-600 rounded-b-full shadow-inner border-t border-emerald-500/20 -mx-[1px]" />
+                      ))}
+                    </div>
                   </div>
 
-                  {/* Compact Interactive Sign */}
-                  <div className="flex flex-col items-center mb-10 pt-10">
-                    <HangingPhysicsSign text={`DEALS AT ₹${section.priceLimit || 99}`} />
+                  {/* Elite Miniature Hanging Assembly */}
+                  <div className="absolute top-10 left-0 right-0 z-40 flex flex-col items-center pointer-events-none animate-sway">
+                    {/* Threads with Connection Points */}
+                    <div className="w-16 h-8 flex justify-between px-6 relative">
+                      {[0, 1].map((i) => (
+                        <div key={i} className="w-[1.5px] h-full bg-emerald-950/50 relative" />
+                      ))}
+                    </div>
+                    {/* Signboard with Holes */}
+                    <div className="bg-white border-2 border-emerald-950 px-6 py-2 rounded-xl shadow-2xl pointer-events-auto -mt-1 relative overflow-visible">
+                      {/* Realistic Thread Holes */}
+                      <div className="absolute top-1 left-0 right-0 flex justify-between px-5 pointer-events-none">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-950/20 border border-emerald-950/10" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-950/20 border border-emerald-950/10" />
+                      </div>
+                      <h3 className="text-emerald-950 font-headline font-black text-sm sm:text-base tracking-tighter uppercase leading-none px-2">
+                        DEALS AT ₹{section.priceLimit || 99}
+                      </h3>
+                    </div>
                   </div>
 
-                  {/* Compact Product Grid */}
-                  <div className="relative z-10">
+                  {/* High-Density Boutique Display Shelf */}
+                  <div className="relative z-10 px-3 sm:px-6 mt-10">
                     <div className={section.layout === 'max4row' ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 sm:gap-4" : "flex overflow-x-auto hide-scrollbar gap-4 items-stretch snap-x"}>
                       {(section.layout === 'max4row' ? dealProducts.slice(0, 12) : dealProducts.slice(0, 15)).map((p, idx) => {
                         const savings = p.mrp > p.price ? p.mrp - p.price : 0;
                         return (
                           <div key={p.id} className={section.layout === 'max4row' ? "w-full" : "min-w-[110px] max-w-[110px] snap-start shrink-0 h-full"}>
-                            <div className="flex flex-col h-full relative group/item animate-in fade-in slide-in-from-bottom-4 fill-mode-both">
-                              {/* Compact Price Tags */}
+                            <div className="flex flex-col h-full relative group/item animate-in fade-in slide-in-from-bottom-4 fill-mode-both" style={{ animationDelay: `${idx * 80}ms` }}>
+                              {/* Pricing Badges */}
                               <div className="absolute top-0 left-0 z-10 flex flex-col gap-0.5 pointer-events-none -ml-1 -mt-1">
                                 <div className="bg-emerald-600 text-white text-[8px] font-black px-2 py-0.5 rounded-br-lg rounded-tl-xl shadow-md border border-white/20">
                                   ₹{p.price.toFixed(0)}
@@ -450,9 +421,9 @@ export default function Home() {
                         );
                       })}
                       
-                      <div className="min-w-[100px] flex items-center justify-center snap-start shrink-0 pr-2">
-                        <Link href={`/deals/${section.priceLimit || 0}?section=${activeSection}`} className="w-12 h-12 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow-lg hover:bg-emerald-700 transition-all group/more">
-                          <span className="material-symbols-outlined text-2xl group-hover/more:translate-x-1 transition-transform">arrow_forward</span>
+                      <div className="min-w-[80px] flex items-center justify-center snap-start shrink-0 pr-2">
+                        <Link href={`/deals/${section.priceLimit || 0}?section=${activeSection}`} className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow-lg hover:bg-emerald-700 transition-all group/more">
+                          <span className="material-symbols-outlined text-xl group-hover/more:translate-x-1 transition-transform">arrow_forward</span>
                         </Link>
                       </div>
                     </div>

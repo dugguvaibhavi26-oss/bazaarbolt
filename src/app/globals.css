@@ -87,8 +87,8 @@ body {
 
 /* Storefront Animations */
 @keyframes signboard-sway {
-  0%, 100% { transform: translateX(-50%) rotate(-1.5deg); transform-origin: top center; }
-  50% { transform: translateX(-50%) rotate(1.5deg); transform-origin: top center; }
+  0%, 100% { transform: rotate(-2deg); transform-origin: top center; }
+  50% { transform: rotate(2deg); transform-origin: top center; }
 }
 
 @keyframes awning-ripple {
