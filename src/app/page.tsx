@@ -420,7 +420,9 @@ export default function Home() {
           if (section.filterType === "BESTSELLERS") {
             rowProducts = rowProducts.filter(p => p.isBestseller);
           } else if (section.filterType === "NEW_ARRIVALS") {
-            rowProducts = [...rowProducts].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, 30);
+            rowProducts = [...rowProducts].sort((a, b) => 
+              new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+            ).slice(0, 30);
           }
 
           if (section.filterCategoryId) {
