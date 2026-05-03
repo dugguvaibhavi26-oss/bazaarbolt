@@ -833,17 +833,19 @@ export default function AdminLayouts() {
                     {products.filter(p => {
                       if (!newDynamicRow.filterCategoryId) return true;
                       const target = newDynamicRow.filterCategoryId.toLowerCase().trim();
-                      const pCat = p.category?.toLowerCase().trim();
-                      const pSub = p.subcategory?.toLowerCase().trim();
+                      
+                      const pCats = Array.isArray(p.category) ? p.category : [p.category || ""];
+                      const pSubs = Array.isArray(p.subcategory) ? p.subcategory : [p.subcategory || ""];
+                      
                       const cat = categories.find(c => c.id === newDynamicRow.filterCategoryId);
                       const catLabel = cat?.label?.toLowerCase().trim();
 
-                      const isCatMatch = pCat === target || pCat === catLabel;
-                      const isSubMatch = pSub === target || categories.some(c => 
+                      const isCatMatch = pCats.some(c => c.toLowerCase().trim() === target || c.toLowerCase().trim() === catLabel);
+                      const isSubMatch = pSubs.some(s => s.toLowerCase().trim() === target) || categories.some(c => 
                         c.subcategories?.some((sub: any) => {
                           const sId = (typeof sub === 'string' ? sub : (sub.id || sub.label)).toLowerCase().trim();
                           const sLabel = (typeof sub === 'string' ? sub : sub.label).toLowerCase().trim();
-                          return sId === target && pSub === sLabel;
+                          return sId === target && pSubs.some(ps => ps.toLowerCase().trim() === sLabel);
                         })
                       );
 
