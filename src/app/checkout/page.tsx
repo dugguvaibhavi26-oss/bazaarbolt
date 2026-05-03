@@ -32,7 +32,7 @@ export default function CheckoutPage() {
 
   const cartSection = (cart[0] as any)?.section || "BB";
   const getVal = (key: string, defaultValue: any) => {
-    const override = settings?.sectionSettings?.[cartSection as "BB" | "CAFE"]?.[key as any];
+    const override = settings?.sectionSettings?.[cartSection as "BB" | "CAFE" | "MALL"]?.[key as any];
     return (override !== undefined && override !== null) ? override : (settings?.[key as any] ?? defaultValue);
   };
 
@@ -65,8 +65,14 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (cart.length === 0 || products.length === 0) return;
     const cat = cart[0].category;
+    const cartCats = Array.isArray(cat) ? cat : [cat || ""];
+
     const items = products
-      .filter(p => !p.isDeleted && p.active && (p.category === cat) && !cart.some(ci => ci.id === p.id))
+      .filter(p => {
+        if (p.isDeleted || !p.active || cart.some(ci => ci.id === p.id)) return false;
+        const pCats = Array.isArray(p.category) ? p.category : [p.category || ""];
+        return pCats.some(pc => cartCats.includes(pc));
+      })
       .slice(0, 6);
     setRecommendations(items);
   }, [cart, products]);

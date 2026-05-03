@@ -16,8 +16,10 @@ async function fix() {
       const data = doc.data();
       const currentSection = data.section || 'BB';
       
-      // If product category matches a CAFE category ID or Label, and it's not already CAFE
-      if ((cafeCatIds.includes(data.category) || cafeCatLabels.includes(data.category)) && currentSection !== 'CAFE') {
+      const pCats = Array.isArray(data.category) ? data.category : [data.category || ""];
+      const isCafe = pCats.some(c => cafeCatIds.includes(c) || cafeCatLabels.includes(c));
+      
+      if (isCafe && currentSection !== 'CAFE') {
         await doc.ref.update({ section: 'CAFE' });
         console.log(`Updated product: ${data.name} to CAFE section`);
         count++;

@@ -15,7 +15,7 @@ export interface Product {
   updatedAt?: string;
   isDeleted?: boolean;
   createdAt?: string;
-  section?: "BB" | "CAFE";
+  section?: "BB" | "CAFE" | "MALL";
   subcategory?: string | string[];
   rating?: number;
   ratingCount?: number;

@@ -90,7 +90,7 @@ export default function ProductPage() {
  <span className="material-symbols-outlined text-xs">event_available</span>
  <span>Slot Only</span>
  </div>
- <span className="text-[10px] font-black text-zinc-400 tracking-widest">{product.category}</span>
+ <span className="text-[10px] font-black text-zinc-400 tracking-widest">{Array.isArray(product.category) ? product.category.join(', ') : product.category}</span>
  </div>
  <h1 className="text-xl font-bold text-zinc-900 leading-snug">{product.name}</h1>
   {(product.rating || 0) > 0 ? (
@@ -152,12 +152,15 @@ export default function ProductPage() {
   </div>
 
  {/* Brand Reference - Mini Promo */}
- <div onClick={() => router.push(`/category/${product.category}`)} className="mt-8 p-4 bg-zinc-50 rounded-2xl border border-zinc-100 flex items-center justify-between group active:bg-zinc-100 transition-colors cursor-pointer">
+ <div onClick={() => {
+   const catId = Array.isArray(product.category) ? product.category[0] : product.category;
+   router.push(`/category/${catId}`);
+ }} className="mt-8 p-4 bg-zinc-50 rounded-2xl border border-zinc-100 flex items-center justify-between group active:bg-zinc-100 transition-colors cursor-pointer">
  <div className="flex items-center gap-3">
  <div className="w-8 h-8 bg-white rounded-lg border border-zinc-200 flex items-center justify-center p-1.5 shadow-sm">
  <span className="material-symbols-outlined text-primary text-sm font-black italic">bolt</span>
  </div>
- <p className="text-xs font-black text-zinc-800 tracking-tight">View all {product.category} products</p>
+ <p className="text-xs font-black text-zinc-800 tracking-tight">View all {Array.isArray(product.category) ? product.category[0] : product.category} products</p>
  </div>
  <span className="material-symbols-outlined text-zinc-300 text-sm group-hover:translate-x-1 transition-transform">arrow_forward_ios</span>
  </div>

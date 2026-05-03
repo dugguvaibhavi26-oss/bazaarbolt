@@ -33,25 +33,31 @@ function SearchContent() {
 
   const filteredProducts = useMemo(() => 
     searchStr !== '' 
-      ? sectionProducts.filter(p =>
-          p.name.toLowerCase().includes(searchStr) ||
-          (p.category || "").toLowerCase().includes(searchStr)
-        )
+      ? sectionProducts.filter(p => {
+          const pCats = Array.isArray(p.category) ? p.category : [p.category || ""];
+          return p.name.toLowerCase().includes(searchStr) ||
+                 pCats.some(c => c.toLowerCase().includes(searchStr));
+        })
       : [],
   [searchStr, sectionProducts]);
 
   const otherSectionMatches = useMemo(() => {
     if (searchStr === '' || filteredProducts.length > 0) return 0;
-    return products.filter(p => 
-      ((p as any).section || "BB") !== currentSection && 
-      (p.name.toLowerCase().includes(searchStr) || (p.category || "").toLowerCase().includes(searchStr))
-    ).length;
+    return products.filter(p => {
+      const pCats = Array.isArray(p.category) ? p.category : [p.category || ""];
+      const isMatch = p.name.toLowerCase().includes(searchStr) || 
+                      pCats.some(c => c.toLowerCase().includes(searchStr));
+      return ((p as any).section || "BB") !== currentSection && isMatch;
+    }).length;
   }, [searchStr, filteredProducts, products, currentSection]);
 
   const recommendations = useMemo(() => {
     const cartCategories = Array.from(new Set(cart.map(item => item.category)));
     const baseRecs = cartCategories.length > 0 
-      ? sectionProducts.filter(p => cartCategories.includes(p.category) && !cart.some(c => c.id === p.id))
+      ? sectionProducts.filter(p => {
+          const pCats = Array.isArray(p.category) ? p.category : [p.category || ""];
+          return pCats.some(c => cartCategories.includes(c)) && !cart.some(c => c.id === p.id);
+        })
       : sectionProducts;
     return baseRecs.slice(0, 8);
   }, [cart, sectionProducts]);

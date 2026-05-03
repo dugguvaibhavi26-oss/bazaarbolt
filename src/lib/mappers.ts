@@ -28,7 +28,7 @@ export const mapProduct = (doc: DocumentSnapshot<DocumentData>): Product => {
     lastUpdatedBy: typeof data.lastUpdatedBy === "string" ? data.lastUpdatedBy : undefined,
     updatedAt: typeof data.updatedAt === "string" ? data.updatedAt : undefined,
     isDeleted: typeof data.isDeleted === "boolean" ? data.isDeleted : false,
-    section: ["BB", "CAFE"].includes(data.section) ? data.section : "BB",
+    section: ["BB", "CAFE", "MALL"].includes(data.section) ? data.section : "BB",
     rating: typeof data.rating === "number" ? data.rating : 0,
     ratingCount: typeof data.ratingCount === "number" ? data.ratingCount : 0,
     isBestseller: typeof data.isBestseller === "boolean" ? data.isBestseller : false,
@@ -48,7 +48,7 @@ export const mapOrder = (doc: DocumentSnapshot<DocumentData>): Order => {
       price: typeof item.price === "number" ? item.price : 0,
       mrp: typeof item.mrp === "number" ? item.mrp : (typeof item.price === "number" ? item.price : 0),
       image: typeof item.image === "string" ? item.image : "",
-      category: typeof item.category === "string" ? item.category : "",
+      category: Array.isArray(item.category) ? item.category : (typeof item.category === "string" ? item.category : ""),
       quantity: typeof item.quantity === "number" ? item.quantity : 1,
       stock: typeof item.stock === "number" ? item.stock : 0,
       adminActive: typeof item.adminActive === "boolean" ? item.adminActive : true,
@@ -103,6 +103,6 @@ export const mapSettings = (doc: DocumentSnapshot<DocumentData>): AppSettings =>
     } : { code: "", discount: 10 },
     notificationTemplates: data.notificationTemplates || {},
     promoSections: Array.isArray(data.promoSections) ? data.promoSections : [],
-    sectionSettings: data.sectionSettings || { BB: {}, CAFE: {} }
+    sectionSettings: data.sectionSettings || { BB: {}, CAFE: {}, MALL: {} }
   };
 };
