@@ -223,15 +223,15 @@ export default function Home() {
             )}
           </div>
         </div>
-        <div className="flex flex-col px-0.5">
-          <div className="flex items-center gap-1 h-2.5">
-            <span className="text-zinc-400 text-[6.5px] font-medium tracking-tight whitespace-nowrap">1 Unit</span>
+        <div className="flex flex-col px-1 pt-1">
+          <div className="flex items-center gap-1 h-3">
+            <span className="text-zinc-400 text-[9px] font-bold tracking-tight whitespace-nowrap">1 unit</span>
           </div>
-          <Link href={`/product/${product.id}`} className="text-[8.5px] font-bold text-zinc-900 leading-[1] mb-0.5 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
+          <Link href={`/product/${product.id}`} className="text-[11px] font-black text-zinc-900 leading-[1.2] mb-1 line-clamp-2 hover:text-green-700 tracking-tight" title={product.name}>
             {product.name}
           </Link>
-          <div className="flex items-center gap-1">
-            <span className="text-[10px] font-black text-zinc-900 tracking-tighter">₹{product.price.toFixed(0)}</span>
+          <div className="flex items-center gap-1 mt-auto">
+            <span className="text-xs font-black text-zinc-900 tracking-tighter">₹{product.price.toFixed(0)}</span>
           </div>
         </div>
       </div>
@@ -284,7 +284,7 @@ export default function Home() {
           );
         } else if (section.type === "grid") {
           content = (
-            <section key={section.id} className="px-3 mb-6">
+            <section key={section.id} className="px-4 mb-8">
               <div className={`${containerClasses} relative`} style={bgStyles}>
                 <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 0)', backgroundSize: '24px 24px' }} />
                 
@@ -297,7 +297,7 @@ export default function Home() {
                   </div>
                 )}
                 
-                <div className={`grid grid-cols-3 gap-3 sm:gap-6 relative z-10 ${section.isCompact ? 'auto-rows-[130px] sm:auto-rows-[160px]' : 'auto-rows-[140px] sm:auto-rows-[200px]'}`}>
+                <div className={`grid grid-cols-3 gap-2 sm:gap-6 relative z-10 ${section.isCompact ? 'auto-rows-[120px] sm:auto-rows-[160px]' : 'auto-rows-[130px] sm:auto-rows-[200px]'}`}>
                   {section.items.map((item, idx) => {
                     const cSpan = Math.min(item.colSpan || 1, 3);
                     const rSpan = Math.min(item.rowSpan || 1, 3);
@@ -456,7 +456,7 @@ export default function Home() {
             content = (
               <section key={section.id} className="mb-10 pl-4 w-full overflow-hidden">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-headline font-black text-[15px] lg:text-lg tracking-tight text-zinc-900 flex items-center gap-3">
+                  <h3 className="font-headline font-black text-lg lg:text-xl tracking-tight text-zinc-900 flex items-center gap-3">
                     <span className="w-1.5 h-6 bg-primary rounded-full" />
                     <span>{section.title || (section.filterType === 'BESTSELLERS' ? 'Bestsellers' : section.filterType === 'NEW_ARRIVALS' ? 'New Arrivals' : 'Trending')}</span>
                   </h3>

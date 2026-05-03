@@ -63,25 +63,25 @@ export const BottomNav = () => {
   return (
     <>
       {/* Floating View Cart Pill (Shows when navbar is hidden) */}
-      <div className={`fixed bottom-6 left-0 w-full z-[45] flex justify-center px-4 pointer-events-none mb-safe transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${isCartPillVisible ? 'translate-y-0 opacity-100' : 'translate-y-[150%] opacity-0'}`}>
-        <div className="w-full max-w-md">
+      <div className={`fixed bottom-6 left-0 w-full z-[45] flex justify-center px-6 pointer-events-none mb-safe transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${isCartPillVisible ? 'translate-y-0 opacity-100' : 'translate-y-[150%] opacity-0'}`}>
+        <div className="w-full max-w-sm">
           <button 
             onClick={() => router.push('/cart')} 
-            className="pointer-events-auto w-full bg-[#318b18] text-white shadow-2xl rounded-[24px] lg:rounded-full p-2.5 lg:p-3 flex items-center justify-between active:scale-95 transition-transform"
+            className="pointer-events-auto w-full bg-[#2d8a11] text-white shadow-[0_15px_40px_-10px_rgba(45,138,17,0.4)] rounded-2xl p-2 flex items-center justify-between active:scale-95 transition-transform border border-white/10"
           >
-            <div className="flex items-center -space-x-4 pl-1">
+            <div className="flex items-center -space-x-3 pl-1">
               {cart.slice(0, 3).map((item, idx) => (
-                <div key={idx} className="w-12 h-12 rounded-full bg-white border-[1.5px] border-[#318b18] overflow-hidden flex-shrink-0 z-[3] relative">
+                <div key={idx} className="w-9 h-9 rounded-full bg-white border-[1.5px] border-[#2d8a11] overflow-hidden flex-shrink-0 z-[3] relative shadow-sm">
                   <img src={item.image} alt={item.name} className="w-full h-full object-contain p-1" />
                 </div>
               ))}
             </div>
-            <div className="flex flex-col items-center flex-1">
-              <span className="font-headline font-black text-lg tracking-tight leading-none mb-0.5">View cart</span>
-              <span className="text-[10px] font-bold tracking-[0.15em] uppercase opacity-90">{cartCount} ITEMS</span>
+            <div className="flex flex-col items-start flex-1 ml-4">
+              <span className="font-headline font-black text-sm tracking-tight leading-none mb-0.5">View cart</span>
+              <span className="text-[9px] font-black tracking-widest uppercase opacity-80">{cartCount} {cartCount === 1 ? 'ITEM' : 'ITEMS'}</span>
             </div>
-            <div className="pr-4">
-              <span className="material-symbols-outlined text-3xl font-bold">chevron_right</span>
+            <div className="pr-2 flex items-center">
+              <span className="material-symbols-outlined text-2xl font-bold">arrow_forward</span>
             </div>
           </button>
         </div>
