@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useStore } from "@/store/useStore";
 import { collection, onSnapshot, query, where, doc, updateDoc, arrayUnion, getDocs, limit, orderBy, runTransaction } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -13,6 +13,58 @@ import { useRouter } from "next/navigation";
 import { BottomNav } from "@/components/BottomNav";
 import { Logo } from "@/components/Logo";
 import { Portal } from "@/components/Portal";
+const InfiniteBannerSlider = ({ section, router }: { section: any; router: any }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const items = section.items || [];
+  const isSingle = items.length <= 1;
+  const [hasScrolled, setHasScrolled] = useState(false);
+
+  // Duplicate items many times to create a fake infinite scroll loop
+  const repeatedItems = isSingle ? items : Array(20).fill(items).flat();
+
+  useEffect(() => {
+    if (isSingle || !scrollRef.current || hasScrolled) return;
+    
+    const container = scrollRef.current;
+    // Start at the 10th set so user can scroll left or right infinitely practically
+    const startIndex = items.length * 10; 
+    
+    const timer = setTimeout(() => {
+      const child = container.children[startIndex] as HTMLElement;
+      if (child) {
+        const scrollPos = child.offsetLeft - container.clientWidth / 2 + child.clientWidth / 2;
+        container.scrollTo({ left: scrollPos, behavior: 'auto' });
+        setHasScrolled(true);
+      }
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [items.length, isSingle, hasScrolled]);
+
+  return (
+    <div 
+      ref={scrollRef}
+      className="flex overflow-x-auto hide-scrollbar gap-4 snap-x snap-mandatory relative"
+      style={{ paddingInline: isSingle ? '1rem' : 'max(10vw, calc(50vw - 400px))' }}
+    >
+      {repeatedItems.map((item: any, idx: number) => (
+        <div 
+          key={idx}
+          className={`relative ${isSingle ? 'w-full' : 'w-[80vw] max-w-[800px]'} shrink-0 snap-center aspect-[21/9] sm:aspect-[21/7] rounded-[24px] sm:rounded-[32px] overflow-hidden shadow-xl cursor-pointer group ${section.bgAnimation === 'zoom' ? 'hover:scale-[1.02]' : ''}`} 
+          onClick={() => item?.redirectUrl && router.push(item.redirectUrl)}
+        >
+          <img 
+            src={item?.imageUrl} 
+            alt={section.title || ""} 
+            className={`w-full h-full object-cover transition-transform duration-[20s] ease-linear ${section.bgAnimation === 'zoom' ? 'scale-110 group-hover:scale-100' : 'group-hover:scale-105'}`} 
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60"></div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export default function Home() {
   const {
     settings, initSettings, settingsLoading,
@@ -268,18 +320,8 @@ export default function Home() {
 
         if (section.type === "banner") {
           content = (
-            <section key={section.id} className="px-4 mb-8">
-              <div 
-                className={`relative w-full aspect-[21/9] sm:aspect-[21/7] rounded-[24px] sm:rounded-[32px] overflow-hidden shadow-xl cursor-pointer group ${section.bgAnimation === 'zoom' ? 'hover:scale-[1.02]' : ''}`} 
-                onClick={() => section.items[0]?.redirectUrl && router.push(section.items[0].redirectUrl)}
-              >
-                <img 
-                  src={section.items[0]?.imageUrl} 
-                  alt={section.title || ""} 
-                  className={`w-full h-full object-cover transition-transform duration-[20s] ease-linear ${section.bgAnimation === 'zoom' ? 'scale-110 group-hover:scale-100' : 'group-hover:scale-105'}`} 
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60"></div>
-              </div>
+            <section key={section.id} className="mb-8 w-full overflow-hidden">
+              <InfiniteBannerSlider section={section} router={router} />
             </section>
           );
         } else if (section.type === "grid") {
