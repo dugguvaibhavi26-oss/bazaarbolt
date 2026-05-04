@@ -140,7 +140,8 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
     const { getDocs, query, collection, where } = await import("firebase/firestore");
     const q = query(collection(db, "products"), where("vendorId", "==", vendorId), where("active", "==", true));
     const snap = await getDocs(q);
-    setVendorProducts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    const products = snap.docs.map(d => ({ id: d.id, ...d.data() } as any));
+    setVendorProducts(products.filter(p => p.stock > 0));
   };
 
   const handleReplaceClick = (idx: number, vendorId: string | undefined) => {

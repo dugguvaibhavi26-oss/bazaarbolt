@@ -53,7 +53,7 @@ service cloud.firestore {
       allow read: if isSignedIn() && (request.auth.uid == resource.data.userId || isAdmin() || isRider() || (isVendor() && (resource.data.vendorId == request.auth.uid || ('vendorIds' in resource.data && request.auth.uid in resource.data.vendorIds))));
       allow create: if isSignedIn();
       allow update: if isAdmin() || 
-        (isOwner(resource.data.userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])) ||
+        (isOwner(resource.data.userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'items', 'subtotal', 'tax', 'total'])) ||
         (isRider() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'riderId', 'deliveredAt', 'pickedUpAt', 'items', 'subtotal', 'tax', 'total'])) ||
         (isVendor() && (resource.data.vendorId == request.auth.uid || ('vendorIds' in resource.data && request.auth.uid in resource.data.vendorIds)));
     }

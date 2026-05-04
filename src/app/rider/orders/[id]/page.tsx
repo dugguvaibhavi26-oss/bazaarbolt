@@ -95,6 +95,16 @@ export default function RiderOrderDetail() {
   
   if (isNowUnavailable) {
     newItem.unavailableAt = new Date().toISOString();
+    try {
+      await updateDoc(doc(db, "products", item.id), { 
+        stock: 0, 
+        vendorAvailable: false,
+        updatedAt: new Date().toISOString(),
+        lastUpdatedBy: "rider"
+      });
+    } catch (err) {
+      console.error("Failed to update product stock", err);
+    }
   } else {
     delete newItem.unavailableAt;
   }

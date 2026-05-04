@@ -74,6 +74,18 @@ export default function VendorOrders() {
         newTax = newSubtotal * taxPercent;
         const fixedCharges = order.total - order.subtotal - order.tax;
         newTotal = newSubtotal + newTax + (fixedCharges > 0 ? fixedCharges : 0);
+
+        // Instantly mark the product as out of stock globally
+        try {
+          await updateDoc(doc(db, "products", item.id), { 
+            stock: 0, 
+            vendorAvailable: false,
+            updatedAt: new Date().toISOString(),
+            lastUpdatedBy: "vendor"
+          });
+        } catch (err) {
+          console.error("Failed to update product stock", err);
+        }
       } else {
         // If accepting, deduct stock
         await runTransaction(db, async (transaction) => {
