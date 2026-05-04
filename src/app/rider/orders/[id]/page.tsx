@@ -87,7 +87,12 @@ export default function RiderOrderDetail() {
 
  try {
  const updatedItems = [...order.items];
- updatedItems[itemIndex] = { ...item, unavailable: isNowUnavailable };
+ updatedItems[itemIndex] = { 
+    ...item, 
+    unavailable: isNowUnavailable,
+    unavailableAt: isNowUnavailable ? new Date().toISOString() : undefined,
+    vendorStatus: isNowUnavailable ? "REJECTED" : "PENDING"
+  };
 
  // 1. Calculate the new subtotal based ONLY on active items
  const activeItems = updatedItems.filter(i => !i.unavailable);

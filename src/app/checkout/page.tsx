@@ -216,6 +216,7 @@ export default function CheckoutPage() {
           deliveryAddress: selectedAddress,
           createdAt: new Date().toISOString(),
           vendorId: cart[0]?.vendorId || null, // Primary vendor for this order
+          vendorIds: Array.from(vendorIds), // Array of all vendors involved in this order
           phoneNumber: userData?.phoneNumber || user.phoneNumber || "+91 00000 00000",
           breakdown: { deliveryCharge, smallCartCharge, handlingFee, tax, customCharges: settings?.customCharges || [] }
         };

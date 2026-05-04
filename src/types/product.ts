@@ -25,4 +25,7 @@ export interface Product {
 export interface CartItem extends Omit<Product, 'active' | 'isDeleted'> {
   quantity: number;
   unavailable?: boolean;
+  unavailableAt?: string;
+  replacedBy?: string;
+  vendorStatus?: "PENDING" | "ACCEPTED" | "REJECTED";
 }

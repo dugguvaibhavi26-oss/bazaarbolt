@@ -123,6 +123,62 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
     }
   };
 
+  const [replacingItemIndex, setReplacingItemIndex] = useState<number | null>(null);
+  const [vendorProducts, setVendorProducts] = useState<any[]>([]);
+  const [now, setNow] = useState(Date.now());
+  const { Portal } = require("@/components/Portal");
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const fetchVendorProducts = async (vendorId: string | undefined) => {
+    if (!vendorId) return;
+    const { getDocs, query, collection, where } = await import("firebase/firestore");
+    const q = query(collection(db, "products"), where("vendorId", "==", vendorId), where("active", "==", true));
+    const snap = await getDocs(q);
+    setVendorProducts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+  };
+
+  const handleReplaceClick = (idx: number, vendorId: string | undefined) => {
+    setReplacingItemIndex(idx);
+    fetchVendorProducts(vendorId);
+  };
+
+  const handleReplace = async (product: any) => {
+    if (replacingItemIndex === null || !order) return;
+    const oldItem = order.items[replacingItemIndex];
+    
+    const newItem = {
+      ...product,
+      quantity: 1, // Defaulting replacement to qty 1 to be safe
+    };
+    
+    const updatedItems = [...order.items];
+    updatedItems[replacingItemIndex] = { ...oldItem, replacedBy: product.id };
+    updatedItems.push(newItem);
+    
+    const activeItems = updatedItems.filter(i => !i.unavailable);
+    const newSubtotal = activeItems.reduce((acc, i) => acc + (i.price * i.quantity), 0);
+    const taxPercent = order.subtotal > 0 ? (order.tax / order.subtotal) : 0.05;
+    const newTax = newSubtotal * taxPercent;
+    const fixedCharges = order.total - order.subtotal - order.tax;
+    const newTotal = newSubtotal + newTax + (fixedCharges > 0 ? fixedCharges : 0);
+
+    const { updateDoc } = await import("firebase/firestore");
+    await updateDoc(doc(db, "orders", order.id!), {
+      items: updatedItems,
+      subtotal: parseFloat(newSubtotal.toFixed(2)),
+      tax: parseFloat(newTax.toFixed(2)),
+      total: parseFloat(newTotal.toFixed(2))
+    });
+    
+    setReplacingItemIndex(null);
+    const t = await import("react-hot-toast");
+    t.default.success("Item replaced successfully!");
+  };
+
   const statusInfo = getStatusDisplay();
   const isDelivered = order.status.toUpperCase() === "DELIVERED";
 
@@ -213,21 +269,46 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
         <div className="bg-white rounded-[32px] p-8 shadow-[0_8px_32px_-4px_rgba(0,0,0,0.06)] border border-zinc-100">
           <h3 className="text-[11px] font-black text-zinc-400 tracking-widest mb-8">Shipment checklist</h3>
           <div className="space-y-6">
-            {order.items.map((item, idx) => (
-              <div key={idx} className="flex items-center gap-4 group">
-                <div className="w-16 h-16 bg-zinc-50 rounded-2xl p-2 border border-zinc-100 shrink-0">
-                  <img src={item.image} alt="" className="w-full h-full object-contain" />
+            {order.items.map((item, idx) => {
+              const isRejected = item.vendorStatus === "REJECTED" && !item.replacedBy;
+              const timeSinceRejection = item.unavailableAt ? now - new Date(item.unavailableAt).getTime() : 0;
+              const timeRemaining = Math.max(0, 30 * 60 * 1000 - timeSinceRejection);
+              const minutesLeft = Math.floor(timeRemaining / 60000);
+              const secondsLeft = Math.floor((timeRemaining % 60000) / 1000);
+              const canReplace = isRejected && timeRemaining > 0;
+
+              return (
+                <div key={idx} className={`flex flex-col gap-3 group ${item.replacedBy ? 'opacity-50 grayscale' : ''}`}>
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-zinc-50 rounded-2xl p-2 border border-zinc-100 shrink-0">
+                      <img src={item.image} alt="" className="w-full h-full object-contain" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-[12px] font-black text-zinc-900 leading-tight mb-1 truncate ${item.unavailable ? 'line-through text-red-500' : ''}`}>{item.name}</p>
+                      <p className="text-[10px] font-bold text-zinc-400">Qty: {item.quantity}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className={`text-sm font-headline font-black text-zinc-900 tracking-tight ${item.unavailable ? 'line-through text-red-300' : ''}`}>₹{(item.price * item.quantity).toFixed(0)}</p>
+                      {item.unavailable && !isRejected && <span className="text-[8px] font-black text-red-500">Out of Stock</span>}
+                    </div>
+                  </div>
+                  {canReplace && (
+                    <div className="bg-red-50 rounded-xl p-4 flex items-center justify-between border border-red-100">
+                      <div>
+                        <p className="text-[10px] font-black text-red-600 uppercase tracking-widest">Item Unavailable</p>
+                        <p className="text-[9px] font-bold text-red-500 mt-1">Replace within {minutesLeft}:{secondsLeft.toString().padStart(2, '0')} or it will be cancelled</p>
+                      </div>
+                      <button onClick={() => handleReplaceClick(idx, item.vendorId)} className="bg-white text-red-600 px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-sm border border-red-200">Replace</button>
+                    </div>
+                  )}
+                  {isRejected && timeRemaining <= 0 && (
+                     <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-200">
+                       <p className="text-[9px] font-black text-zinc-500 text-center uppercase tracking-widest">Replacement window expired. Item cancelled.</p>
+                     </div>
+                  )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-[12px] font-black text-zinc-900 leading-tight mb-1 truncate ${item.unavailable ? 'line-through text-red-500' : ''}`}>{item.name}</p>
-                  <p className="text-[10px] font-bold text-zinc-400">Qty: {item.quantity}</p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className={`text-sm font-headline font-black text-zinc-900 tracking-tight ${item.unavailable ? 'line-through text-red-300' : ''}`}>₹{(item.price * item.quantity).toFixed(0)}</p>
-                  {item.unavailable && <span className="text-[8px] font-black text-red-500">Out of Stock</span>}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="mt-8 pt-8 border-t border-zinc-100 space-y-3">
@@ -282,7 +363,7 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
 
       </main>
       
-      {order.items.some(i => i.unavailable) && (
+      {order.items.some(i => i.unavailable && !i.replacedBy && i.vendorStatus !== "REJECTED") && (
         <div className="px-4 pb-8 max-w-2xl mx-auto">
           <div className="bg-red-50 rounded-[32px] p-8 border border-red-100 space-y-4">
             <div className="flex items-center gap-3 text-red-600 mb-2">
@@ -294,6 +375,43 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
             </p>
           </div>
         </div>
+      )}
+
+      {replacingItemIndex !== null && (
+        <Portal>
+          <div className="fixed inset-0 z-[200] flex items-end justify-center">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setReplacingItemIndex(null)}></div>
+            <div className="bg-white w-full max-w-lg rounded-t-[40px] p-8 pb-safe shadow-2xl relative z-10 max-h-[80vh] flex flex-col">
+               <div className="flex justify-between items-center mb-6">
+                 <div>
+                   <h3 className="text-2xl font-headline font-black text-zinc-900 tracking-tighter">Choose replacement</h3>
+                   <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">From the same store</p>
+                 </div>
+                 <button onClick={() => setReplacingItemIndex(null)} className="w-10 h-10 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-500"><span className="material-symbols-outlined">close</span></button>
+               </div>
+               
+               <div className="flex-1 overflow-y-auto custom-scrollbar -mr-4 pr-4 space-y-4">
+                 {vendorProducts.length === 0 ? (
+                    <div className="py-10 text-center opacity-50">
+                      <span className="material-symbols-outlined text-4xl mb-2">inventory_2</span>
+                      <p className="text-xs font-bold">No alternatives found from this store</p>
+                    </div>
+                 ) : (
+                   vendorProducts.map(p => (
+                     <div key={p.id} className="flex items-center gap-4 bg-zinc-50 p-4 rounded-2xl border border-zinc-100">
+                        <img src={p.image} alt="" className="w-16 h-16 object-contain bg-white rounded-xl" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-black text-zinc-900 truncate">{p.name}</p>
+                          <p className="text-[10px] font-bold text-zinc-500 mt-1">₹{p.price}</p>
+                        </div>
+                        <button onClick={() => handleReplace(p)} className="bg-primary text-zinc-900 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">Select</button>
+                     </div>
+                   ))
+                 )}
+               </div>
+            </div>
+          </div>
+        </Portal>
       )}
     </>
   );
