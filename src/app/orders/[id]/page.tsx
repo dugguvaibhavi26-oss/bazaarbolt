@@ -150,50 +150,53 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
 
   const handleReplace = async (product: any) => {
     if (replacingItemIndex === null || !order) return;
-    const oldItem = order.items[replacingItemIndex];
     
-    const newItem = {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      mrp: product.mrp || product.price,
-      image: product.image,
-      quantity: oldItem.quantity || 1,
-      vendorId: product.vendorId || null,
-      category: product.category || "",
-      stock: product.stock || 0,
-      adminActive: product.adminActive ?? true,
-      vendorAvailable: product.vendorAvailable ?? true
-    };
-    
-    const updatedItems = [...order.items];
-    updatedItems[replacingItemIndex] = { ...oldItem, replacedBy: product.id };
-    
-    // Clean old item of any undefined
-    if (updatedItems[replacingItemIndex].unavailableAt === undefined) {
-       delete updatedItems[replacingItemIndex].unavailableAt;
-    }
-    
-    updatedItems.push(newItem);
-    
-    const activeItems = updatedItems.filter(i => !i.unavailable);
-    const newSubtotal = activeItems.reduce((acc, i) => acc + (i.price * i.quantity), 0);
-    const taxPercent = order.subtotal > 0 ? (order.tax / order.subtotal) : 0.05;
-    const newTax = newSubtotal * taxPercent;
-    const fixedCharges = order.total - order.subtotal - order.tax;
-    const newTotal = newSubtotal + newTax + (fixedCharges > 0 ? fixedCharges : 0);
-
-    const { updateDoc } = await import("firebase/firestore");
-    await updateDoc(doc(db, "orders", order.id!), {
-      items: updatedItems,
-      subtotal: parseFloat(newSubtotal.toFixed(2)),
-      tax: parseFloat(newTax.toFixed(2)),
-      total: parseFloat(newTotal.toFixed(2))
-    });
-    
-    setReplacingItemIndex(null);
     const t = await import("react-hot-toast");
-    t.default.success("Item replaced successfully!");
+    const toastId = t.default.loading("Replacing item...");
+
+    try {
+      const oldItem = order.items[replacingItemIndex];
+      
+      const newItem = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        mrp: product.mrp || product.price,
+        image: product.image,
+        quantity: oldItem.quantity || 1,
+        vendorId: product.vendorId || null,
+        category: product.category || "",
+        stock: product.stock || 0,
+        adminActive: product.adminActive ?? true,
+        vendorAvailable: product.vendorAvailable ?? true
+      };
+      
+      const updatedItems = [...order.items];
+      updatedItems[replacingItemIndex] = { ...oldItem, replacedBy: product.id };
+      updatedItems.push(newItem);
+      
+      const activeItems = updatedItems.filter(i => !i.unavailable);
+      const newSubtotal = activeItems.reduce((acc, i) => acc + (i.price * i.quantity), 0);
+      const taxPercent = order.subtotal > 0 ? (order.tax / order.subtotal) : 0.05;
+      const newTax = newSubtotal * taxPercent;
+      const fixedCharges = order.total - order.subtotal - order.tax;
+      const newTotal = newSubtotal + newTax + (fixedCharges > 0 ? fixedCharges : 0);
+
+      const sanitizedItems = JSON.parse(JSON.stringify(updatedItems, (k, v) => v === undefined ? null : v));
+
+      const { updateDoc } = await import("firebase/firestore");
+      await updateDoc(doc(db, "orders", order.id!), {
+        items: sanitizedItems,
+        subtotal: parseFloat(newSubtotal.toFixed(2)),
+        tax: parseFloat(newTax.toFixed(2)),
+        total: parseFloat(newTotal.toFixed(2))
+      });
+      
+      setReplacingItemIndex(null);
+      t.default.success("Item replaced successfully!", { id: toastId });
+    } catch (e: any) {
+      t.default.error(e.message || "Failed to replace item", { id: toastId });
+    }
   };
 
   const statusInfo = getStatusDisplay();
