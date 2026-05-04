@@ -6,7 +6,7 @@ import { db } from "@/lib/firebase";
 import { Order } from "@/types";
 import { useRouter } from "next/navigation";
 import { mapOrder } from "@/lib/mappers";
-import Portal from "@/components/Portal";
+import { Portal } from "@/components/Portal";
 
 export default function OrderTracking({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
