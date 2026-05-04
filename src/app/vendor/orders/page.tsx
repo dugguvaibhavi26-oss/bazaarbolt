@@ -51,7 +51,7 @@ export default function VendorOrders() {
       const newItem = {
         ...item,
         unavailable: isRejecting,
-        vendorStatus: isRejecting ? "REJECTED" : "ACCEPTED"
+        vendorStatus: (isRejecting ? "REJECTED" : "ACCEPTED") as "REJECTED" | "ACCEPTED"
       };
       
       if (isRejecting) {
