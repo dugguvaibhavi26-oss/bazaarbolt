@@ -176,10 +176,10 @@ export default function AdminLayouts() {
     }
   };
 
-  const removeBanner = async (index: number) => {
+  const removeBanner = async (url: string) => {
     const tid = toast.loading("Removing banner...");
     try {
-      const updated = (settings.heroBanners || []).filter((_, i) => i !== index);
+      const updated = (settings.heroBanners || []).filter((b) => b.url !== url);
       await setDoc(doc(db, "settings", "config"), { heroBanners: updated }, { merge: true });
       toast.success("Banner removed", { id: tid });
     } catch (e) {
@@ -412,49 +412,50 @@ export default function AdminLayouts() {
         </button>
       </div>
 
+      <div className="flex bg-zinc-200/50 p-1.5 rounded-full w-fit mb-6 lg:mb-10 shadow-inner border border-zinc-100">
+        <button 
+          onClick={() => { 
+            setActiveBannerTab("BB"); 
+            setNewBanner(prev => ({...prev, section: "BB"})); 
+            setNewPromoSection(prev => ({...prev, section: "BB"}));
+            setNewUnderPriceStore(prev => ({...prev, section: "BB"}));
+            setNewDynamicRow(prev => ({...prev, section: "BB"}));
+          }} 
+          className={`px-8 py-2.5 rounded-full text-[10px] font-black tracking-widest uppercase transition-all duration-300 ${activeBannerTab === "BB" ? "bg-white text-zinc-900 shadow-[0_8px_20px_-6px_rgba(0,0,0,0.15)]" : "text-zinc-500 hover:text-zinc-700"}`}
+        >
+          Bazaarbolt
+        </button>
+        <button 
+          onClick={() => { 
+            setActiveBannerTab("CAFE"); 
+            setNewBanner(prev => ({...prev, section: "CAFE"})); 
+            setNewPromoSection(prev => ({...prev, section: "CAFE"}));
+            setNewUnderPriceStore(prev => ({...prev, section: "CAFE"}));
+            setNewDynamicRow(prev => ({...prev, section: "CAFE"}));
+          }} 
+          className={`px-8 py-2.5 rounded-full text-[10px] font-black tracking-widest uppercase transition-all duration-300 ${activeBannerTab === "CAFE" ? "bg-white text-zinc-900 shadow-[0_8px_20px_-6px_rgba(0,0,0,0.15)]" : "text-zinc-500 hover:text-zinc-700"}`}
+        >
+          BB Cafe
+        </button>
+        <button 
+          onClick={() => { 
+            setActiveBannerTab("MALL"); 
+            setNewBanner(prev => ({...prev, section: "MALL"})); 
+            setNewPromoSection(prev => ({...prev, section: "MALL"}));
+            setNewUnderPriceStore(prev => ({...prev, section: "MALL"}));
+            setNewDynamicRow(prev => ({...prev, section: "MALL"}));
+          }} 
+          className={`px-8 py-2.5 rounded-full text-[10px] font-black tracking-widest uppercase transition-all duration-300 ${activeBannerTab === "MALL" ? "bg-white text-zinc-900 shadow-[0_8px_20px_-6px_rgba(0,0,0,0.15)]" : "text-zinc-500 hover:text-zinc-700"}`}
+        >
+          BB Mall
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 gap-6 lg:gap-8">
         <div className="bg-white rounded-[32px] lg:rounded-[40px] p-6 lg:p-10 shadow-sm border border-zinc-100 space-y-8 lg:space-y-10">
           <div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 lg:mb-4">
+            <div className="mb-4">
               <label className="text-[9px] lg:text-[10px] font-black tracking-widest text-zinc-400 ml-1 uppercase">Carousel Banners</label>
-              <div className="flex bg-zinc-100 p-1 rounded-xl w-full sm:w-auto">
-                <button 
-                  onClick={() => { 
-                    setActiveBannerTab("BB"); 
-                    setNewBanner(prev => ({...prev, section: "BB"})); 
-                    setNewPromoSection(prev => ({...prev, section: "BB"}));
-                    setNewUnderPriceStore(prev => ({...prev, section: "BB"}));
-                    setNewDynamicRow(prev => ({...prev, section: "BB"}));
-                  }} 
-                  className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[8px] font-black tracking-widest uppercase transition-all ${activeBannerTab === "BB" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500"}`}
-                >
-                  Bazaarbolt
-                </button>
-                <button 
-                  onClick={() => { 
-                    setActiveBannerTab("CAFE"); 
-                    setNewBanner(prev => ({...prev, section: "CAFE"})); 
-                    setNewPromoSection(prev => ({...prev, section: "CAFE"}));
-                    setNewUnderPriceStore(prev => ({...prev, section: "CAFE"}));
-                    setNewDynamicRow(prev => ({...prev, section: "CAFE"}));
-                  }} 
-                  className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[8px] font-black tracking-widest uppercase transition-all ${activeBannerTab === "CAFE" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500"}`}
-                >
-                  BB Cafe
-                </button>
-                <button 
-                  onClick={() => { 
-                    setActiveBannerTab("MALL"); 
-                    setNewBanner(prev => ({...prev, section: "MALL"})); 
-                    setNewPromoSection(prev => ({...prev, section: "MALL"}));
-                    setNewUnderPriceStore(prev => ({...prev, section: "MALL"}));
-                    setNewDynamicRow(prev => ({...prev, section: "MALL"}));
-                  }} 
-                  className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-[8px] font-black tracking-widest uppercase transition-all ${activeBannerTab === "MALL" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500"}`}
-                >
-                  BB Mall
-                </button>
-              </div>
             </div>
             <div className="space-y-4 mb-4 bg-zinc-50 p-4 lg:p-6 rounded-[24px] lg:rounded-[32px] border border-zinc-100 uppercase">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 uppercase">
@@ -472,21 +473,9 @@ export default function AdminLayouts() {
                     </button>
                   </div>
                 </div>
-                <div className="space-y-1 lg:space-y-1.5 uppercase">
-                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Section</label>
-                  <select 
-                    value={newBanner.section} 
-                    onChange={e => {
-                      const val = e.target.value as "BB" | "CAFE" | "MALL";
-                      setNewBanner({...newBanner, section: val});
-                      setActiveBannerTab(val);
-                    }} 
-                    className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
-                  >
-                    <option value="BB">BAZAAR BOLT</option>
-                    <option value="CAFE">BB CAFE</option>
-                    <option value="MALL">BB MALL</option>
-                  </select>
+                <div className="space-y-1 lg:space-y-1.5">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Title</label>
+                  <input type="text" value={newBanner.title} onChange={e => setNewBanner({...newBanner, title: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. FLASH SALE" />
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Title</label>
@@ -524,7 +513,7 @@ export default function AdminLayouts() {
                       onChange={e => setNewBanner({...newBanner, redirectUrl: `/category/${e.target.value}`})}
                       className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
                     >
-                      {categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                      {categories.filter(c => !c.section || c.section === activeBannerTab).map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                     </select>
                   )}
                   
@@ -534,7 +523,7 @@ export default function AdminLayouts() {
                       onChange={e => setNewBanner({...newBanner, redirectUrl: `/product/${e.target.value}`})}
                       className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
                     >
-                      {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                      {products.filter(p => p.section === activeBannerTab).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </select>
                   )}
                   
@@ -555,18 +544,18 @@ export default function AdminLayouts() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {(settings.heroBanners || []).map((b, idx) => b.section === activeBannerTab ? (
+              {(settings.heroBanners || []).filter(b => (b.section || "BB") === activeBannerTab).map((b, idx) => (
                 <div key={idx} className="relative group aspect-[21/9] rounded-2xl overflow-hidden border border-zinc-100 shadow-sm uppercase">
                   <img src={b.url} className="w-full h-full object-cover" alt="" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                    <button onClick={() => removeBanner(idx)} className="bg-white/20 backdrop-blur-md p-2 rounded-full text-white hover:bg-red-500 transition-colors">
+                    <button onClick={() => removeBanner(b.url)} className="bg-white/20 backdrop-blur-md p-2 rounded-full text-white hover:bg-red-500 transition-colors">
                       <span className="material-symbols-outlined">delete</span>
                     </button>
                   </div>
-                  <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md text-white text-[8px] font-black px-2 py-1 rounded-md uppercase">{b.section}</div>
+                  <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md text-white text-[8px] font-black px-2 py-1 rounded-md uppercase">{(b.section || "BB")}</div>
                 </div>
-              ) : null)}
-              {(!settings.heroBanners || settings.heroBanners.filter(b => b.section === activeBannerTab).length === 0) && (
+              ))}
+              {(!settings.heroBanners || settings.heroBanners.filter(b => (b.section || "BB") === activeBannerTab).length === 0) && (
                 <div className="col-span-2 py-10 border-2 border-dashed border-zinc-100 rounded-3xl flex flex-col items-center justify-center opacity-40">
                    <span className="material-symbols-outlined text-4xl mb-2">add_photo_alternate</span>
                    <p className="text-[10px] font-black tracking-widest uppercase">No carousel slides added for this section</p>
@@ -586,17 +575,9 @@ export default function AdminLayouts() {
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Store Title</label>
                   <input type="text" value={newUnderPriceStore.title} onChange={e => setNewUnderPriceStore({...newUnderPriceStore, title: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. UNDER 19 STORE" />
                 </div>
-                <div className="space-y-1 lg:space-y-1.5 uppercase">
-                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Applied To Section</label>
-                  <select 
-                    value={newUnderPriceStore.section} 
-                    onChange={e => setNewUnderPriceStore({...newUnderPriceStore, section: e.target.value as "BB" | "CAFE" | "MALL"})} 
-                    className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
-                  >
-                    <option value="BB">BAZAAR BOLT</option>
-                    <option value="CAFE">BB CAFE</option>
-                    <option value="MALL">BB MALL</option>
-                  </select>
+                <div className="space-y-1 lg:space-y-1.5">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Price Limit (₹)</label>
+                  <input type="number" value={newUnderPriceStore.priceLimit} onChange={e => setNewUnderPriceStore({...newUnderPriceStore, priceLimit: parseInt(e.target.value)})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold" />
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Products Layout</label>
@@ -625,7 +606,7 @@ export default function AdminLayouts() {
                     className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
                   >
                     <option value="">ALL CATEGORIES</option>
-                    {categories.map(c => (
+                    {categories.filter(c => !c.section || c.section === activeBannerTab).map(c => (
                       <React.Fragment key={c.id}>
                         <option value={c.id}>{c.label}</option>
                         {c.subcategories && Array.isArray(c.subcategories) && c.subcategories.map((sub: any) => {
@@ -705,7 +686,7 @@ export default function AdminLayouts() {
             </div>
 
             <div className="space-y-4">
-              {(settings.promoSections || []).filter(s => s.type === "deal_row").map((s) => s.section === activeBannerTab ? (
+              {(settings.promoSections || []).filter(s => s.type === "deal_row" && (s.section || "BB") === activeBannerTab).map((s) => (
                 <div key={s.id} className="relative rounded-2xl overflow-hidden border border-zinc-200 shadow-sm p-4 bg-zinc-50">
                   <div className="flex justify-between items-start mb-3 relative z-10">
                     <div>
@@ -719,7 +700,12 @@ export default function AdminLayouts() {
                     </button>
                   </div>
                 </div>
-              ) : null)}
+              ))}
+              {(!settings.promoSections || settings.promoSections.filter(s => s.type === "deal_row" && (s.section || "BB") === activeBannerTab).length === 0) && (
+                <div className="py-8 border-2 border-dashed border-zinc-100 rounded-3xl flex flex-col items-center justify-center opacity-40">
+                   <p className="text-[10px] font-black tracking-widest uppercase">No price stores added for this section</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -734,17 +720,9 @@ export default function AdminLayouts() {
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Section Title</label>
                   <input type="text" value={newDynamicRow.title || ""} onChange={e => setNewDynamicRow({...newDynamicRow, title: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. BESTSELLERS" />
                 </div>
-                <div className="space-y-1 lg:space-y-1.5 uppercase">
-                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Applied To Section</label>
-                  <select 
-                    value={newDynamicRow.section} 
-                    onChange={e => setNewDynamicRow({...newDynamicRow, section: e.target.value as "BB" | "CAFE" | "MALL"})} 
-                    className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
-                  >
-                    <option value="BB">BAZAAR BOLT</option>
-                    <option value="CAFE">BB CAFE</option>
-                    <option value="MALL">BB MALL</option>
-                  </select>
+                <div className="space-y-1 lg:space-y-1.5">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Icon / Icon URL (Optional)</label>
+                  <input type="text" value={newDynamicRow.iconUrl} onChange={e => setNewDynamicRow({...newDynamicRow, iconUrl: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold" placeholder="Material icon name or URL" />
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Products Layout</label>
@@ -781,7 +759,7 @@ export default function AdminLayouts() {
                     className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
                   >
                     <option value="">ALL CATEGORIES</option>
-                    {categories.map(c => (
+                    {categories.filter(c => !c.section || c.section === activeBannerTab).map(c => (
                       <React.Fragment key={c.id}>
                         <option value={c.id}>{c.label}</option>
                         {c.subcategories && Array.isArray(c.subcategories) && c.subcategories.map((sub: any) => {
@@ -830,7 +808,7 @@ export default function AdminLayouts() {
                 <div className="space-y-1 lg:space-y-1.5 uppercase sm:col-span-2">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase block">Featured Products (Optional - Overrides Category Filter)</label>
                   <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto bg-white border border-zinc-100 rounded-xl p-3">
-                    {products.filter(p => {
+                    {products.filter(p => p.section === activeBannerTab).filter(p => {
                       if (!newDynamicRow.filterCategoryId) return true;
                       const target = newDynamicRow.filterCategoryId.toLowerCase().trim();
                       
@@ -903,7 +881,7 @@ export default function AdminLayouts() {
             </div>
 
             <div className="space-y-4">
-              {(settings.promoSections || []).filter(s => s.type === "sliding_row" || s.type === "deal_row").map((s) => (s.section === activeBannerTab || (!s.section && activeBannerTab === "BB")) ? (
+              {(settings.promoSections || []).filter(s => (s.type === "sliding_row" || s.type === "deal_row") && (s.section || "BB") === activeBannerTab).map((s) => (
                 <div key={s.id} className="relative rounded-2xl overflow-hidden border border-zinc-200 shadow-sm p-4 bg-zinc-50">
                   <div className="flex justify-between items-start mb-3 relative z-10">
                     <div className="flex items-center gap-3">
@@ -930,7 +908,12 @@ export default function AdminLayouts() {
                     </div>
                   </div>
                 </div>
-              ) : null)}
+              ))}
+              {(!settings.promoSections || settings.promoSections.filter(s => (s.type === "sliding_row" || s.type === "deal_row") && (s.section || "BB") === activeBannerTab).length === 0) && (
+                <div className="py-8 border-2 border-dashed border-zinc-100 rounded-3xl flex flex-col items-center justify-center opacity-40">
+                   <p className="text-[10px] font-black tracking-widest uppercase">No product rows added for this section</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -948,16 +931,11 @@ export default function AdminLayouts() {
                     <option value="category_grid">Category Grid</option>
                   </select>
                 </div>
-                <div className="space-y-1 lg:space-y-1.5 uppercase">
-                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Applied To Section</label>
-                  <select 
-                    value={newPromoSection.section} 
-                    onChange={e => setNewPromoSection({...newPromoSection, section: e.target.value as "BB" | "CAFE" | "MALL"})} 
-                    className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
-                  >
-                    <option value="BB">BAZAAR BOLT</option>
-                    <option value="CAFE">BB CAFE</option>
-                    <option value="MALL">BB MALL</option>
+                <div className="space-y-1 lg:space-y-1.5">
+                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Section Type</label>
+                  <select value={newPromoSection.type} onChange={e => setNewPromoSection({...newPromoSection, type: e.target.value as any})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase">
+                    <option value="grid">Dynamic Grid (Custom Layout)</option>
+                    <option value="banner">Single Wide Banner</option>
                   </select>
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
@@ -1131,7 +1109,7 @@ export default function AdminLayouts() {
                           onChange={e => setNewPromoItem({...newPromoItem, redirectUrl: `/category/${e.target.value}`})}
                           className="w-full bg-zinc-50 border border-zinc-100 rounded-xl p-2.5 text-[10px] font-bold uppercase"
                         >
-                          {categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                          {categories.filter(c => !c.section || c.section === activeBannerTab).map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                         </select>
                       )}
                       
@@ -1141,7 +1119,7 @@ export default function AdminLayouts() {
                           onChange={e => setNewPromoItem({...newPromoItem, redirectUrl: `/product/${e.target.value}`})}
                           className="w-full bg-zinc-50 border border-zinc-100 rounded-xl p-2.5 text-[10px] font-bold uppercase"
                         >
-                          {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                          {products.filter(p => p.section === activeBannerTab).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                         </select>
                       )}
                       
@@ -1223,7 +1201,7 @@ export default function AdminLayouts() {
             </div>
 
             <div className="space-y-4">
-              {(settings.promoSections || []).filter(s => s.type !== "deal_row" && s.type !== "sliding_row").map((s, idx) => (s.section === activeBannerTab || (!s.section && activeBannerTab === "BB")) ? (
+              {(settings.promoSections || []).filter(s => s.type !== "deal_row" && s.type !== "sliding_row" && (s.section || "BB") === activeBannerTab).map((s, idx) => (
                 <div key={s.id} className="relative rounded-2xl overflow-hidden border border-zinc-200 shadow-sm p-4" style={{ backgroundColor: s.bgColor }}>
                   <div className="flex justify-between items-start mb-3 relative z-10">
                     <h4 className="font-headline font-black text-sm uppercase" style={{ color: s.textColor }}>{s.title || `${s.type} Section`}</h4>
@@ -1250,8 +1228,8 @@ export default function AdminLayouts() {
                     ))}
                   </div>
                 </div>
-              ) : null)}
-              {(!settings.promoSections || settings.promoSections.filter(s => s.section === activeBannerTab && s.type !== "deal_row").length === 0) && (
+              ))}
+              {(!settings.promoSections || settings.promoSections.filter(s => s.type !== "deal_row" && s.type !== "sliding_row" && (s.section || "BB") === activeBannerTab).length === 0) && (
                 <div className="py-10 border-2 border-dashed border-zinc-100 rounded-3xl flex flex-col items-center justify-center opacity-40">
                    <span className="material-symbols-outlined text-4xl mb-2">view_carousel</span>
                    <p className="text-[10px] font-black tracking-widest uppercase">No other promotional sections added</p>
