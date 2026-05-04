@@ -97,14 +97,18 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
         if (!currentOrderSnap.exists()) throw new Error("Order not found");
         if (currentOrderSnap.data().status !== "PLACED") throw new Error("Rider already assigned. Cannot cancel.");
 
-        // Return items to stock
-        for (const item of order.items) {
-          const prodRef = doc(db, "products", item.id);
-          const prodSnap = await transaction.get(prodRef);
+        // First: Read all product snapshots
+        const productRefs = order.items.map(item => doc(db, "products", item.id));
+        const productSnaps = await Promise.all(productRefs.map(ref => transaction.get(ref)));
+
+        // Second: Execute all writes
+        productSnaps.forEach((prodSnap, idx) => {
           if (prodSnap.exists()) {
-            transaction.update(prodRef, { stock: prodSnap.data().stock + item.quantity });
+            const item = order.items[idx];
+            const currentStock = prodSnap.data()?.stock || 0;
+            transaction.update(prodSnap.ref, { stock: currentStock + item.quantity });
           }
-        }
+        });
 
         transaction.update(orderRef, { status: "CANCELLED" });
       });
