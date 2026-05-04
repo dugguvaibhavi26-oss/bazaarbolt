@@ -54,10 +54,10 @@ export const mapOrder = (doc: DocumentSnapshot<DocumentData>): Order => {
       adminActive: typeof item.adminActive === "boolean" ? item.adminActive : true,
       vendorAvailable: typeof item.vendorAvailable === "boolean" ? item.vendorAvailable : true,
       unavailable: typeof item.unavailable === "boolean" ? item.unavailable : false,
-      unavailableAt: typeof item.unavailableAt === "string" ? item.unavailableAt : undefined,
-      replacedBy: typeof item.replacedBy === "string" ? item.replacedBy : undefined,
+      unavailableAt: typeof item.unavailableAt === "string" ? item.unavailableAt : null,
+      replacedBy: typeof item.replacedBy === "string" ? item.replacedBy : null,
       vendorStatus: ["PENDING", "ACCEPTED", "REJECTED"].includes(item.vendorStatus) ? item.vendorStatus : "PENDING",
-      vendorId: typeof item.vendorId === "string" ? item.vendorId : undefined,
+      vendorId: typeof item.vendorId === "string" ? item.vendorId : null,
     };
   }) : [];
 

@@ -86,8 +86,10 @@ export default function VendorOrders() {
         });
       }
 
+      const sanitizedItems = JSON.parse(JSON.stringify(updatedItems, (k, v) => v === undefined ? null : v));
+
       await updateDoc(doc(db, "orders", order.id), {
-        items: updatedItems,
+        items: sanitizedItems,
         subtotal: parseFloat(newSubtotal.toFixed(2)),
         tax: parseFloat(newTax.toFixed(2)),
         total: parseFloat(newTotal.toFixed(2))

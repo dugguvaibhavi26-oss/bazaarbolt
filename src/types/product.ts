@@ -10,7 +10,7 @@ export interface Product {
   active: boolean;
   adminActive: boolean;
   vendorAvailable: boolean;
-  vendorId?: string;
+  vendorId?: string | null;
   lastUpdatedBy?: string;
   updatedAt?: string;
   isDeleted?: boolean;
@@ -25,7 +25,7 @@ export interface Product {
 export interface CartItem extends Omit<Product, 'active' | 'isDeleted'> {
   quantity: number;
   unavailable?: boolean;
-  unavailableAt?: string;
-  replacedBy?: string;
+  unavailableAt?: string | null;
+  replacedBy?: string | null;
   vendorStatus?: "PENDING" | "ACCEPTED" | "REJECTED";
 }
