@@ -23,13 +23,17 @@ export default function CategoryPage() {
     fetchCatalog();
   }, [fetchCatalog]);
 
-  const categoryProducts = products.filter(p => 
-    p.category === category?.id || p.category === category?.label || p.category === decodedId
-  );
+  const categoryProducts = products.filter(p => {
+    const pCats = Array.isArray(p.category) ? p.category : [p.category];
+    return pCats.includes(category?.id || "") || 
+           pCats.includes(category?.label || "") || 
+           pCats.includes(decodedId);
+  });
 
   const filteredProducts = categoryProducts.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
-    const matchesSubcategory = selectedSubcategory === "All" || p.subcategory === selectedSubcategory;
+    const pSubs = Array.isArray(p.subcategory) ? p.subcategory : [p.subcategory || ""];
+    const matchesSubcategory = selectedSubcategory === "All" || pSubs.includes(selectedSubcategory);
     return matchesSearch && matchesSubcategory;
   }).sort((a, b) => {
     if (sortBy === "Price: Low to High") return a.price - b.price;
