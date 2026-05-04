@@ -14,6 +14,16 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
   const [order, setOrder] = useState<Order | null>(null);
   const [rider, setRider] = useState<any>(null);
   const [cancelling, setCancelling] = useState(false);
+  
+  // Replacement window state
+  const [replacingItemIndex, setReplacingItemIndex] = useState<number | null>(null);
+  const [vendorProducts, setVendorProducts] = useState<any[]>([]);
+  const [now, setNow] = useState<number>(Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (!resolvedParams.id) return;
@@ -124,14 +134,6 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
     }
   };
 
-  const [replacingItemIndex, setReplacingItemIndex] = useState<number | null>(null);
-  const [vendorProducts, setVendorProducts] = useState<any[]>([]);
-  const [now, setNow] = useState(Date.now());
-
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   const fetchVendorProducts = async (vendorId: string | undefined) => {
     if (!vendorId) return;
