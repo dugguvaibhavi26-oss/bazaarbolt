@@ -158,7 +158,10 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
       image: product.image,
       quantity: oldItem.quantity || 1,
       vendorId: product.vendorId || null,
-      category: product.category || ""
+      category: product.category || "",
+      stock: product.stock || 0,
+      adminActive: product.adminActive ?? true,
+      vendorAvailable: product.vendorAvailable ?? true
     };
     
     const updatedItems = [...order.items];
