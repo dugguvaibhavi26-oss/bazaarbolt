@@ -48,12 +48,19 @@ export default function VendorOrders() {
       const item = updatedItems[itemIndex];
       const isRejecting = action === "REJECT";
       
-      updatedItems[itemIndex] = {
+      const newItem = {
         ...item,
         unavailable: isRejecting,
-        unavailableAt: isRejecting ? new Date().toISOString() : undefined,
         vendorStatus: isRejecting ? "REJECTED" : "ACCEPTED"
       };
+      
+      if (isRejecting) {
+        newItem.unavailableAt = new Date().toISOString();
+      } else {
+        delete newItem.unavailableAt;
+      }
+      
+      updatedItems[itemIndex] = newItem;
 
       // Recalculate totals if rejected
       let newSubtotal = order.subtotal;

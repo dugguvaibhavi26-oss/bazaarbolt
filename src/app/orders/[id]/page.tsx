@@ -6,6 +6,7 @@ import { db } from "@/lib/firebase";
 import { Order } from "@/types";
 import { useRouter } from "next/navigation";
 import { mapOrder } from "@/lib/mappers";
+import Portal from "@/components/Portal";
 
 export default function OrderTracking({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -126,7 +127,6 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
   const [replacingItemIndex, setReplacingItemIndex] = useState<number | null>(null);
   const [vendorProducts, setVendorProducts] = useState<any[]>([]);
   const [now, setNow] = useState(Date.now());
-  const { Portal } = require("@/components/Portal");
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -151,12 +151,24 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
     const oldItem = order.items[replacingItemIndex];
     
     const newItem = {
-      ...product,
-      quantity: 1, // Defaulting replacement to qty 1 to be safe
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      mrp: product.mrp || product.price,
+      image: product.image,
+      quantity: oldItem.quantity || 1,
+      vendorId: product.vendorId || null,
+      category: product.category || ""
     };
     
     const updatedItems = [...order.items];
     updatedItems[replacingItemIndex] = { ...oldItem, replacedBy: product.id };
+    
+    // Clean old item of any undefined
+    if (updatedItems[replacingItemIndex].unavailableAt === undefined) {
+       delete updatedItems[replacingItemIndex].unavailableAt;
+    }
+    
     updatedItems.push(newItem);
     
     const activeItems = updatedItems.filter(i => !i.unavailable);
