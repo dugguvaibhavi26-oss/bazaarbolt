@@ -182,14 +182,6 @@ export function ProductBottomSheet({ isOpen, onClose, productId, products }: Pro
             >
               <span className="material-symbols-outlined text-zinc-900 font-bold">close</span>
             </button>
-            <div className="flex gap-2 pointer-events-auto">
-              <button className="w-10 h-10 bg-white/90 backdrop-blur-md rounded-full shadow-sm flex items-center justify-center active:scale-90 transition-transform border border-zinc-100">
-                <span className="material-symbols-outlined text-zinc-900 font-bold">share</span>
-              </button>
-              <button className="w-10 h-10 bg-white/90 backdrop-blur-md rounded-full shadow-sm flex items-center justify-center active:scale-90 transition-transform border border-zinc-100">
-                <span className="material-symbols-outlined text-zinc-900 font-bold" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
-              </button>
-            </div>
           </div>
 
           {/* Main Content Area */}
@@ -218,7 +210,8 @@ export function ProductBottomSheet({ isOpen, onClose, productId, products }: Pro
               >
                 <div 
                   ref={contentRef}
-                  className={`h-full ${snapState === 'full' ? 'overflow-y-auto' : 'overflow-hidden'} hide-scrollbar`}
+                  className={`h-full ${snapState === 'full' ? 'overflow-y-auto' : 'overflow-hidden'} hide-scrollbar scroll-smooth`}
+                  style={{ WebkitOverflowScrolling: 'touch' }}
                 >
                   <ProductDetails productId={currentId} isInsideBottomSheet onClose={onClose} />
                 </div>

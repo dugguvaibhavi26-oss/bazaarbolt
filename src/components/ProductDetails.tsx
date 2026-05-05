@@ -67,7 +67,7 @@ export function ProductDetails({ productId, isInsideBottomSheet, onClose }: Prod
   const outOfStock = product.stock <= 0;
 
   return (
-    <div className="relative h-full overflow-y-auto hide-scrollbar pb-32">
+    <div className="relative pb-32">
       {/* Hero Image Section */}
       <section className="bg-white w-full aspect-square flex items-center justify-center p-10 relative">
         <img src={product.image} alt={product.name} className="w-full h-full object-contain"/>
@@ -98,9 +98,6 @@ export function ProductDetails({ productId, isInsideBottomSheet, onClose }: Prod
             ) : null}
             <p className="text-sm font-bold text-zinc-400 mt-1 tracking-tight">Net quantity: 1 unit</p>
           </div>
-          <button className="w-10 h-10 bg-white border border-zinc-100 rounded-full text-zinc-400 shadow-sm active:scale-90 transition-transform flex items-center justify-center">
-            <span className="material-symbols-outlined font-black">favorite</span>
-          </button>
         </div>
 
         <div className="mt-6 flex flex-col gap-1">
