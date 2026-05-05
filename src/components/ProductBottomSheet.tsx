@@ -32,7 +32,7 @@ export function ProductBottomSheet({ isOpen, onClose, productId, products }: Pro
   const y = useMotionValue(windowHeight);
 
   const SNAP_CLOSED = windowHeight;
-  const SNAP_CARD = windowHeight * 0.30; // exactly 70% height
+  const SNAP_CARD = windowHeight * 0.15; // 85% height
   const SNAP_FULL = 0;
 
   useEffect(() => {
@@ -58,6 +58,7 @@ export function ProductBottomSheet({ isOpen, onClose, productId, products }: Pro
 
   // Visual transitions based on y position
   const sheetHeight = useTransform(y, [SNAP_FULL, SNAP_CARD], [windowHeight, windowHeight - 110 - SNAP_CARD]);
+  const sheetWidth = useTransform(y, [SNAP_FULL, SNAP_CARD], ["100%", "92%"]);
   const borderRadius = useTransform(y, [SNAP_FULL, SNAP_CARD], [0, 24]);
   const bottomRadius = useTransform(y, [SNAP_FULL, SNAP_CARD], [0, 16]);
   
@@ -188,12 +189,13 @@ export function ProductBottomSheet({ isOpen, onClose, productId, products }: Pro
           <motion.div 
             style={{
               height: sheetHeight,
+              width: sheetWidth,
               borderTopLeftRadius: borderRadius,
               borderTopRightRadius: borderRadius,
               borderBottomLeftRadius: bottomRadius,
               borderBottomRightRadius: bottomRadius,
             }}
-            className="bg-zinc-50 relative flex flex-col w-full sm:w-[96%] z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.2)] pointer-events-auto"
+            className="bg-zinc-50 relative flex flex-col z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.2)] pointer-events-auto"
           >
             {/* Header Area (Drag handle) */}
             <div 

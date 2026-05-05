@@ -66,12 +66,12 @@ export function ProductDetails({ productId, isInsideBottomSheet, onClose }: Prod
   return (
     <div className="relative pb-32">
       {/* Hero Image Section - Compressed */}
-      <section className="bg-white w-full flex items-center justify-center p-4 relative" style={{ height: '30vh', minHeight: '220px', maxHeight: '280px' }}>
+      <section className="bg-white w-full flex items-center justify-center p-2 relative" style={{ height: '22vh', minHeight: '160px', maxHeight: '200px' }}>
         <img src={product.image} alt={product.name} className="w-full h-full object-contain"/>
       </section>
 
       {/* Main Info Card - Compressed */}
-      <section className="bg-white px-5 py-4 rounded-b-[24px] shadow-sm border-b border-zinc-100">
+      <section className="bg-white px-4 py-3 rounded-b-[24px] shadow-sm border-b border-zinc-100">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2 mb-1">
             <div className="flex items-center gap-1 bg-green-50 text-green-700 px-2 py-0.5 rounded-md text-[9px] font-black uppercase">
@@ -83,8 +83,8 @@ export function ProductDetails({ productId, isInsideBottomSheet, onClose }: Prod
             </span>
           </div>
           
-          <h1 className="text-lg sm:text-xl font-bold text-zinc-900 leading-tight">{product.name}</h1>
-          <p className="text-xs font-bold text-zinc-400">1 unit</p>
+          <h1 className="text-base sm:text-lg font-bold text-zinc-900 leading-tight">{product.name}</h1>
+          <p className="text-[11px] font-bold text-zinc-400">1 unit</p>
           
           {(product.rating || 0) > 0 && (
             <div className="flex items-center gap-2 mt-1">
@@ -111,17 +111,17 @@ export function ProductDetails({ productId, isInsideBottomSheet, onClose }: Prod
            </div>
          )}
 
-        <div className="bg-white p-5 rounded-[24px] border border-zinc-100 shadow-sm">
-          <h3 className="text-[10px] font-black text-zinc-900 tracking-widest mb-2 uppercase">Product Details</h3>
-          <p className="text-xs font-bold text-zinc-500 leading-relaxed">
+        <div className="bg-white p-4 rounded-[20px] border border-zinc-100 shadow-sm">
+          <h3 className="text-[9px] font-black text-zinc-900 tracking-widest mb-1.5 uppercase">Product Details</h3>
+          <p className="text-[11px] font-bold text-zinc-500 leading-relaxed">
             {product.description || "Every BazaarBolt pick is fresh, handled with hygiene, and delivered in record time to ensure you get nothing but the best quality for your house."}
           </p>
         </div>
 
         {/* Why BazaarBolt Badges */}
-        <div className="bg-white p-5 rounded-[24px] border border-zinc-100 shadow-sm">
-          <h3 className="text-[10px] font-black text-zinc-900 tracking-widest mb-4 uppercase">Why shop from us?</h3>
-          <div className="space-y-4">
+        <div className="bg-white p-4 rounded-[20px] border border-zinc-100 shadow-sm">
+          <h3 className="text-[9px] font-black text-zinc-900 tracking-widest mb-3 uppercase">Why shop from us?</h3>
+          <div className="space-y-3">
             {[
               {icon: 'electric_bolt', title: 'Superfast Delivery', sub: 'Get your order delivered to your doorstep at the earliest.'},
               {icon: 'verified_user', title: 'Best Prices & Offers', sub: 'Cheaper prices than your local supermarket, great cashback offers.'},
@@ -132,8 +132,8 @@ export function ProductDetails({ productId, isInsideBottomSheet, onClose }: Prod
                   <span className="material-symbols-outlined text-sm">{item.icon}</span>
                 </div>
                 <div>
-                  <h4 className="text-xs font-black text-zinc-900 leading-none mb-1">{item.title}</h4>
-                  <p className="text-[9px] font-bold text-zinc-400 leading-tight">{item.sub}</p>
+                  <h4 className="text-[11px] font-black text-zinc-900 leading-none mb-0.5">{item.title}</h4>
+                  <p className="text-[8px] font-bold text-zinc-400 leading-tight">{item.sub}</p>
                 </div>
               </div>
             ))}
