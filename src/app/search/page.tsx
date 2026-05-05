@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { BottomNav } from "@/components/BottomNav";
+import { ProductBottomSheet } from "@/components/ProductBottomSheet";
 
 function SearchContent() {
   const router = useRouter();
@@ -19,6 +20,10 @@ function SearchContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [recentSearches, setRecentSearches] = useState<string[]>(["Milk", "Bread", "Eggs", "Chips", "Cola"]);
   const inputRef = useRef<HTMLInputElement>(null);
+  
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [isProductSheetOpen, setIsProductSheetOpen] = useState(false);
+  const [sheetProductsContext, setSheetProductsContext] = useState<Product[] | null>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -62,13 +67,13 @@ function SearchContent() {
     return baseRecs.slice(0, 8);
   }, [cart, sectionProducts]);
 
-  const ProductCard = ({ product }: { product: Product }) => {
+  const ProductCard = ({ product, contextProducts }: { product: Product, contextProducts?: Product[] }) => {
     const cartItem = cart.find(c => c.id === product.id);
     const outOfStock = product.stock <= 0;
 
     return (
       <div className={`flex flex-col gap-0.5 transition-all group ${outOfStock ? 'opacity-60 grayscale' : ''}`}>
-        <div className="relative aspect-square bg-white rounded-md sm:rounded-lg overflow-hidden border border-zinc-100 cursor-pointer shadow-sm" onClick={() => router.push(`/product/${product.id}`)}>
+        <div className="relative aspect-square bg-white rounded-md sm:rounded-lg overflow-hidden border border-zinc-100 cursor-pointer shadow-sm" onClick={() => { setSelectedProductId(product.id); setSheetProductsContext(contextProducts || null); setIsProductSheetOpen(true); }}>
           <img className="w-full h-full p-0.5 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} />
           <div className="absolute bottom-0.5 right-0.5">
             {outOfStock ? (
@@ -165,9 +170,9 @@ function SearchContent() {
 
             <h3 className="font-headline font-black text-[10px] text-zinc-400 tracking-widest mb-4">Top picks for you</h3>
             <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-x-2 gap-y-6">
-              {recommendations.slice(0, 8).map(p => (
+               {recommendations.slice(0, 8).map(p => (
                  <div key={p.id} className="bg-white rounded-2xl p-0 border border-transparent">
-                    <ProductCard product={p} />
+                    <ProductCard product={p} contextProducts={recommendations.slice(0, 8)} />
                  </div>
               ))}
             </div>
@@ -203,7 +208,7 @@ function SearchContent() {
               <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-x-2 gap-y-6">
                 {filteredProducts.map(p => (
                   <div key={p.id} className="bg-white rounded-2xl p-0 border border-transparent">
-                     <ProductCard product={p} />
+                     <ProductCard product={p} contextProducts={filteredProducts} />
                   </div>
                 ))}
               </div>
@@ -212,6 +217,12 @@ function SearchContent() {
         )}
       </main>
 
+      <ProductBottomSheet 
+        isOpen={isProductSheetOpen} 
+        onClose={() => setIsProductSheetOpen(false)} 
+        productId={selectedProductId || ""} 
+        products={sheetProductsContext || (searchStr === '' ? recommendations : filteredProducts)} 
+      />
     </div>
   );
 }

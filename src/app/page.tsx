@@ -51,7 +51,7 @@ const InfiniteBannerSlider = ({ section, router }: { section: any; router: any }
       {repeatedItems.map((item: any, idx: number) => (
         <div 
           key={idx}
-          className={`relative ${isSingle ? 'w-full' : 'w-[80vw] max-w-[800px]'} shrink-0 snap-center aspect-[21/9] sm:aspect-[21/7] rounded-[24px] sm:rounded-[32px] overflow-hidden shadow-xl cursor-pointer group ${section.bgAnimation === 'zoom' ? 'hover:scale-[1.02]' : ''}`} 
+          className={`relative ${isSingle ? 'w-full' : 'w-[85vw] max-w-[800px]'} shrink-0 snap-center aspect-[16/9] sm:aspect-[21/9] rounded-[24px] sm:rounded-[32px] overflow-hidden shadow-xl cursor-pointer group ${section.bgAnimation === 'zoom' ? 'hover:scale-[1.02]' : ''}`} 
           onClick={() => item?.redirectUrl && router.push(item.redirectUrl)}
         >
           <img 
@@ -91,6 +91,7 @@ export default function Home() {
 
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [isProductSheetOpen, setIsProductSheetOpen] = useState(false);
+  const [sheetProductsContext, setSheetProductsContext] = useState<Product[] | null>(null);
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -246,13 +247,13 @@ export default function Home() {
     ? `${selectedAddress.line1}, ${selectedAddress.city}`
     : "SET DELIVERY ADDRESS";
 
-  const ProductCard = ({ product }: { product: Product }) => {
+  const ProductCard = ({ product, contextProducts }: { product: Product, contextProducts?: Product[] }) => {
     const cartItem = cart.find(c => c.id === product.id);
     const outOfStock = product.stock <= 0;
 
     return (
       <div className={`flex flex-col gap-0.5 transition-all group ${outOfStock ? 'opacity-60 grayscale' : ''}`}>
-        <div className="relative aspect-square bg-white rounded-md sm:rounded-lg overflow-hidden border border-zinc-100 cursor-pointer shadow-sm" onClick={() => { setSelectedProductId(product.id); setIsProductSheetOpen(true); }}>
+        <div className="relative aspect-square bg-white rounded-md sm:rounded-lg overflow-hidden border border-zinc-100 cursor-pointer shadow-sm" onClick={() => { setSelectedProductId(product.id); setSheetProductsContext(contextProducts || null); setIsProductSheetOpen(true); }}>
           <img className="w-full h-full p-0.5 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} />
           <div className="absolute bottom-0.5 right-0.5">
             {outOfStock ? (
@@ -450,7 +451,7 @@ export default function Home() {
                               <div className="bg-emerald-600 text-white text-[8px] font-black px-2 py-0.5 rounded-br-lg rounded-tl-xl shadow-md border border-white/20">₹{p.price.toFixed(0)}</div>
                             </div>
                             <div className="flex-1 bg-white rounded-2xl p-1 border border-emerald-50 hover:border-emerald-200 transition-all duration-500 shadow-sm">
-                              <ProductCard product={p} />
+                              <ProductCard product={p} contextProducts={section.layout === 'max4row' ? dealProducts.slice(0, 12) : dealProducts.slice(0, 15)} />
                             </div>
                           </div>
                         </div>
@@ -521,7 +522,7 @@ export default function Home() {
                 <div className={section.layout === 'max4row' ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 pb-4 pr-4 w-full" : "flex overflow-x-auto hide-scrollbar gap-3 pb-4 pr-4 snap-x w-full pointer-events-auto"}>
                   {(section.layout === 'max4row' ? rowProducts.slice(0, 12) : rowProducts).map(p => (
                     <div key={p.id} className={section.layout === 'max4row' ? "w-full" : "min-w-[105px] max-w-[105px] snap-start shrink-0"}>
-                      <ProductCard product={p} />
+                      <ProductCard product={p} contextProducts={section.layout === 'max4row' ? rowProducts.slice(0, 12) : rowProducts} />
                     </div>
                   ))}
                 </div>
@@ -805,7 +806,7 @@ export default function Home() {
         isOpen={isProductSheetOpen} 
         onClose={() => setIsProductSheetOpen(false)} 
         productId={selectedProductId || ""} 
-        products={filteredProducts} 
+        products={sheetProductsContext || filteredProducts} 
       />
 
       {isAddressModalOpen && (

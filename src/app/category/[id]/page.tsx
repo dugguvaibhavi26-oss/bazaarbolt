@@ -7,6 +7,7 @@ import { db } from "@/lib/firebase";
 import { Product } from "@/types";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { ProductBottomSheet } from "@/components/ProductBottomSheet";
 
 export default function CategoryPage() {
   const { id } = useParams();
@@ -15,6 +16,8 @@ export default function CategoryPage() {
   const [search, setSearch] = useState("");
   const [selectedSubcategory, setSelectedSubcategory] = useState("All");
   const [sortBy, setSortBy] = useState("Relevance");
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [isProductSheetOpen, setIsProductSheetOpen] = useState(false);
 
   const decodedId = decodeURIComponent(id as string);
   const category = categories.find(c => c.id === decodedId || c.label === decodedId);
@@ -48,7 +51,7 @@ export default function CategoryPage() {
 
     return (
       <div className={`flex flex-col gap-0.5 transition-all group ${outOfStock ? 'opacity-60 grayscale' : ''}`}>
-        <div className="relative aspect-square bg-white rounded-md sm:rounded-lg overflow-hidden border border-zinc-100 cursor-pointer shadow-sm" onClick={() => router.push(`/product/${product.id}`)}>
+        <div className="relative aspect-square bg-white rounded-md sm:rounded-lg overflow-hidden border border-zinc-100 cursor-pointer shadow-sm" onClick={() => { setSelectedProductId(product.id); setIsProductSheetOpen(true); }}>
           <img className="w-full h-full p-0.5 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} />
           <div className="absolute bottom-0.5 right-0.5">
             {outOfStock ? (
@@ -184,6 +187,13 @@ export default function CategoryPage() {
         )}
 
       </main>
+
+      <ProductBottomSheet 
+        isOpen={isProductSheetOpen} 
+        onClose={() => setIsProductSheetOpen(false)} 
+        productId={selectedProductId || ""} 
+        products={filteredProducts} 
+      />
     </div>
   );
 }
