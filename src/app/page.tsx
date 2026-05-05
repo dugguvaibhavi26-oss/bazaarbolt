@@ -749,7 +749,7 @@ export default function Home() {
             {renderPromoSections("TOP")}
 
             <section className="px-4 mb-8">
-              <div className={`relative w-full aspect-[21/12] rounded-[40px] overflow-hidden shadow-2xl transition-all duration-500 ${activeSection === 'CAFE' ? 'bg-[#EAD8C0]/20' : 'bg-zinc-100'}`}>
+              <div className={`relative w-full aspect-[4/3] sm:aspect-[21/9] rounded-[40px] overflow-hidden shadow-2xl transition-all duration-500 ${activeSection === 'CAFE' ? 'bg-[#EAD8C0]/20' : 'bg-zinc-100'}`}>
                 {BANNERS.map((banner, idx) => (
                   <div
                     key={idx}
