@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { BottomNav } from "@/components/BottomNav";
 import { Logo } from "@/components/Logo";
 import { Portal } from "@/components/Portal";
+import { ProductBottomSheet } from "@/components/ProductBottomSheet";
 const InfiniteBannerSlider = ({ section, router }: { section: any; router: any }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const items = section.items || [];
@@ -87,6 +88,9 @@ export default function Home() {
 
   const [pendingRatingOrder, setPendingRatingOrder] = useState<Order | null>(null);
   const [ratings, setRatings] = useState<Record<string, number>>({});
+
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [isProductSheetOpen, setIsProductSheetOpen] = useState(false);
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -248,7 +252,7 @@ export default function Home() {
 
     return (
       <div className={`flex flex-col gap-0.5 transition-all group ${outOfStock ? 'opacity-60 grayscale' : ''}`}>
-        <div className="relative aspect-square bg-white rounded-md sm:rounded-lg overflow-hidden border border-zinc-100 cursor-pointer shadow-sm" onClick={() => router.push(`/product/${product.id}`)}>
+        <div className="relative aspect-square bg-white rounded-md sm:rounded-lg overflow-hidden border border-zinc-100 cursor-pointer shadow-sm" onClick={() => { setSelectedProductId(product.id); setIsProductSheetOpen(true); }}>
           <img className="w-full h-full p-0.5 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} />
           <div className="absolute bottom-0.5 right-0.5">
             {outOfStock ? (
@@ -452,6 +456,17 @@ export default function Home() {
                         </div>
                       ))}
                     </div>
+                    {section.layout === 'max4row' && dealProducts.length > 12 && (
+                      <div className="mt-8 flex justify-center">
+                        <button 
+                          onClick={() => router.push(section.filterCategoryId ? `/category/${section.filterCategoryId}` : `/search?section=${activeSection}`)}
+                          className="w-full py-4 bg-white/80 backdrop-blur-sm border-2 border-emerald-100 rounded-2xl text-[10px] font-black text-emerald-800 uppercase tracking-widest hover:bg-emerald-50 transition-all active:scale-[0.98] shadow-md flex items-center justify-center gap-2 group"
+                        >
+                          View All Deals
+                          <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </section>
@@ -510,23 +525,31 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
+                {section.layout === 'max4row' && rowProducts.length > 12 && (
+                  <div className="mt-4 pr-4">
+                    <button 
+                      onClick={() => router.push(section.filterCategoryId ? `/category/${section.filterCategoryId}` : `/search?section=${activeSection}`)}
+                      className={`w-full py-4 rounded-2xl font-black text-[10px] tracking-[0.2em] uppercase transition-all active:scale-[0.97] border shadow-sm flex items-center justify-center gap-2 ${
+                        activeSection === 'CAFE' 
+                          ? 'bg-[#FAF7F2] border-[#EAD8C0] text-[#8B5E3C] hover:bg-[#EAD8C0]/20' 
+                          : activeSection === 'MALL'
+                          ? 'bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100'
+                          : 'bg-zinc-50 border-zinc-100 text-zinc-900 hover:bg-zinc-100'
+                      }`}
+                    >
+                      View All
+                      <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                    </button>
+                  </div>
+                )}
               </section>
             );
           }
         } else if (section.type === "category_grid") {
           content = (
-            <section key={section.id} className="mt-4 mb-8">
-              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-x-1 gap-y-6 px-2 justify-items-center">
-                {filteredCategories.map(cat => (
-                  <div key={cat.id} onClick={() => router.push(`/category/${cat.id}`)} className="flex flex-col items-center gap-2 cursor-pointer group w-full max-w-[85px]">
-                    <div className="w-[60px] h-[60px] rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center p-0 overflow-hidden group-hover:border-primary transition-all shadow-sm">
-                      <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={cat.img} alt={cat.label} />
-                    </div>
-                    <span className="text-[9.5px] font-bold tracking-tight text-center text-zinc-600 leading-[1.1] w-full block px-1">{cat.label}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
+            <React.Fragment key={section.id}>
+              {renderCategorySections(section)}
+            </React.Fragment>
           );
         } else {
           content = (
@@ -568,6 +591,55 @@ export default function Home() {
       });
   };
 
+  const renderCategorySections = (promoSection?: PromoSection) => {
+    const isMax4Row = promoSection?.layout === 'max4row';
+    const limit = isMax4Row ? 16 : filteredCategories.length;
+    const items = filteredCategories.slice(0, limit);
+    const hasMore = filteredCategories.length > limit;
+
+    return (
+      <div className="px-4 mb-8 mt-4">
+        <div className="grid grid-cols-4 sm:grid-cols-8 gap-x-2 gap-y-4">
+          {items.map((cat) => (
+            <div 
+              key={cat.id} 
+              onClick={() => router.push(`/category/${cat.id}`)}
+              className="flex flex-col items-center cursor-pointer group"
+            >
+              <div className="w-full aspect-square rounded-full bg-transparent flex items-center justify-center p-2 mb-1.5 overflow-hidden transition-all group-hover:scale-105 group-active:scale-95">
+                 <img 
+                   src={cat.img} 
+                   alt={cat.label} 
+                   className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" 
+                 />
+              </div>
+              <span className="text-[10px] font-bold text-zinc-800 text-center leading-[1.2] tracking-tight px-0.5 line-clamp-2 w-full">
+                {cat.label}
+              </span>
+            </div>
+          ))}
+        </div>
+        {isMax4Row && hasMore && (
+          <div className="mt-6">
+            <button 
+              onClick={() => router.push(`/category`)}
+              className={`w-full py-4 rounded-2xl font-black text-[10px] tracking-[0.2em] uppercase transition-all active:scale-[0.97] border shadow-sm flex items-center justify-center gap-2 ${
+                activeSection === 'CAFE' 
+                  ? 'bg-[#FAF7F2] border-[#EAD8C0] text-[#8B5E3C] hover:bg-[#EAD8C0]/20' 
+                  : activeSection === 'MALL'
+                  ? 'bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100'
+                  : 'bg-zinc-50 border-zinc-100 text-zinc-900 hover:bg-zinc-100'
+              }`}
+            >
+              View All Categories
+              <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   if (settingsLoading) {
     return (
       <div className="min-h-[100dvh] bg-white flex items-center justify-center space-x-2">
@@ -587,7 +659,7 @@ export default function Home() {
   }
 
   return (
-    <div className={`min-h-screen relative transition-colors duration-700 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : activeSection === 'MALL' ? 'bg-zinc-50' : 'bg-white'}`}>
+    <div className={`min-h-screen relative transition-colors duration-700 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : 'bg-white'}`}>
       <div className={`fixed top-0 left-0 w-full flex flex-col z-[60] transition-colors duration-500 ${activeSection === 'CAFE' ? 'bg-[#2D1B14] text-[#EAD8C0]' : activeSection === 'MALL' ? 'bg-black text-white' : 'bg-black text-white'}`}>
         <div className="pt-safe" />
         <div className="h-8 flex items-center overflow-hidden">
@@ -658,7 +730,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className={`pt-[calc(230px+env(safe-area-inset-top,0px))] pb-16 overflow-x-hidden min-h-[100dvh] transition-colors duration-700 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : activeSection === 'MALL' ? 'bg-zinc-50' : 'bg-white'}`}>
+      <main className={`pt-[calc(230px+env(safe-area-inset-top,0px))] pb-16 overflow-x-hidden min-h-[100dvh] transition-colors duration-700 ${activeSection === 'CAFE' ? 'bg-[#FAF7F2]' : 'bg-white'}`}>
         <div className={`transition-all duration-500 ease-in-out ${isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
         {(settings?.sectionSettings?.[activeSection]?.storeOpen ?? settings?.storeOpen) === false ? (
           <section className="px-6 py-20 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-700">
@@ -667,24 +739,13 @@ export default function Home() {
           </section>
         ) : (
           <>
-            {/* Dynamic Promo Sections - VERY TOP */}
-            {renderPromoSections("TOP")}
- 
             {/* Falling back to default category grid if no custom category_grid is defined for this section */}
             {(!settings?.promoSections || !settings.promoSections.some(s => s.section === activeSection && s.type === "category_grid")) && (
-              <section className="mt-4 mb-10">
-                <div className="grid grid-cols-4 gap-x-1 gap-y-10 px-1 justify-items-center max-w-4xl mx-auto">
-                  {filteredCategories.map(cat => (
-                    <div key={cat.id} onClick={() => router.push(`/category/${cat.id}`)} className="flex flex-col items-center gap-2 cursor-pointer group w-full">
-                      <div className="w-[64px] h-[64px] sm:w-[72px] sm:h-[72px] rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center p-0 overflow-hidden flex-shrink-0 group-hover:border-primary transition-all shadow-sm">
-                        <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={cat.img} alt={cat.label} />
-                      </div>
-                      <span className="text-[9.5px] sm:text-[11px] font-bold tracking-tight text-center text-zinc-600 leading-[1.1] w-full break-words min-h-[2.2em] block px-0.5">{cat.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </section>
+              renderCategorySections()
             )}
+
+            {/* Dynamic Promo Sections - VERY TOP */}
+            {renderPromoSections("TOP")}
 
             <section className="px-4 mb-8">
               <div className={`relative w-full aspect-[21/12] rounded-[40px] overflow-hidden shadow-2xl transition-all duration-500 ${activeSection === 'CAFE' ? 'bg-[#EAD8C0]/20' : 'bg-zinc-100'}`}>
@@ -739,6 +800,13 @@ export default function Home() {
         )}
         </div>
       </main>
+
+      <ProductBottomSheet 
+        isOpen={isProductSheetOpen} 
+        onClose={() => setIsProductSheetOpen(false)} 
+        productId={selectedProductId || ""} 
+        products={filteredProducts} 
+      />
 
       {isAddressModalOpen && (
         <Portal>
