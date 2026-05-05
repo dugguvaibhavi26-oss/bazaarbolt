@@ -32,7 +32,7 @@ export function ProductBottomSheet({ isOpen, onClose, productId, products }: Pro
   const y = useMotionValue(windowHeight);
 
   const SNAP_CLOSED = windowHeight;
-  const SNAP_CARD = windowHeight * 0.22; // 22% from top, leaves exactly enough room
+  const SNAP_CARD = windowHeight * 0.30; // exactly 70% height
   const SNAP_FULL = 0;
 
   useEffect(() => {
@@ -58,8 +58,8 @@ export function ProductBottomSheet({ isOpen, onClose, productId, products }: Pro
 
   // Visual transitions based on y position
   const sheetHeight = useTransform(y, [SNAP_FULL, SNAP_CARD], [windowHeight, windowHeight - 110 - SNAP_CARD]);
-  const borderRadius = useTransform(y, [SNAP_FULL, SNAP_CARD], [0, 32]);
-  const bottomRadius = useTransform(y, [SNAP_FULL, SNAP_CARD], [0, 24]);
+  const borderRadius = useTransform(y, [SNAP_FULL, SNAP_CARD], [0, 24]);
+  const bottomRadius = useTransform(y, [SNAP_FULL, SNAP_CARD], [0, 16]);
   
   const backdropOpacity = useTransform(y, [SNAP_FULL, SNAP_CARD, SNAP_CLOSED], [0.6, 0.4, 0]);
   
@@ -295,19 +295,16 @@ export function ProductBottomSheet({ isOpen, onClose, productId, products }: Pro
 
         {/* Fixed Thumbnails Row at Bottom */}
         <motion.div 
-          className="fixed bottom-0 left-0 right-0 h-[110px] z-[150] flex items-center justify-center gap-3 px-2 pointer-events-auto"
+          className="fixed bottom-0 left-0 right-0 h-[110px] z-[150] flex items-center justify-center gap-3 px-2 pointer-events-auto bg-gradient-to-t from-black/80 via-black/50 to-transparent"
           style={{ opacity: thumbOpacity, y: thumbY }}
         >
           {visibleProducts.map(p => (
             <button 
               key={p.id}
               onClick={() => setCurrentId(p.id)}
-              className={`relative w-[60px] h-[60px] sm:w-[65px] sm:h-[65px] rounded-[16px] overflow-hidden bg-white shrink-0 transition-all duration-300 ease-out ${p.id === currentId ? 'ring-[3px] ring-white scale-[1.15] shadow-xl z-10' : 'opacity-60 scale-95 hover:opacity-100 hover:scale-100 shadow-sm'}`}
+              className={`relative w-[60px] h-[60px] sm:w-[65px] sm:h-[65px] rounded-[12px] overflow-hidden bg-white shrink-0 transition-transform active:scale-95 shadow-sm border ${p.id === currentId ? 'border-zinc-400' : 'border-zinc-100'}`}
             >
               <img src={p.image} className="w-full h-full object-contain p-2" />
-              {p.id === currentId && (
-                <div className="absolute inset-0 bg-black/5 pointer-events-none" />
-              )}
             </button>
           ))}
         </motion.div>
