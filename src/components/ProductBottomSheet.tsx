@@ -30,9 +30,9 @@ export function ProductBottomSheet({ isOpen, onClose, productId, products }: Pro
   }, []);
 
   const y = useMotionValue(windowHeight);
-  
+
   const SNAP_CLOSED = windowHeight;
-  const SNAP_CARD = windowHeight * 0.35; // 65% height means 35% from top
+  const SNAP_CARD = windowHeight * 0.22; // 22% from top, leaves exactly enough room
   const SNAP_FULL = 0;
 
   useEffect(() => {
@@ -56,13 +56,17 @@ export function ProductBottomSheet({ isOpen, onClose, productId, products }: Pro
     }
   }, [snapState, SNAP_CARD, SNAP_CLOSED, SNAP_FULL, y]);
 
-  // Visual transitions based on y position (real-time during drag)
-  const borderRadius = useTransform(y, [SNAP_FULL, SNAP_CARD], [0, 24]);
+  // Visual transitions based on y position
+  const sheetHeight = useTransform(y, [SNAP_FULL, SNAP_CARD], [windowHeight, windowHeight - 110 - SNAP_CARD]);
+  const borderRadius = useTransform(y, [SNAP_FULL, SNAP_CARD], [0, 32]);
+  const bottomRadius = useTransform(y, [SNAP_FULL, SNAP_CARD], [0, 24]);
+  
   const backdropOpacity = useTransform(y, [SNAP_FULL, SNAP_CARD, SNAP_CLOSED], [0.6, 0.4, 0]);
-  const boxShadow = useTransform(y, [SNAP_FULL, SNAP_CARD], [
-    "none",
-    "0px -10px 40px rgba(0,0,0,0.2)"
-  ]);
+  
+  // Fade out thumbnails as we approach FULL
+  const thumbOpacity = useTransform(y, [SNAP_CARD * 0.5, SNAP_CARD], [0, 1]);
+  const thumbY = useTransform(y, [SNAP_CARD * 0.5, SNAP_CARD], [50, 0]);
+  const pointerOpacity = useTransform(y, [SNAP_CARD * 0.8, SNAP_CARD], [0, 1]);
 
   const product = products.find(p => p.id === currentId);
   const cartItem = cart.find(c => c.id === currentId);
@@ -89,7 +93,7 @@ export function ProductBottomSheet({ isOpen, onClose, productId, products }: Pro
     if (snapState === "card") {
       if (offset > 100 || velocity > 500) {
         onClose();
-      } else if (offset < -100 || velocity < -500) {
+      } else if (offset < -50 || velocity < -500) {
         setSnapState("full");
       } else {
         animate(y, SNAP_CARD, { type: "spring", damping: 25, stiffness: 300 });
@@ -123,7 +127,6 @@ export function ProductBottomSheet({ isOpen, onClose, productId, products }: Pro
     const deltaY = touchY - touchStartY;
     
     if (deltaY > 0) {
-      // User is dragging down from the top of the scroll container
       y.set(deltaY);
     }
   };
@@ -133,7 +136,6 @@ export function ProductBottomSheet({ isOpen, onClose, productId, products }: Pro
     setIsPullingDown(false);
     
     const currentY = y.get();
-    const velocity = currentY > touchStartY ? 500 : 0; // Simple velocity fake for touch end
 
     if (currentY > 100) {
       setSnapState("card");
@@ -141,6 +143,22 @@ export function ProductBottomSheet({ isOpen, onClose, productId, products }: Pro
       animate(y, SNAP_FULL, { type: "spring", damping: 25, stiffness: 300 });
     }
   };
+
+  let visibleProducts = products;
+  if (products.length > 5) {
+    let start = currentIndex - 2;
+    let end = currentIndex + 3;
+    if (start < 0) {
+      end += Math.abs(start);
+      start = 0;
+    }
+    if (end > products.length) {
+      start -= (end - products.length);
+      end = products.length;
+    }
+    start = Math.max(0, start);
+    visibleProducts = products.slice(start, end);
+  }
 
   if (!isOpen && snapState === "closed") return null;
 
@@ -154,9 +172,9 @@ export function ProductBottomSheet({ isOpen, onClose, productId, products }: Pro
           className="absolute inset-0 bg-black backdrop-blur-[2px] pointer-events-auto"
         />
 
-        {/* Sheet */}
+        {/* Outer Draggable Sheet Wrapper */}
         <motion.div
-          style={{ y, borderTopLeftRadius: borderRadius, borderTopRightRadius: borderRadius, boxShadow }}
+          style={{ y }}
           drag="y"
           dragDirectionLock
           dragControls={dragControls}
@@ -164,97 +182,134 @@ export function ProductBottomSheet({ isOpen, onClose, productId, products }: Pro
           dragConstraints={{ top: SNAP_FULL, bottom: SNAP_CLOSED }}
           dragElastic={0.05}
           onDragEnd={handleDragEnd}
-          className="relative w-full max-w-2xl bg-zinc-50 flex flex-col h-screen overflow-hidden pointer-events-auto"
+          className="absolute top-0 left-0 right-0 w-full max-w-2xl mx-auto flex flex-col items-center pointer-events-auto h-screen"
         >
-          {/* Header Area (Always draggable handle) */}
-          <div 
-            onPointerDown={(e) => dragControls.start(e)}
-            className="absolute top-0 left-0 right-0 h-14 flex flex-col items-center justify-start pt-4 z-[130] cursor-grab active:cursor-grabbing touch-none"
+          {/* White Card Container */}
+          <motion.div 
+            style={{
+              height: sheetHeight,
+              borderTopLeftRadius: borderRadius,
+              borderTopRightRadius: borderRadius,
+              borderBottomLeftRadius: bottomRadius,
+              borderBottomRightRadius: bottomRadius,
+            }}
+            className="bg-zinc-50 relative flex flex-col w-full sm:w-[96%] z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.2)] pointer-events-auto"
           >
-            <div className="w-12 h-1.5 bg-zinc-300 rounded-full" />
-          </div>
-
-          {/* Sticky Header Icons */}
-          <div className="absolute top-5 left-6 right-6 flex justify-between items-center z-[130] pointer-events-none">
-            <button 
-              onClick={onClose} 
-              className="w-10 h-10 bg-white/90 backdrop-blur-md rounded-full shadow-sm flex items-center justify-center pointer-events-auto active:scale-90 transition-transform border border-zinc-100"
+            {/* Header Area (Drag handle) */}
+            <div 
+              onPointerDown={(e) => dragControls.start(e)}
+              className="absolute top-0 left-0 right-0 h-12 flex flex-col items-center justify-start pt-3 z-[130] touch-none cursor-grab active:cursor-grabbing"
             >
-              <span className="material-symbols-outlined text-zinc-900 font-bold">close</span>
-            </button>
-          </div>
+              <div className="w-12 h-1.5 bg-zinc-300 rounded-full" />
+            </div>
 
-          {/* Main Content Area */}
-          <div 
-            className="flex-1 overflow-hidden relative mt-14"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentId}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-                drag={snapState === "card" ? "x" : false}
-                dragDirectionLock
-                dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={0.2}
-                onDragEnd={(_, info) => {
-                  if (info.offset.x < -50) handleNext();
-                  else if (info.offset.x > 50) handlePrev();
-                }}
-                className="h-full"
+            {/* Close Button */}
+            <div className="absolute top-4 left-4 z-[130]">
+              <button 
+                onClick={onClose} 
+                className="w-9 h-9 bg-white shadow-md rounded-full flex items-center justify-center active:scale-90 transition-transform border border-zinc-100"
               >
-                <div 
-                  ref={contentRef}
-                  className={`h-full ${snapState === 'full' ? 'overflow-y-auto' : 'overflow-hidden'} hide-scrollbar scroll-smooth`}
-                  style={{ WebkitOverflowScrolling: 'touch' }}
-                >
-                  <ProductDetails productId={currentId} isInsideBottomSheet onClose={onClose} />
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
+                <span className="material-symbols-outlined text-zinc-900 font-bold text-[18px]">close</span>
+              </button>
+            </div>
 
-          {/* Sticky Add Button */}
-          <div className="absolute bottom-0 left-0 right-0 p-5 bg-white/90 backdrop-blur-2xl border-t border-zinc-100 z-[120] flex items-center justify-between pb-[max(1.25rem,env(safe-area-inset-bottom))]">
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">Best Price</span>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-black text-zinc-900">₹{product?.price.toFixed(0)}</span>
-                <span className="text-xs font-bold text-zinc-400 line-through">₹{(product?.price || 0) * 1.5}</span>
+            {/* Main Content Area */}
+            <div 
+              className="flex-1 overflow-hidden relative mt-12 rounded-b-[inherit]"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentId}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.2 }}
+                  drag={snapState === "card" ? "x" : false}
+                  dragDirectionLock
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.2}
+                  onDragEnd={(_, info) => {
+                    if (info.offset.x < -50) handleNext();
+                    else if (info.offset.x > 50) handlePrev();
+                  }}
+                  className="h-full"
+                >
+                  <div 
+                    ref={contentRef}
+                    className={`h-full ${snapState === 'full' ? 'overflow-y-scroll scroll-smooth' : 'overflow-hidden'} hide-scrollbar rounded-b-[inherit]`}
+                    style={{ WebkitOverflowScrolling: 'touch' }}
+                  >
+                    <ProductDetails productId={currentId} isInsideBottomSheet onClose={onClose} />
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Sticky Add Button */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-xl border-t border-zinc-100 z-[120] flex items-center justify-between pb-[max(1rem,env(safe-area-inset-bottom))] rounded-b-[inherit]">
+              <div className="flex flex-col">
+                <span className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-0.5">Best Price</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-black text-zinc-900 leading-none">₹{product?.price.toFixed(0)}</span>
+                  <span className="text-[10px] font-bold text-zinc-400 line-through">₹{(product?.price || 0) * 1.5}</span>
+                </div>
+              </div>
+              
+              <div className="w-[150px]">
+                {outOfStock ? (
+                  <button disabled className="w-full h-12 bg-red-50 text-red-600 border border-red-100 rounded-[14px] font-black text-[11px] tracking-widest cursor-not-allowed uppercase">
+                    Sold Out
+                  </button>
+                ) : !cartItem ? (
+                  <button 
+                    onClick={() => product && addToCart({...product, quantity: 1})} 
+                    className="w-full h-12 bg-[#1ed760] hover:bg-[#1db954] text-white rounded-[14px] font-black text-[11px] tracking-widest shadow-lg shadow-[#1ed760]/30 active:scale-95 transition-all uppercase flex items-center justify-center gap-2"
+                  >
+                    Add to cart
+                    <span className="material-symbols-outlined text-[14px]">shopping_bag</span>
+                  </button>
+                ) : (
+                  <div className="w-full h-12 bg-zinc-900 text-white rounded-[14px] flex items-center justify-between px-1 overflow-hidden shadow-2xl">
+                    <button onClick={() => updateQuantity(product!.id, -1)} className="w-10 h-full flex items-center justify-center hover:bg-white/10 transition-colors">
+                      <span className="material-symbols-outlined font-black text-[18px]">remove</span>
+                    </button>
+                    <span className="text-sm font-black">{cartItem.quantity}</span>
+                    <button onClick={() => updateQuantity(product!.id, 1)} disabled={cartItem.quantity >= product!.stock} className="w-10 h-full flex items-center justify-center hover:bg-white/10 transition-colors disabled:opacity-20">
+                      <span className="material-symbols-outlined font-black text-[18px]">add</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
-            
-            <div className="w-44">
-              {outOfStock ? (
-                <button disabled className="w-full h-14 bg-red-50 text-red-600 border border-red-100 rounded-2xl font-black text-xs tracking-widest cursor-not-allowed uppercase">
-                  Sold Out
-                </button>
-              ) : !cartItem ? (
-                <button 
-                  onClick={() => product && addToCart({...product, quantity: 1})} 
-                  className="w-full h-14 bg-primary text-zinc-900 rounded-2xl font-black text-xs tracking-[0.1em] shadow-xl shadow-primary/20 active:scale-95 transition-all uppercase flex items-center justify-center gap-2"
-                >
-                  Add to cart
-                  <span className="material-symbols-outlined text-sm">shopping_bag</span>
-                </button>
-              ) : (
-                <div className="w-full h-14 bg-zinc-900 text-white rounded-2xl flex items-center justify-between px-2 overflow-hidden shadow-2xl">
-                  <button onClick={() => updateQuantity(product!.id, -1)} className="w-14 h-full flex items-center justify-center hover:bg-white/10 transition-colors">
-                    <span className="material-symbols-outlined font-black">remove</span>
-                  </button>
-                  <span className="text-base font-black">{cartItem.quantity}</span>
-                  <button onClick={() => updateQuantity(product!.id, 1)} disabled={cartItem.quantity >= product!.stock} className="w-14 h-full flex items-center justify-center hover:bg-white/10 transition-colors disabled:opacity-20">
-                    <span className="material-symbols-outlined font-black">add</span>
-                  </button>
-                </div>
+
+            {/* Speech Bubble Pointer */}
+            <motion.div 
+              style={{ opacity: pointerOpacity }}
+              className="absolute top-[calc(100%-2px)] left-1/2 -translate-x-1/2 w-14 h-4 bg-white/95 backdrop-blur-xl rounded-b-[14px]" 
+            />
+          </motion.div>
+        </motion.div>
+
+        {/* Fixed Thumbnails Row at Bottom */}
+        <motion.div 
+          className="fixed bottom-0 left-0 right-0 h-[110px] z-[150] flex items-center justify-center gap-3 px-2 pointer-events-auto"
+          style={{ opacity: thumbOpacity, y: thumbY }}
+        >
+          {visibleProducts.map(p => (
+            <button 
+              key={p.id}
+              onClick={() => setCurrentId(p.id)}
+              className={`relative w-[60px] h-[60px] sm:w-[65px] sm:h-[65px] rounded-[16px] overflow-hidden bg-white shrink-0 transition-all duration-300 ease-out ${p.id === currentId ? 'ring-[3px] ring-white scale-[1.15] shadow-xl z-10' : 'opacity-60 scale-95 hover:opacity-100 hover:scale-100 shadow-sm'}`}
+            >
+              <img src={p.image} className="w-full h-full object-contain p-2" />
+              {p.id === currentId && (
+                <div className="absolute inset-0 bg-black/5 pointer-events-none" />
               )}
-            </div>
-          </div>
+            </button>
+          ))}
         </motion.div>
       </div>
     </Portal>
