@@ -14,9 +14,9 @@ import { ProductBottomSheet } from "@/components/ProductBottomSheet";
 function SearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const currentSection = (searchParams.get("section") || "BB") as "BB" | "CAFE";
+  const currentSection = (searchParams.get("section") || "BB") as "BB" | "CAFE" | "MALL";
   
-  const { cart, addToCart, updateQuantity, products, fetchCatalog } = useStore();
+  const { cart, addToCart, updateQuantity, products, fetchCatalog, settings } = useStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [recentSearches, setRecentSearches] = useState<string[]>(["Milk", "Bread", "Eggs", "Chips", "Cola"]);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -46,15 +46,22 @@ function SearchContent() {
       : [],
   [searchStr, sectionProducts]);
 
+  const availableSections = useMemo(() => [
+    ...(settings?.activeSections?.BB !== false ? ['BB'] : []),
+    ...(settings?.activeSections?.CAFE !== false ? ['CAFE'] : []),
+    ...(settings?.activeSections?.MALL !== false ? ['MALL'] : [])
+  ], [settings?.activeSections]);
+
   const otherSectionMatches = useMemo(() => {
     if (searchStr === '' || filteredProducts.length > 0) return 0;
     return products.filter(p => {
       const pCats = Array.isArray(p.category) ? p.category : [p.category || ""];
       const isMatch = p.name.toLowerCase().includes(searchStr) || 
                       pCats.some(c => c.toLowerCase().includes(searchStr));
-      return ((p as any).section || "BB") !== currentSection && isMatch;
+      const section = ((p as any).section || "BB");
+      return section !== currentSection && isMatch && availableSections.includes(section);
     }).length;
-  }, [searchStr, filteredProducts, products, currentSection]);
+  }, [searchStr, filteredProducts, products, currentSection, availableSections]);
 
   const recommendations = useMemo(() => {
     const cartCategories = Array.from(new Set(cart.map(item => item.category)));

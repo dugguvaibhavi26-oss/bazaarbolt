@@ -37,9 +37,14 @@ export interface AppSettings {
   };
   promoSections?: PromoSection[];
   sectionSettings?: {
-    BB?: Partial<Omit<AppSettings, 'heroBanners' | 'promoSections' | 'sectionSettings'>>;
-    CAFE?: Partial<Omit<AppSettings, 'heroBanners' | 'promoSections' | 'sectionSettings'>>;
-    MALL?: Partial<Omit<AppSettings, 'heroBanners' | 'promoSections' | 'sectionSettings'>>;
+    BB?: Partial<Omit<AppSettings, 'heroBanners' | 'promoSections' | 'sectionSettings' | 'activeSections'>>;
+    CAFE?: Partial<Omit<AppSettings, 'heroBanners' | 'promoSections' | 'sectionSettings' | 'activeSections'>>;
+    MALL?: Partial<Omit<AppSettings, 'heroBanners' | 'promoSections' | 'sectionSettings' | 'activeSections'>>;
+  };
+  activeSections?: {
+    BB?: boolean;
+    CAFE?: boolean;
+    MALL?: boolean;
   };
 }
 

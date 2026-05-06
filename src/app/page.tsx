@@ -76,6 +76,19 @@ export default function Home() {
   const router = useRouter();
 
   const [activeSection, setActiveSection] = useState<"BB" | "CAFE" | "MALL">("BB");
+
+  const availableSections = [
+    ...(settings?.activeSections?.BB !== false ? [{ id: 'BB' as const, label: 'BAZAAR', sub: 'BOLT', colorClass: 'text-primary' }] : []),
+    ...(settings?.activeSections?.CAFE !== false ? [{ id: 'CAFE' as const, label: 'BB', sub: 'CAFE', colorClass: 'text-[#8B5E3C]' }] : []),
+    ...(settings?.activeSections?.MALL !== false ? [{ id: 'MALL' as const, label: 'BB', sub: 'CENTRAL', colorClass: 'text-indigo-500' }] : [])
+  ];
+
+  useEffect(() => {
+    if (availableSections.length > 0 && !availableSections.find(s => s.id === activeSection)) {
+      setActiveSection(availableSections[0].id);
+    }
+  }, [settings?.activeSections, activeSection]);
+
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [addressForm, setAddressForm] = useState<Address>({
@@ -695,33 +708,31 @@ export default function Home() {
           </div>
 
           {/* New Premium Segmented Tabs */}
-          <div className={`relative p-1 rounded-2xl flex items-center transition-all duration-500 mb-4 ${activeSection === 'CAFE' ? 'bg-[#EAD8C0]/20' : activeSection === 'MALL' ? 'bg-indigo-100/50' : 'bg-zinc-100'}`}>
-            <div 
-              className={`absolute top-1 bottom-1 w-[calc(33.33%-4px)] rounded-xl transition-all duration-500 ease-out shadow-sm ${
-                activeSection === 'BB' ? 'left-1 bg-white' : 
-                activeSection === 'CAFE' ? 'left-[calc(33.33%+1px)] bg-[#FAF7F2]' : 
-                'left-[calc(66.66%+1px)] bg-white'
-              }`}
-            />
-            <button
-              onClick={() => setActiveSection("BB")}
-              className={`relative z-10 flex-1 py-2.5 text-[10px] font-black tracking-tighter transition-colors duration-500 flex items-center justify-center ${activeSection === "BB" ? "text-zinc-900" : "text-zinc-400"}`}
-            >
-              <span className={activeSection === 'BB' ? 'text-primary' : ''}>BAZAAR</span>&nbsp;BOLT
-            </button>
-            <button
-              onClick={() => setActiveSection("CAFE")}
-              className={`relative z-10 flex-1 py-2.5 text-[10px] font-black tracking-tighter transition-colors duration-500 flex items-center justify-center ${activeSection === "CAFE" ? "text-[#2D1B14]" : "text-zinc-400"}`}
-            >
-              BB&nbsp;<span className={activeSection === 'CAFE' ? 'text-[#8B5E3C]' : ''}>CAFE</span>
-            </button>
-            <button
-              onClick={() => setActiveSection("MALL")}
-              className={`relative z-10 flex-1 py-2.5 text-[10px] font-black tracking-tighter transition-colors duration-500 flex items-center justify-center ${activeSection === "MALL" ? "text-zinc-900" : "text-zinc-500"}`}
-            >
-              BB&nbsp;<span className={activeSection === 'MALL' ? 'text-indigo-500' : ''}>MALL</span>
-            </button>
-          </div>
+          {availableSections.length > 1 && (
+            <div className={`relative p-1 rounded-2xl flex items-center transition-all duration-500 mb-4 ${activeSection === 'CAFE' ? 'bg-[#EAD8C0]/20' : activeSection === 'MALL' ? 'bg-indigo-100/50' : 'bg-zinc-100'}`}>
+              <div 
+                className="absolute top-1 bottom-1 rounded-xl transition-all duration-500 ease-out shadow-sm"
+                style={{
+                  width: `calc(${100 / availableSections.length}% - 4px)`,
+                  left: `calc(${(availableSections.findIndex(s => s.id === activeSection) * (100 / availableSections.length))}% + 2px)`,
+                  backgroundColor: activeSection === 'CAFE' ? '#FAF7F2' : 'white'
+                }}
+              />
+              {availableSections.map(section => (
+                <button
+                  key={section.id}
+                  onClick={() => setActiveSection(section.id)}
+                  className={`relative z-10 flex-1 py-2.5 text-[10px] font-black tracking-tighter transition-colors duration-500 flex items-center justify-center ${activeSection === section.id ? (section.id === 'CAFE' ? 'text-[#2D1B14]' : 'text-zinc-900') : 'text-zinc-400'}`}
+                >
+                  {section.id === 'BB' ? (
+                    <><span className={activeSection === 'BB' ? 'text-primary' : ''}>BAZAAR</span>&nbsp;BOLT</>
+                  ) : (
+                    <>BB&nbsp;<span className={activeSection === section.id ? section.colorClass : ''}>{section.sub}</span></>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Search Bar area */}
           <div onClick={() => router.push(`/search?section=${activeSection}`)} className={`rounded-xl flex items-center px-4 py-3 gap-3 cursor-pointer shadow-sm border transition-all ${activeSection === 'CAFE' ? 'bg-white/50 border-[#EAD8C0]/30' : activeSection === 'MALL' ? 'bg-white/80 border-indigo-100' : 'bg-zinc-50 border-zinc-100'}`}>
@@ -735,7 +746,7 @@ export default function Home() {
         <div className={`transition-all duration-500 ease-in-out ${isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
         {(settings?.sectionSettings?.[activeSection]?.storeOpen ?? settings?.storeOpen) === false ? (
           <section className="px-6 py-20 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-700">
-            <h2 className="text-5xl font-headline font-black text-zinc-900 tracking-tighter leading-[0.8] mb-8">Currently <br /><span className="text-primary">Unavailable</span></h2>
+            <h2 className="text-5xl font-headline font-black text-zinc-900 tracking-tighter leading-[0.8] mb-8">Currently <br /><span className={`${activeSection === 'CAFE' ? 'text-[#8B5E3C]' : activeSection === 'MALL' ? 'text-indigo-500' : 'text-primary'}`}>Unavailable</span></h2>
             <p className="max-w-xs mx-auto text-[10px] font-bold text-zinc-400 tracking-[0.2em] leading-relaxed mb-12">We're Not Serving This Area At The Moment.</p>
           </section>
         ) : (

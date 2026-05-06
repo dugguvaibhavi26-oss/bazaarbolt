@@ -32,11 +32,12 @@ export default function AdminSettings() {
       DELIVERED: { title: "Order Delivered 🏁", body: "Hi {{name}}, your order has been delivered. Enjoy!" },
       CANCELLED: { title: "Order Cancelled 🚫", body: "Hi {{name}}, your order has been cancelled. Any payment will be refunded." },
     },
-    sectionSettings: { BB: {}, CAFE: {} }
+    sectionSettings: { BB: {}, CAFE: {} },
+    activeSections: { BB: true, CAFE: true, MALL: true }
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [notifContext, setNotifContext] = useState<"GLOBAL" | "BB" | "CAFE">("GLOBAL");
+  const [notifContext, setNotifContext] = useState<"GLOBAL" | "BB" | "CAFE" | "MALL">("GLOBAL");
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "settings", "config"), (docSnap) => {
@@ -66,7 +67,7 @@ export default function AdminSettings() {
   };
 
   const SettingField = ({ label, field, type = "text", placeholder = "" }: { label: string, field: keyof AppSettings, type?: string, placeholder?: string }) => {
-    const [context, setContext] = useState<"GLOBAL" | "BB" | "CAFE">("GLOBAL");
+    const [context, setContext] = useState<"GLOBAL" | "BB" | "CAFE" | "MALL">("GLOBAL");
     
     const value = context === "GLOBAL" 
       ? (settings[field] as any)
@@ -106,12 +107,13 @@ export default function AdminSettings() {
               <option value="GLOBAL">Global</option>
               <option value="BB">Bazaarbolt</option>
               <option value="CAFE">BB Cafe</option>
+              <option value="MALL">BB Central</option>
             </select>
           </div>
         </div>
         {type === "checkbox" ? (
           <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
-            <span className="text-xs font-bold text-zinc-700">{label} Status</span>
+            <span className="text-xs font-bold text-zinc-700">BB Central Status</span>
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" className="sr-only peer" checked={!!value} onChange={handleChange} />
               <div className="w-12 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
@@ -163,6 +165,33 @@ export default function AdminSettings() {
               <SettingField label="Handling Charge (₹)" field="handlingCharge" type="number" />
               <SettingField label="Free Delivery Above (₹)" field="freeDeliveryThreshold" type="number" />
               <SettingField label="Small Cart Threshold (₹)" field="smallCartThreshold" type="number" />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-[32px] lg:rounded-[40px] p-6 lg:p-10 shadow-sm border border-zinc-100 space-y-6">
+            <h4 className="font-headline font-black text-xs lg:text-sm tracking-widest text-zinc-400 uppercase">Storefront Sections Visibility</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                <span className="text-xs font-bold text-zinc-700">Bazaarbolt (BB)</span>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" className="sr-only peer" checked={settings.activeSections?.BB ?? true} onChange={(e) => setSettings({...settings, activeSections: {...(settings.activeSections || {}), BB: e.target.checked}})} />
+                  <div className="w-12 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                <span className="text-xs font-bold text-zinc-700">BB Cafe</span>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" className="sr-only peer" checked={settings.activeSections?.CAFE ?? true} onChange={(e) => setSettings({...settings, activeSections: {...(settings.activeSections || {}), CAFE: e.target.checked}})} />
+                  <div className="w-12 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                <span className="text-xs font-bold text-zinc-700">BB Central</span>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" className="sr-only peer" checked={settings.activeSections?.MALL ?? true} onChange={(e) => setSettings({...settings, activeSections: {...(settings.activeSections || {}), MALL: e.target.checked}})} />
+                  <div className="w-12 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+              </div>
             </div>
           </div>
         </div>

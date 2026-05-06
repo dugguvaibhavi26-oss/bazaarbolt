@@ -447,8 +447,35 @@ export default function AdminLayouts() {
           }} 
           className={`px-8 py-2.5 rounded-full text-[10px] font-black tracking-widest uppercase transition-all duration-300 ${activeBannerTab === "MALL" ? "bg-white text-zinc-900 shadow-[0_8px_20px_-6px_rgba(0,0,0,0.15)]" : "text-zinc-500 hover:text-zinc-700"}`}
         >
-          BB Mall
+          BB Central
         </button>
+      </div>
+      
+      <div className="bg-white rounded-[32px] lg:rounded-[40px] p-6 lg:p-10 shadow-sm border border-zinc-100 mb-6 lg:mb-10">
+        <h4 className="font-headline font-black text-xs lg:text-sm tracking-widest text-zinc-400 uppercase mb-4">Customer App Visibility</h4>
+        <div className="flex flex-wrap gap-6">
+          <div className="flex items-center gap-3 bg-zinc-50 px-4 py-3 rounded-2xl border border-zinc-100">
+            <span className="text-xs font-bold text-zinc-700">BazaarBolt Status</span>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" className="sr-only peer" checked={settings.activeSections?.BB ?? true} onChange={(e) => setSettings({...settings, activeSections: {...(settings.activeSections || {}), BB: e.target.checked}})} />
+              <div className="w-12 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+            </label>
+          </div>
+          <div className="flex items-center gap-3 bg-zinc-50 px-4 py-3 rounded-2xl border border-zinc-100">
+            <span className="text-xs font-bold text-zinc-700">BB Cafe Status</span>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" className="sr-only peer" checked={settings.activeSections?.CAFE ?? true} onChange={(e) => setSettings({...settings, activeSections: {...(settings.activeSections || {}), CAFE: e.target.checked}})} />
+              <div className="w-12 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+            </label>
+          </div>
+          <div className="flex items-center gap-3 bg-zinc-50 px-4 py-3 rounded-2xl border border-zinc-100">
+            <span className="text-xs font-bold text-zinc-700">BB Central Status</span>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" className="sr-only peer" checked={settings.activeSections?.MALL ?? true} onChange={(e) => setSettings({...settings, activeSections: {...(settings.activeSections || {}), MALL: e.target.checked}})} />
+              <div className="w-12 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+            </label>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:gap-8">
@@ -465,7 +492,7 @@ export default function AdminLayouts() {
                     <input type="text" value={newBanner.url} onChange={e => setNewBanner({...newBanner, url: e.target.value})} className="flex-1 bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="URL..." />
                     <button 
                       type="button"
-                      onClick={() => { setCropAspect(21/9); setCropTarget("HERO"); setIsCropping(true); }}
+                      onClick={() => { setCropAspect(4/3); setCropTarget("HERO"); setIsCropping(true); }}
                       className="bg-zinc-900 text-white px-4 rounded-xl flex items-center justify-center hover:bg-black transition-all"
                       title="Open Crop Tool"
                     >
@@ -545,7 +572,7 @@ export default function AdminLayouts() {
 
             <div className="grid grid-cols-2 gap-4">
               {(settings.heroBanners || []).filter(b => (b.section || "BB") === activeBannerTab).map((b, idx) => (
-                <div key={idx} className="relative group aspect-[21/9] rounded-2xl overflow-hidden border border-zinc-100 shadow-sm uppercase">
+                <div key={idx} className="relative group aspect-[4/3] rounded-2xl overflow-hidden border border-zinc-100 shadow-sm uppercase">
                   <img src={b.url} className="w-full h-full object-cover" alt="" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
                     <button onClick={() => removeBanner(b.url)} className="bg-white/20 backdrop-blur-md p-2 rounded-full text-white hover:bg-red-500 transition-colors">
