@@ -297,7 +297,7 @@ export function ProductBottomSheet({ isOpen, onClose, productId, products }: Pro
 
         {/* Fixed Thumbnails Row at Bottom */}
         <motion.div 
-          className="fixed bottom-0 left-0 right-0 h-[110px] z-[150] flex items-center justify-center gap-3 px-2 pointer-events-auto bg-gradient-to-t from-black/80 via-black/50 to-transparent"
+          className="fixed bottom-0 left-0 right-0 h-[120px] z-[150] flex items-center justify-center gap-3 px-4 pb-safe pointer-events-auto bg-gradient-to-t from-black/90 via-black/60 to-transparent"
           style={{ opacity: thumbOpacity, y: thumbY }}
         >
           {visibleProducts.map(p => (

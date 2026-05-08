@@ -65,9 +65,22 @@ export function ProductDetails({ productId, isInsideBottomSheet, onClose }: Prod
 
   return (
     <div className="relative pb-32">
-      {/* Hero Image Section - Compressed */}
-      <section className="bg-white w-full flex items-center justify-center p-2 relative" style={{ height: '22vh', minHeight: '160px', maxHeight: '200px' }}>
-        <img src={product.image} alt={product.name} className="w-full h-full object-contain"/>
+      {/* Hero Image Section - Optimized for mobile visibility */}
+      <section 
+        className={`bg-white w-full flex items-center justify-center p-6 relative transition-all duration-500 ${!isInsideBottomSheet ? 'pt-28' : 'pt-4'}`} 
+        style={{ 
+          height: isInsideBottomSheet ? '30vh' : '40vh', 
+          minHeight: isInsideBottomSheet ? '220px' : '300px',
+          maxHeight: isInsideBottomSheet ? '300px' : '450px'
+        }}
+      >
+        <div className="w-full h-full relative group">
+          <img 
+            src={product.image} 
+            alt={product.name} 
+            className="w-full h-full object-contain drop-shadow-2xl transform transition-transform duration-700 group-hover:scale-105"
+          />
+        </div>
       </section>
 
       {/* Main Info Card - Compressed */}
