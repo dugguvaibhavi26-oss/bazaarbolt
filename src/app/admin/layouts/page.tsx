@@ -421,7 +421,7 @@ export default function AdminLayouts() {
             setNewUnderPriceStore(prev => ({...prev, section: "BB"}));
             setNewDynamicRow(prev => ({...prev, section: "BB"}));
           }} 
-          className={`px-8 py-2.5 rounded-full text-[10px] font-black tracking-widest uppercase transition-all duration-300 ${activeBannerTab === "BB" ? "bg-white text-zinc-900 shadow-[0_8px_20px_-6px_rgba(0,0,0,0.15)]" : "text-zinc-500 hover:text-zinc-700"}`}
+          className={`px-8 py-2.5 rounded-full text-[10px] font-black tracking-widest uppercase transition-all duration-300 ${activeBannerTab === "BB" ? "bg-primary text-white shadow-[0_8px_20px_-6px_rgba(34,197,94,0.4)]" : "text-zinc-500 hover:text-zinc-700"}`}
         >
           Bazaarbolt
         </button>
@@ -433,7 +433,7 @@ export default function AdminLayouts() {
             setNewUnderPriceStore(prev => ({...prev, section: "CAFE"}));
             setNewDynamicRow(prev => ({...prev, section: "CAFE"}));
           }} 
-          className={`px-8 py-2.5 rounded-full text-[10px] font-black tracking-widest uppercase transition-all duration-300 ${activeBannerTab === "CAFE" ? "bg-white text-zinc-900 shadow-[0_8px_20px_-6px_rgba(0,0,0,0.15)]" : "text-zinc-500 hover:text-zinc-700"}`}
+          className={`px-8 py-2.5 rounded-full text-[10px] font-black tracking-widest uppercase transition-all duration-300 ${activeBannerTab === "CAFE" ? "bg-[#8B5E3C] text-white shadow-[0_8px_20px_-6px_rgba(139,94,60,0.4)]" : "text-zinc-500 hover:text-zinc-700"}`}
         >
           BB Cafe
         </button>
@@ -445,7 +445,7 @@ export default function AdminLayouts() {
             setNewUnderPriceStore(prev => ({...prev, section: "MALL"}));
             setNewDynamicRow(prev => ({...prev, section: "MALL"}));
           }} 
-          className={`px-8 py-2.5 rounded-full text-[10px] font-black tracking-widest uppercase transition-all duration-300 ${activeBannerTab === "MALL" ? "bg-white text-zinc-900 shadow-[0_8px_20px_-6px_rgba(0,0,0,0.15)]" : "text-zinc-500 hover:text-zinc-700"}`}
+          className={`px-8 py-2.5 rounded-full text-[10px] font-black tracking-widest uppercase transition-all duration-300 ${activeBannerTab === "MALL" ? "bg-indigo-600 text-white shadow-[0_8px_20px_-6px_rgba(79,70,229,0.4)]" : "text-zinc-500 hover:text-zinc-700"}`}
         >
           BB Central
         </button>
@@ -717,7 +717,12 @@ export default function AdminLayouts() {
                 <div key={s.id} className="relative rounded-2xl overflow-hidden border border-zinc-200 shadow-sm p-4 bg-zinc-50">
                   <div className="flex justify-between items-start mb-3 relative z-10">
                     <div>
-                      <h4 className="font-headline font-black text-sm uppercase text-zinc-900">{s.title}</h4>
+                      <h4 className="font-headline font-black text-sm uppercase text-zinc-900 flex items-center gap-2">
+                        {s.title}
+                        <span className={`text-[7px] px-1.5 py-0.5 rounded-full text-white font-black ${s.section === 'CAFE' ? 'bg-[#8B5E3C]' : s.section === 'MALL' ? 'bg-indigo-500' : 'bg-primary'}`}>
+                          {(s.section || "BB")}
+                        </span>
+                      </h4>
                       <p className="text-[8px] font-bold text-zinc-400 tracking-widest uppercase">
                         Under ₹{s.priceLimit} • {s.afterCategoryId ? `After Category: ${categories.find(c => c.id === s.afterCategoryId)?.label}` : `Position: ${s.position}`}
                       </p>
@@ -913,7 +918,12 @@ export default function AdminLayouts() {
                   <div className="flex justify-between items-start mb-3 relative z-10">
                     <div className="flex items-center gap-3">
                       <div>
-                        <h4 className="font-headline font-black text-sm uppercase text-zinc-900">{s.title || (s.filterType === 'BESTSELLERS' ? 'Bestsellers' : s.filterType === 'NEW_ARRIVALS' ? 'New Arrivals' : 'Category Row')}</h4>
+                        <h4 className="font-headline font-black text-sm uppercase text-zinc-900 flex items-center gap-2">
+                          {s.title || (s.filterType === 'BESTSELLERS' ? 'Bestsellers' : s.filterType === 'NEW_ARRIVALS' ? 'New Arrivals' : 'Category Row')}
+                          <span className={`text-[7px] px-1.5 py-0.5 rounded-full text-white font-black ${s.section === 'CAFE' ? 'bg-[#8B5E3C]' : s.section === 'MALL' ? 'bg-indigo-500' : 'bg-primary'}`}>
+                            {(s.section || "BB")}
+                          </span>
+                        </h4>
                         <p className="text-[8px] font-bold text-zinc-400 tracking-widest uppercase">
                           Type: {s.filterType || 'CATEGORY'} • {s.filterCategoryId ? `Category: ${categories.find(c => c.id === s.filterCategoryId)?.label}` : 'All Products'} • {s.afterCategoryId ? `After: ${categories.find(c => c.id === s.afterCategoryId)?.label}` : `Pos: ${s.position}`}
                         </p>
@@ -1231,7 +1241,12 @@ export default function AdminLayouts() {
               {(settings.promoSections || []).filter(s => s.type !== "deal_row" && s.type !== "sliding_row" && (s.section || "BB") === activeBannerTab).map((s, idx) => (
                 <div key={s.id} className="relative rounded-2xl overflow-hidden border border-zinc-200 shadow-sm p-4" style={{ backgroundColor: s.bgColor }}>
                   <div className="flex justify-between items-start mb-3 relative z-10">
-                    <h4 className="font-headline font-black text-sm uppercase" style={{ color: s.textColor }}>{s.title || `${s.type} Section`}</h4>
+                    <h4 className="font-headline font-black text-sm uppercase flex items-center gap-2" style={{ color: s.textColor }}>
+                      {s.title || `${s.type} Section`}
+                      <span className={`text-[7px] px-1.5 py-0.5 rounded-full text-white font-black ${s.section === 'CAFE' ? 'bg-[#8B5E3C]' : s.section === 'MALL' ? 'bg-indigo-500' : 'bg-primary'}`}>
+                        {(s.section || "BB")}
+                      </span>
+                    </h4>
                     <div className="flex items-center gap-2">
                       <button onClick={() => moveSection(s.id, 'up')} className="p-1.5 rounded-lg bg-black/10 text-inherit hover:bg-black/20 transition-colors">
                         <span className="material-symbols-outlined text-sm">arrow_upward</span>

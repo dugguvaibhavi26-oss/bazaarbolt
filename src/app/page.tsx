@@ -42,10 +42,35 @@ const InfiniteBannerSlider = ({ section, router }: { section: any; router: any }
     return () => clearTimeout(timer);
   }, [items.length, isSingle, hasScrolled]);
 
+  // Auto-play logic
+  useEffect(() => {
+    if (isSingle || !scrollRef.current || !hasScrolled) return;
+
+    const interval = setInterval(() => {
+      if (scrollRef.current) {
+        const container = scrollRef.current;
+        const scrollAmount = container.clientWidth * 0.8;
+        const newPos = container.scrollLeft + scrollAmount;
+        
+        container.scrollTo({
+          left: newPos,
+          behavior: 'smooth'
+        });
+
+        // Loop back if we've scrolled too far (infinite effect)
+        if (container.scrollLeft > (container.scrollWidth / 2)) {
+          container.scrollTo({ left: container.scrollLeft - (container.scrollWidth / 4), behavior: 'auto' });
+        }
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [isSingle, hasScrolled]);
+
   return (
     <div 
       ref={scrollRef}
-      className="flex overflow-x-auto hide-scrollbar gap-4 snap-x snap-mandatory relative"
+      className="flex overflow-x-auto hide-scrollbar gap-4 snap-x snap-mandatory relative scroll-smooth"
       style={{ paddingInline: isSingle ? '1rem' : 'max(10vw, calc(50vw - 400px))' }}
     >
       {repeatedItems.map((item: any, idx: number) => (
@@ -222,7 +247,7 @@ export default function Home() {
     }
     const interval = setInterval(() => {
       setCurrentBannerIndex(prev => (prev + 1) % BANNERS.length);
-    }, 5000);
+    }, 3500);
     return () => clearInterval(interval);
   }, [BANNERS.length]);
 
