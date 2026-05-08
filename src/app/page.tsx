@@ -312,16 +312,22 @@ export default function Home() {
     return (settings?.promoSections || [])
       .filter(s => {
         const isMatchesSection = s.section === activeSection || (!s.section && activeSection === "BB");
-        const isMatchesPosition = (s.position || "MIDDLE") === pos;
         
         if (anchoredTo) {
           return isMatchesSection && s.afterCategoryId === anchoredTo;
         }
+
+        const isMatchesPosition = (s.position || "MIDDLE") === pos;
         
-        // Root level call: render sections that are not anchored to a category OR another section
-        const isAnchoredToCategory = categories.some(c => c.id === s.afterCategoryId);
-        const isAnchoredToSection = settings?.promoSections?.some(other => other.id === s.afterCategoryId);
-        return isMatchesSection && isMatchesPosition && !isAnchoredToCategory && !isAnchoredToSection;
+        // Root level call: render sections that are not anchored to an ACTIVE category OR another ACTIVE section
+        const isAnchoredToActiveCategory = categories.some(c => {
+          const isTargetCat = c.id === s.afterCategoryId;
+          const isTargetSub = c.subcategories?.some((sub: any) => (typeof sub === 'string' ? sub : (sub.id || sub.label)) === s.afterCategoryId);
+          return (isTargetCat || isTargetSub) && ((c as any).section || "BB") === activeSection;
+        });
+        const isAnchoredToActiveSection = settings?.promoSections?.some(other => other.id === s.afterCategoryId && (other.section === activeSection || (!other.section && activeSection === "BB")));
+        
+        return isMatchesSection && isMatchesPosition && !isAnchoredToActiveCategory && !isAnchoredToActiveSection;
       })
       .map(section => {
         let content: React.ReactNode = null;
@@ -633,6 +639,18 @@ export default function Home() {
             </div>
           ))}
         </div>
+        
+        {/* Render sections anchored to any of these categories or their subcategories */}
+        {items.map(cat => (
+          <React.Fragment key={`anchored-${cat.id}`}>
+            {renderPromoSections("MIDDLE", cat.id)}
+            {cat.subcategories?.map((sub: any) => {
+              const subId = typeof sub === 'string' ? sub : (sub.id || sub.label);
+              return <React.Fragment key={`anchored-sub-${subId}`}>{renderPromoSections("MIDDLE", subId)}</React.Fragment>;
+            })}
+          </React.Fragment>
+        ))}
+
         {isMax4Row && hasMore && (
           <div className="mt-6">
             <button 
