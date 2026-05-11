@@ -286,41 +286,69 @@ export default function RiderOrderDetail() {
   </div>
   </section>
 
-  <section className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-100">
-  <h3 className="text-[10px] font-black text-zinc-900 mb-4">Shipment checklist</h3>
-  <div className="space-y-4">
-  {order.items.map((item, idx) => (
-  <div key={idx} className={`space-y-3 pb-4 border-b border-zinc-50 last:border-0 last:pb-0 p-4 rounded-3xl transition-all ${item.unavailable ? 'bg-red-50/50 border border-red-100 opacity-80': ''}`}>
-  <div className="flex items-center justify-between">
-  <div className="flex items-center gap-3">
-  <div className="w-10 h-10 bg-zinc-50 rounded-lg p-1 border border-zinc-100">
-  <img src={item.image} alt=""className="w-full h-full object-contain"/>
-  </div>
-  <div>
-  <p className={`text-[11px] font-black text-zinc-900 leading-tight ${item.unavailable ? 'line-through text-red-600': ''}`}>{item.name}</p>
-  <p className="text-[9px] font-bold text-zinc-400">Quantity: {item.quantity}</p>
-  </div>
-  </div>
-  <div className="text-right">
-  <p className={`text-xs font-black text-zinc-900 ${item.unavailable ? 'line-through text-red-400': ''}`}>₹{(item.price * item.quantity).toFixed(0)}</p>
-  {item.unavailable && <span className="text-[8px] font-black text-red-500 ">Out of Stock</span>}
-  </div>
-  </div>
+  <section className="space-y-6">
+  <h3 className="text-[10px] font-black text-zinc-900 mb-2 px-2 uppercase tracking-widest">Shipment Checklist</h3>
+  {Object.entries(
+    order.items.reduce((acc, item) => {
+      const vendorId = item.vendorId || 'Store';
+      if (!acc[vendorId]) acc[vendorId] = [];
+      acc[vendorId].push(item);
+      return acc;
+    }, {} as Record<string, typeof order.items>)
+  ).map(([vendorId, items], vIdx) => (
+    <div key={vendorId} className="bg-white rounded-[32px] p-6 shadow-sm border border-zinc-100 space-y-4">
+      <div className="flex items-center justify-between border-b border-zinc-50 pb-4 mb-2">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-primary/10 rounded-xl flex items-center justify-center">
+            <span className="material-symbols-outlined text-primary text-sm">storefront</span>
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-zinc-900 tracking-tight">Vendor Shipment</p>
+            <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-tighter">ID: {vendorId.slice(0, 8)}</p>
+          </div>
+        </div>
+        <span className="text-[10px] font-black bg-zinc-100 px-2 py-1 rounded-lg text-zinc-500">{items.length} items</span>
+      </div>
 
-  {/* Toggle Availability Button - only for rider during pick-up phase */}
-  {(order.status === "ACCEPTED"|| order.status === "PICKED") && order.riderId === user?.uid && (
-  <button onClick={() => toggleItemAvailability(idx)}
-  disabled={processing}
-  className={`w-full py-2 rounded-xl text-[9px] font-black transition-all ${
-  item.unavailable ? "bg-white text-green-600 border border-green-200 shadow-sm": "bg-red-50 text-red-600 border border-red-100"
-  }`}
-  >
-  {item.unavailable ? "Product found? (Add back)": "Mark not available"}
-  </button>
-  )}
-  </div>
+      <div className="space-y-4">
+        {items.map((item, idx) => {
+          // Find original index for toggle function
+          const originalIndex = order.items.findIndex(i => i.id === item.id && i.name === item.name);
+          return (
+            <div key={idx} className={`space-y-3 pb-4 border-b border-zinc-50 last:border-0 last:pb-0 transition-all ${item.unavailable ? 'bg-red-50/30 -mx-2 px-2 rounded-2xl opacity-80' : ''}`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-zinc-50 rounded-lg p-1 border border-zinc-100 shrink-0">
+                    <img src={item.image} alt="" className="w-full h-full object-contain" />
+                  </div>
+                  <div>
+                    <p className={`text-[11px] font-black text-zinc-900 leading-tight ${item.unavailable ? 'line-through text-red-600' : ''}`}>{item.name}</p>
+                    <p className="text-[9px] font-bold text-zinc-400">Quantity: {item.quantity}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className={`text-xs font-black text-zinc-900 ${item.unavailable ? 'line-through text-red-400' : ''}`}>₹{(item.price * item.quantity).toFixed(0)}</p>
+                  {item.unavailable && <span className="text-[8px] font-black text-red-500 ">Out of Stock</span>}
+                </div>
+              </div>
+
+              {/* Toggle Availability Button - only for rider during pick-up phase */}
+              {(order.status === "ACCEPTED" || order.status === "PICKED") && order.riderId === user?.uid && (
+                <button onClick={() => toggleItemAvailability(originalIndex)}
+                  disabled={processing}
+                  className={`w-full py-2 rounded-xl text-[9px] font-black transition-all ${
+                    item.unavailable ? "bg-white text-green-600 border border-green-200 shadow-sm" : "bg-red-50 text-red-600 border border-red-100"
+                  }`}
+                >
+                  {item.unavailable ? "Product found? (Add back)" : "Mark not available"}
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   ))}
-  </div>
   </section>
 
   {/* Action Buttons */}
