@@ -10,6 +10,7 @@ import { AppSettings, PromoSection, PromoSectionItem } from "@/types";
 import { useStore } from "@/store/useStore";
 import { BannerCropper } from "@/components/BannerCropper";
 import { Portal } from "@/components/Portal";
+import Image from "next/image";
 
 export default function AdminLayouts() {
   const { categories, products, fetchCatalog } = useStore();
@@ -505,10 +506,6 @@ export default function AdminLayouts() {
                   <input type="text" value={newBanner.title} onChange={e => setNewBanner({...newBanner, title: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. FLASH SALE" />
                 </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
-                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Title</label>
-                  <input type="text" value={newBanner.title} onChange={e => setNewBanner({...newBanner, title: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. FLASH SALE" />
-                </div>
-                <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Subtitle</label>
                   <input type="text" value={newBanner.subtitle} onChange={e => setNewBanner({...newBanner, subtitle: e.target.value})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase placeholder:uppercase" placeholder="E.G. 50% OFF" />
                 </div>
@@ -573,7 +570,7 @@ export default function AdminLayouts() {
             <div className="grid grid-cols-2 gap-4">
               {(settings.heroBanners || []).filter(b => (b.section || "BB") === activeBannerTab).map((b, idx) => (
                 <div key={idx} className="relative group aspect-[4/3] rounded-2xl overflow-hidden border border-zinc-100 shadow-sm uppercase">
-                  <img src={b.url} className="w-full h-full object-cover" alt="" />
+                  <Image src={b.url} fill className="object-cover" alt="" sizes="200px" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
                     <button onClick={() => removeBanner(b.url)} className="bg-white/20 backdrop-blur-md p-2 rounded-full text-white hover:bg-red-500 transition-colors">
                       <span className="material-symbols-outlined">delete</span>
@@ -662,10 +659,10 @@ export default function AdminLayouts() {
                     }} 
                     className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
                   >
-                    <option value="TOP">PAGE TOP</option>
-                    <option value="AFTER_HERO">AFTER HERO BANNERS</option>
-                    <option value="AFTER_CATEGORIES">AFTER ALL CATEGORIES</option>
-                    <option value="BOTTOM">PAGE BOTTOM</option>
+                    <option value="TOP">PAGE TOP (Before Categories)</option>
+                    <option value="AFTER_HERO">AFTER HERO BANNERS (Above Categories)</option>
+                    <option value="AFTER_CATEGORIES">AFTER ALL CATEGORIES (Bottom Area)</option>
+                    <option value="BOTTOM">PAGE BOTTOM (Footer Area)</option>
                     <optgroup label="ANCHOR TO CATEGORY">
                       {categories.filter(c => !c.section || c.section === activeBannerTab).map(c => (
                         <option key={c.id} value={c.id}>UNDER {c.label}</option>
@@ -700,7 +697,9 @@ export default function AdminLayouts() {
                         }}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[8px] font-bold tracking-widest uppercase transition-all ${newUnderPriceStore.manualProductIds?.includes(p.id) ? 'bg-primary text-zinc-900 border border-primary' : 'bg-zinc-50 text-zinc-500 border border-zinc-200'}`}
                       >
-                        <img src={p.image} className="w-4 h-4 object-contain rounded" alt="" />
+                        <div className="w-4 h-4 relative rounded overflow-hidden">
+                          <Image src={p.image} fill className="object-contain" alt="" sizes="16px" />
+                        </div>
                         {p.name.length > 20 ? p.name.substring(0, 20) + "..." : p.name}
                       </button>
                     ))}
@@ -820,10 +819,10 @@ export default function AdminLayouts() {
                     }} 
                     className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
                   >
-                    <option value="TOP">PAGE TOP</option>
-                    <option value="AFTER_HERO">AFTER HERO BANNERS</option>
-                    <option value="AFTER_CATEGORIES">AFTER ALL CATEGORIES</option>
-                    <option value="BOTTOM">PAGE BOTTOM</option>
+                    <option value="TOP">PAGE TOP (Before Categories)</option>
+                    <option value="AFTER_HERO">AFTER HERO BANNERS (Above Categories)</option>
+                    <option value="AFTER_CATEGORIES">AFTER ALL CATEGORIES (Bottom Area)</option>
+                    <option value="BOTTOM">PAGE BOTTOM (Footer Area)</option>
                     <optgroup label="ANCHOR TO CATEGORY">
                       {categories.filter(c => !c.section || c.section === activeBannerTab).map(c => (
                         <option key={c.id} value={c.id}>UNDER {c.label}</option>
@@ -878,7 +877,9 @@ export default function AdminLayouts() {
                         }}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[8px] font-bold tracking-widest uppercase transition-all ${newDynamicRow.manualProductIds?.includes(p.id) ? 'bg-primary text-zinc-900 border border-primary' : 'bg-zinc-50 text-zinc-500 border border-zinc-200'}`}
                       >
-                        <img src={p.image} className="w-4 h-4 object-contain rounded" alt="" />
+                        <div className="w-4 h-4 relative rounded overflow-hidden">
+                          <Image src={p.image} fill className="object-contain" alt="" sizes="16px" />
+                        </div>
                         {p.name.length > 20 ? p.name.substring(0, 20) + "..." : p.name}
                       </button>
                     ))}
@@ -968,13 +969,6 @@ export default function AdminLayouts() {
                     <option value="category_grid">Category Grid</option>
                   </select>
                 </div>
-                <div className="space-y-1 lg:space-y-1.5">
-                  <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Section Type</label>
-                  <select value={newPromoSection.type} onChange={e => setNewPromoSection({...newPromoSection, type: e.target.value as any})} className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase">
-                    <option value="grid">Dynamic Grid (Custom Layout)</option>
-                    <option value="banner">Single Wide Banner</option>
-                  </select>
-                </div>
                 <div className="space-y-1 lg:space-y-1.5 uppercase">
                   <label className="text-[9px] lg:text-[10px] font-black text-zinc-400 ml-1 uppercase">Display Placement</label>
                   <select 
@@ -990,10 +984,10 @@ export default function AdminLayouts() {
                     }} 
                     className="w-full bg-white border border-zinc-100 rounded-xl p-3 text-[10px] lg:text-xs font-bold uppercase"
                   >
-                    <option value="TOP">PAGE TOP</option>
-                    <option value="AFTER_HERO">AFTER HERO BANNERS</option>
-                    <option value="AFTER_CATEGORIES">AFTER ALL CATEGORIES</option>
-                    <option value="BOTTOM">PAGE BOTTOM</option>
+                    <option value="TOP">PAGE TOP (Before Categories)</option>
+                    <option value="AFTER_HERO">AFTER HERO BANNERS (Above Categories)</option>
+                    <option value="AFTER_CATEGORIES">AFTER ALL CATEGORIES (Bottom Area)</option>
+                    <option value="BOTTOM">PAGE BOTTOM (Footer Area)</option>
                     <optgroup label="ANCHOR TO CATEGORY">
                       {categories.filter(c => !c.section || c.section === activeBannerTab).map(c => (
                         <option key={c.id} value={c.id}>UNDER {c.label}</option>
@@ -1184,8 +1178,8 @@ export default function AdminLayouts() {
                   {newPromoSection.items.map((item, idx) => (
                     <div key={idx} className="flex flex-col sm:flex-row gap-2 bg-zinc-50 border border-zinc-200 p-2 rounded-xl relative group">
                       <div className="w-16 h-16 rounded-lg bg-zinc-200 overflow-hidden flex-shrink-0 flex items-center justify-center relative">
-                        {item.imageUrl ? <img src={item.imageUrl} className="w-full h-full object-cover" alt="" /> : <span className="material-symbols-outlined text-zinc-400">image</span>}
-                        <div className="absolute top-0 left-0 bg-black/60 text-white text-[8px] font-bold px-1 rounded-br-lg">{item.colSpan}x{item.rowSpan}</div>
+                        {item.imageUrl ? <Image src={item.imageUrl} fill className="object-cover" alt="" sizes="64px" /> : <span className="material-symbols-outlined text-zinc-400">image</span>}
+                        <div className="absolute top-0 left-0 bg-black/60 text-white text-[8px] font-bold px-1 rounded-br-lg z-10">{item.colSpan}x{item.rowSpan}</div>
                       </div>
                       <div className="flex-1 space-y-2">
                         <div className="grid grid-cols-2 gap-2">
@@ -1264,8 +1258,8 @@ export default function AdminLayouts() {
                   </div>
                   <div className="flex gap-2 overflow-x-auto relative z-10">
                     {s.items.map((item, i) => (
-                      <div key={i} className="w-16 h-16 rounded-xl overflow-hidden border border-white/20 flex-shrink-0 bg-white/10">
-                        <img src={item.imageUrl} className="w-full h-full object-cover" alt="" />
+                      <div key={i} className="w-16 h-16 rounded-xl overflow-hidden border border-white/20 flex-shrink-0 bg-white/10 relative">
+                        <Image src={item.imageUrl} fill className="object-cover" alt="" sizes="64px" />
                       </div>
                     ))}
                   </div>

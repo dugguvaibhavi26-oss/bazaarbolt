@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 
 interface LogoProps {
   className?: string;
@@ -15,16 +16,13 @@ export const Logo = ({ className = "", size = "md" }: LogoProps) => {
 
   return (
     <div className={`relative flex items-center justify-center ${sizeMap[size]} ${className} select-none`}>
-      <img 
+      <Image 
         src="/logo.png" 
         alt="BazaarBolt Logo" 
+        width={160}
+        height={40}
         className="h-full w-auto object-contain transition-transform duration-500 group-hover:scale-105"
-        onError={(e) => {
-          // Fallback to stylized SVG if image is not yet uploaded to public/logo.png
-          e.currentTarget.style.display = 'none';
-          const parent = e.currentTarget.parentElement;
-          if (parent) parent.setAttribute('data-fallback', 'true');
-        }}
+        priority
       />
       <div className="hidden data-[fallback=true]:block h-full w-auto">
         <svg viewBox="0 0 400 100" fill="none" className="h-full w-auto">

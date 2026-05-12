@@ -3,6 +3,7 @@
 import { useRouter, usePathname } from "next/navigation";
 import { useStore } from "@/store/useStore";
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 
 export const BottomNav = () => {
   const router = useRouter();
@@ -72,7 +73,7 @@ export const BottomNav = () => {
             <div className="flex items-center -space-x-3 pl-1">
               {cart.slice(0, 3).map((item, idx) => (
                 <div key={idx} className="w-9 h-9 rounded-full bg-white border-[1.5px] border-[#2d8a11] overflow-hidden flex-shrink-0 z-[3] relative shadow-sm">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-contain p-1" />
+                  <Image src={item.image} alt={item.name} fill className="object-contain p-1" sizes="36px" />
                 </div>
               ))}
             </div>

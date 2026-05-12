@@ -10,6 +10,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { useAuth } from "@/components/AuthProvider";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { BottomNav } from "@/components/BottomNav";
 import { Logo } from "@/components/Logo";
 import { Portal } from "@/components/Portal";
@@ -24,23 +25,22 @@ const InfiniteBannerSlider = ({ section, router }: { section: any; router: any }
   const repeatedItems = isSingle ? items : Array(20).fill(items).flat();
 
   useEffect(() => {
-    if (isSingle || !scrollRef.current || hasScrolled) return;
+    if (isSingle || !scrollRef.current) return;
     
     const container = scrollRef.current;
     // Start at the 10th set so user can scroll left or right infinitely practically
     const startIndex = items.length * 10; 
     
-    const timer = setTimeout(() => {
+    // Use requestAnimationFrame for smoother initial positioning
+    requestAnimationFrame(() => {
       const child = container.children[startIndex] as HTMLElement;
       if (child) {
         const scrollPos = child.offsetLeft - container.clientWidth / 2 + child.clientWidth / 2;
         container.scrollTo({ left: scrollPos, behavior: 'auto' });
         setHasScrolled(true);
       }
-    }, 50);
-
-    return () => clearTimeout(timer);
-  }, [items.length, isSingle, hasScrolled]);
+    });
+  }, [items.length, isSingle]);
 
   // Auto-play logic
   useEffect(() => {
@@ -75,14 +75,17 @@ const InfiniteBannerSlider = ({ section, router }: { section: any; router: any }
     >
       {repeatedItems.map((item: any, idx: number) => (
         <div 
-          key={idx}
+          key={`${section.id}-${idx}`}
           className={`relative ${isSingle ? 'w-full' : 'w-[85vw] max-w-[800px]'} shrink-0 snap-center aspect-[16/9] sm:aspect-[21/9] rounded-[24px] sm:rounded-[32px] overflow-hidden shadow-xl cursor-pointer group ${section.bgAnimation === 'zoom' ? 'hover:scale-[1.02]' : ''}`} 
           onClick={() => item?.redirectUrl && router.push(item.redirectUrl)}
         >
-          <img 
+          <Image 
             src={item?.imageUrl} 
             alt={section.title || ""} 
-            className={`w-full h-full object-cover transition-transform duration-[20s] ease-linear ${section.bgAnimation === 'zoom' ? 'scale-110 group-hover:scale-100' : 'group-hover:scale-105'}`} 
+            fill
+            sizes="(max-width: 768px) 100vw, 800px"
+            priority={idx === 0}
+            unoptimized={true}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60"></div>
         </div>
@@ -95,12 +98,11 @@ export default function Home() {
   const {
     settings, initSettings, settingsLoading,
     products, categories, catalogLoading, fetchCatalog,
-    cart, addToCart, updateQuantity, selectedAddress, setSelectedAddress
+    cart, addToCart, updateQuantity, selectedAddress, setSelectedAddress,
+    activeSection, setActiveSection
   } = useStore();
   const { user, role, loading: authLoading, userData } = useAuth();
   const router = useRouter();
-
-  const [activeSection, setActiveSection] = useState<"BB" | "CAFE" | "MALL">("BB");
 
   const availableSections = [
     ...(settings?.activeSections?.BB !== false ? [{ id: 'BB' as const, label: 'BAZAAR', sub: 'BOLT', colorClass: 'text-primary' }] : []),
@@ -236,7 +238,7 @@ export default function Home() {
 
   useEffect(() => {
     setIsTransitioning(true);
-    const timer = setTimeout(() => setIsTransitioning(false), 400);
+    const timer = setTimeout(() => setIsTransitioning(false), 250);
     return () => clearTimeout(timer);
   }, [activeSection]);
 
@@ -247,9 +249,9 @@ export default function Home() {
     }
     const interval = setInterval(() => {
       setCurrentBannerIndex(prev => (prev + 1) % BANNERS.length);
-    }, 3500);
+    }, 4500);
     return () => clearInterval(interval);
-  }, [BANNERS.length]);
+  }, [BANNERS.length, activeSection]);
 
   if (!authLoading && user && role !== 'customer') {
     return (
@@ -292,7 +294,7 @@ export default function Home() {
     return (
       <div className={`flex flex-col gap-0.5 transition-all group ${outOfStock ? 'opacity-60 grayscale' : ''}`}>
         <div className="relative aspect-square bg-white rounded-md sm:rounded-lg overflow-hidden border border-zinc-100 cursor-pointer shadow-sm" onClick={() => { setSelectedProductId(product.id); setSheetProductsContext(contextProducts || null); setIsProductSheetOpen(true); }}>
-          <img className="w-full h-full p-2 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} />
+          <Image className="p-2 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} fill sizes="(max-width: 768px) 33vw, 20vw" unoptimized={true} />
           <div className="absolute bottom-0.5 right-0.5">
             {outOfStock ? (
               <div className="bg-red-50 border border-red-100 text-red-600 px-1 py-0.5 rounded text-[6px] font-black uppercase">
@@ -401,7 +403,7 @@ export default function Home() {
                       <div key={idx} onClick={() => item.redirectUrl && router.push(item.redirectUrl)} className={`cursor-pointer group ${colSpanClass} ${rowSpanClass} relative`}>
                         <div className="w-full h-full flex flex-col bg-white/10 backdrop-blur-md rounded-[32px] border-2 border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] group-hover:scale-[1.02] transition-all duration-500 overflow-hidden relative">
                           {item.imageUrl ? (
-                            <img src={item.imageUrl} alt={item.label || ""} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                            <Image src={item.imageUrl} alt={item.label || ""} fill className="object-cover transition-transform duration-700 group-hover:scale-110" sizes="(max-width: 768px) 33vw, 25vw" unoptimized={true} />
                           ) : (
                             <div className="absolute inset-0 w-full h-full bg-zinc-50" />
                           )}
@@ -616,7 +618,7 @@ export default function Home() {
                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                        {section.items.map((item, i) => (
                          <Link key={i} href={item.redirectUrl || "#"} className={`relative overflow-hidden rounded-2xl group shadow-md hover:shadow-xl transition-all duration-300 ${item.colSpan === 2 ? 'col-span-2' : 'col-span-1'} ${item.rowSpan === 2 ? 'row-span-2 aspect-[1/2]' : 'aspect-square'}`}>
-                           <img src={item.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
+                           <Image src={item.imageUrl} fill className="object-cover transition-transform duration-700 group-hover:scale-110" alt="" sizes="(max-width: 768px) 50vw, 25vw" unoptimized={true} />
                          </Link>
                        ))}
                      </div>
@@ -651,11 +653,13 @@ export default function Home() {
               onClick={() => router.push(`/category/${cat.id}`)}
               className="flex flex-col items-center cursor-pointer group"
             >
-              <div className="w-full aspect-square rounded-full bg-transparent flex items-center justify-center p-2 mb-1.5 overflow-hidden transition-all group-hover:scale-105 group-active:scale-95">
-                 <img 
+              <div className="w-full aspect-square rounded-full bg-transparent flex items-center justify-center p-2 mb-1.5 overflow-hidden transition-all group-hover:scale-105 group-active:scale-95 relative">
+                 <Image 
                    src={cat.img} 
                    alt={cat.label} 
-                   className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" 
+                   fill
+                   className="p-2 object-contain group-hover:scale-110 transition-transform duration-500" 
+                   sizes="80px"
                  />
               </div>
               <span className="text-[10px] font-bold text-zinc-800 text-center leading-[1.2] tracking-tight px-0.5 line-clamp-2 w-full">
@@ -802,15 +806,24 @@ export default function Home() {
             {/* Dynamic Promo Sections - VERY TOP */}
             {renderPromoSections("TOP")}
 
-            <section className="px-4 mb-8">
-              <div className={`relative w-full aspect-[4/3] sm:aspect-[21/9] rounded-[40px] overflow-hidden shadow-2xl transition-all duration-500 ${activeSection === 'CAFE' ? 'bg-[#EAD8C0]/20' : 'bg-zinc-100'}`}>
-                {BANNERS.map((banner, idx) => (
+            {BANNERS.length > 0 && (
+              <section className="px-4 mb-8">
+                <div className={`relative w-full aspect-[4/3] sm:aspect-[21/9] rounded-[40px] overflow-hidden shadow-2xl transition-all duration-500 ${activeSection === 'CAFE' ? 'bg-[#EAD8C0]/20' : 'bg-zinc-100'}`}>
+                  {BANNERS.map((banner, idx) => (
                   <div
-                    key={idx}
+                    key={`${activeSection}-${idx}`}
                     onClick={() => banner.redirectUrl && router.push(banner.redirectUrl)}
-                    className={`absolute inset-0 transition-all duration-1000 ${banner.redirectUrl ? 'cursor-pointer' : ''} ${idx === currentBannerIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'}`}
+                    className={`absolute inset-0 transition-all duration-700 ${banner.redirectUrl ? 'cursor-pointer' : ''} ${idx === currentBannerIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
                   >
-                    <img className="w-full h-full object-cover" src={banner.url} alt={banner.title} />
+                    <Image 
+                      className="object-cover" 
+                      src={banner.url} 
+                      alt={banner.title} 
+                      fill 
+                      priority={idx === 0} 
+                      sizes="100vw"
+                      unoptimized={true}
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-6">
                       <p className="text-[12px] font-black tracking-widest text-white/70 mb-1">{banner.subtitle}</p>
                       <h2 className="text-2xl font-black text-white tracking-tighter leading-none">{banner.title}</h2>
@@ -826,6 +839,7 @@ export default function Home() {
                 )}
               </div>
             </section>
+            )}
 
             {/* Dynamic Promo Sections - MIDDLE */}
             {renderPromoSections("AFTER_HERO")}
@@ -953,7 +967,9 @@ export default function Home() {
               <div className="space-y-4 max-h-[40vh] overflow-y-auto mb-8 pr-2 custom-scrollbar">
                 {pendingRatingOrder.items.map((item, idx) => (
                   <div key={`${item.id}-${idx}`} className="flex items-center gap-4 bg-zinc-50 p-4 rounded-2xl border border-zinc-100">
-                    <div className="w-12 h-12 flex-shrink-0 bg-white p-1 shadow-sm rounded-lg border border-zinc-100"><img src={item.image} alt={item.name} className="w-full h-full object-contain" /></div>
+                    <div className="w-12 h-12 flex-shrink-0 bg-white p-1 shadow-sm rounded-lg border border-zinc-100 relative">
+                      <Image src={item.image} alt={item.name} fill className="object-contain p-1" sizes="48px" />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[11px] font-bold text-zinc-900 truncate leading-none mb-2">{item.name}</p>
                       <div className="flex gap-1">

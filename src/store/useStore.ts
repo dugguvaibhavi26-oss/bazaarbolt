@@ -20,6 +20,8 @@ interface StoreState {
   cart: CartItem[];
   selectedAddress: Address | null;
   activeCoupon: { code: string; discount: number } | null;
+  activeSection: "BB" | "CAFE" | "MALL";
+  setActiveSection: (section: "BB" | "CAFE" | "MALL") => void;
   addToCart: (item: CartItem) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, delta: number) => void;
@@ -43,7 +45,9 @@ export const useStore = create<StoreState>()(
       cart: [],
       selectedAddress: null,
       activeCoupon: null,
+      activeSection: "BB",
 
+      setActiveSection: (section) => set({ activeSection: section }),
       setSelectedAddress: (address) => set({ selectedAddress: address }),
 
       addToCart: (item) => {
@@ -199,7 +203,8 @@ export const useStore = create<StoreState>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ 
         cart: state.cart, 
-        selectedAddress: state.selectedAddress
+        selectedAddress: state.selectedAddress,
+        activeSection: state.activeSection
       }),
     }
   )

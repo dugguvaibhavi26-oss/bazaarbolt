@@ -7,6 +7,7 @@ import { db } from "@/lib/firebase";
 import { Product } from "@/types";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ProductBottomSheet } from "@/components/ProductBottomSheet";
 
 export default function CategoryPage() {
@@ -52,7 +53,7 @@ export default function CategoryPage() {
     return (
       <div className={`flex flex-col gap-0.5 transition-all group ${outOfStock ? 'opacity-60 grayscale' : ''}`}>
         <div className="relative aspect-square bg-white rounded-md sm:rounded-lg overflow-hidden border border-zinc-100 cursor-pointer shadow-sm" onClick={() => { setSelectedProductId(product.id); setIsProductSheetOpen(true); }}>
-          <img className="w-full h-full p-0.5 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} />
+          <Image className="p-0.5 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} fill sizes="(max-width: 768px) 33vw, 20vw" />
           <div className="absolute bottom-0.5 right-0.5">
             {outOfStock ? (
               <div className="bg-red-50 border border-red-100 text-red-600 px-1 py-0.5 rounded text-[6px] font-black uppercase">
@@ -142,7 +143,9 @@ export default function CategoryPage() {
                 >
                   <div className={`w-14 h-14 lg:w-16 lg:h-16 rounded-full overflow-hidden border transition-all duration-300 flex items-center justify-center p-2.5 shadow-sm ${selectedSubcategory === label ? 'border-green-600 bg-white shadow-lg shadow-green-100 scale-105' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}>
                     {img ? (
-                      <img src={img} alt={label} className="w-full h-full object-contain group-hover:scale-110 transition-transform" />
+                      <div className="w-full h-full relative">
+                        <Image src={img} alt={label} fill className="object-contain group-hover:scale-110 transition-transform" sizes="64px" />
+                      </div>
                     ) : (
                       <span className="material-symbols-outlined text-zinc-300 text-lg">category</span>
                     )}
