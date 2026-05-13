@@ -68,19 +68,20 @@ export default function AdminVendors() {
               </div>
             </div>
             
-            <div className="flex items-center justify-between pt-4 border-t border-zinc-50">
-              <div className="flex flex-col">
-                <span className="text-[8px] font-black text-zinc-300 tracking-[0.2em] uppercase">Status</span>
-                <span className={`text-[10px] font-black tracking-widest uppercase ${vendor.vendorStatus === 'online' ? 'text-green-500' : 'text-red-500'}`}>
-                  {vendor.vendorStatus || 'OFFLINE'}
-                </span>
-              </div>
-              <div className="flex flex-col items-end">
-                <span className="text-[8px] font-black text-zinc-300 tracking-[0.2em] uppercase">UID</span>
-                <span className="text-[10px] font-bold text-zinc-400 font-mono select-all cursor-pointer" title="Click to copy UID" onClick={() => { navigator.clipboard.writeText(vendor.id); toast.success("UID Copied!"); }}>
-                  {vendor.id.slice(0, 8)}...
-                </span>
-              </div>
+            <div className="mt-6 flex gap-3">
+              <button 
+                onClick={() => toggleVendorStatus(vendor.id, vendor.vendorStatus)}
+                className={`flex-1 py-3 rounded-2xl text-[10px] font-black tracking-widest transition-all uppercase border ${vendor.vendorStatus === 'online' ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100' : 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100'}`}
+              >
+                {vendor.vendorStatus === 'online' ? 'Go Offline' : 'Go Online'}
+              </button>
+              <a 
+                href={`/admin/products?vendorId=${vendor.id}`}
+                className="flex-1 py-3 rounded-2xl bg-zinc-900 text-white text-[10px] font-black tracking-widest transition-all uppercase text-center hover:bg-black flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined text-xs">inventory_2</span>
+                Products
+              </a>
             </div>
           </div>
         ))}

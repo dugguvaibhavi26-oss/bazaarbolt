@@ -44,7 +44,9 @@ export default function AdminProducts() {
   const [displayCount, setDisplayCount] = useState(24);
   const [viewMode, setViewMode] = useState<"categories" | "products">("categories");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [vendors, setVendors] = useState<{uid: string, name: string}[]>([]);
+  const [vendorFilter, setVendorFilter] = useState<string>("ALL"); // "ALL", "UNASSIGNED", or vendorUID
 
   useEffect(() => {
     async function loadData() {
@@ -104,6 +106,14 @@ export default function AdminProducts() {
       }
     }
     loadData();
+
+    // Handle vendorId from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const vId = urlParams.get('vendorId');
+    if (vId) {
+      setVendorFilter(vId);
+      setViewMode("products");
+    }
   }, []);
 
   const syncSections = async () => {
@@ -163,21 +173,32 @@ export default function AdminProducts() {
       return pCats.includes(selectedCategory);
     });
     
-    const data = productsToExport.map(p => ({
-      id: p.id,
-      name: p.name,
-      price: p.price,
-      mrp: p.mrp || p.price,
-      category: p.category,
-      subcategory: p.subcategory || "",
-      stock: p.stock,
-      vendorId: p.vendorId || "",
-      section: (p as any).section || "BB",
-      image: p.image,
-      description: p.description || "",
-      active: p.active,
-      adminActive: p.adminActive ?? true
-    }));
+    const data = productsToExport.map(p => {
+      const pCats = Array.isArray(p.category) ? p.category : [p.category || ""];
+      const pSubs = Array.isArray(p.subcategory) ? p.subcategory : [p.subcategory || ""];
+      
+      // Map category IDs to labels for better readability in Excel
+      const catLabels = pCats.map(cId => {
+        const cat = categories.find(c => c.id === cId || c.label === cId);
+        return cat?.label || cId;
+      }).filter(Boolean);
+
+      return {
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        mrp: p.mrp || p.price,
+        category: catLabels.join(", "),
+        subcategory: pSubs.filter(Boolean).join(", "),
+        stock: p.stock,
+        vendorId: p.vendorId || "",
+        section: (p as any).section || "BB",
+        image: p.image,
+        description: p.description || "",
+        active: p.active,
+        adminActive: p.adminActive ?? true
+      };
+    });
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Products");
@@ -397,7 +418,20 @@ export default function AdminProducts() {
       ) || ((!p.category || (Array.isArray(p.category) && p.category.length === 0)) && target === "uncategorized");
     }
 
-    return matchesSection && matchesSearch && matchesCategory;
+    let matchesSubcategory = true;
+    if (selectedSubcategory) {
+      const productSubcategories = Array.isArray(p.subcategory) ? p.subcategory : [p.subcategory || ""];
+      matchesSubcategory = productSubcategories.some(s => s === selectedSubcategory);
+    }
+
+    let matchesVendor = true;
+    if (vendorFilter === "UNASSIGNED") {
+      matchesVendor = !p.vendorId;
+    } else if (vendorFilter !== "ALL") {
+      matchesVendor = p.vendorId === vendorFilter;
+    }
+
+    return matchesSection && matchesSearch && matchesCategory && matchesSubcategory && matchesVendor;
   });
 
   const paginatedProducts = filteredProducts.slice(0, displayCount);
@@ -695,6 +729,18 @@ onChange={(e) => {
             />
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+          <select 
+            value={vendorFilter}
+            onChange={(e) => {
+              setVendorFilter(e.target.value);
+              if (e.target.value !== "ALL") setViewMode("products");
+            }}
+            className="w-full sm:w-auto bg-white border border-zinc-100 rounded-2xl py-3 px-4 text-[10px] font-black uppercase tracking-widest shadow-sm focus:ring-2 ring-primary transition-all outline-none"
+          >
+            <option value="ALL">All Vendors</option>
+            <option value="UNASSIGNED">Not Assigned</option>
+            {vendors.map(v => <option key={v.uid} value={v.uid}>{v.name}</option>)}
+          </select>
           <button onClick={syncSections}
             className="w-full sm:w-auto bg-white border border-zinc-200 text-zinc-400 px-6 py-3 lg:py-3.5 rounded-2xl font-black text-[9px] lg:text-[10px] tracking-widest hover:text-zinc-900 hover:border-zinc-900 transition-all flex items-center justify-center gap-2 uppercase"
           >
@@ -756,18 +802,55 @@ onChange={(e) => {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => { setViewMode("categories"); setSelectedCategory(null); }}
-              className="p-3 bg-white rounded-xl border border-zinc-100 text-zinc-400 hover:text-zinc-900 transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"
-            >
-              <span className="material-symbols-outlined text-sm">arrow_back</span>
-              Back to categories
-            </button>
+          <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => { setViewMode("categories"); setSelectedCategory(null); setSelectedSubcategory(null); }}
+                className="p-3 bg-white rounded-xl border border-zinc-100 text-zinc-400 hover:text-zinc-900 transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest shrink-0"
+              >
+                <span className="material-symbols-outlined text-sm">arrow_back</span>
+                Back
+              </button>
+              {selectedCategory && (
+                <div className="bg-zinc-900 text-white px-4 py-3 rounded-xl flex items-center gap-2 shrink-0">
+                  <span className="text-[10px] font-black uppercase tracking-widest">{categories.find(c => c.id === selectedCategory)?.label}</span>
+                </div>
+              )}
+            </div>
+
             {selectedCategory && (
-              <h4 className="text-sm font-black text-zinc-400 uppercase tracking-widest">
-                Viewing: <span className="text-zinc-900">{categories.find(c => c.id === selectedCategory)?.label}</span>
-              </h4>
+              <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+                <button 
+                  onClick={() => setSelectedSubcategory(null)}
+                  className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all shrink-0 ${!selectedSubcategory ? 'bg-zinc-900 text-white border-zinc-900 shadow-md' : 'bg-white text-zinc-400 border-zinc-100 hover:bg-zinc-50'}`}
+                >
+                  All Subcategories
+                </button>
+                {categories.find(c => c.id === selectedCategory)?.subcategories?.map((sub: any) => {
+                  const subLabel = typeof sub === 'string' ? sub : sub.label;
+                  return (
+                    <button 
+                      key={subLabel}
+                      onClick={() => setSelectedSubcategory(subLabel === selectedSubcategory ? null : subLabel)}
+                      className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all shrink-0 ${subLabel === selectedSubcategory ? 'bg-primary text-zinc-900 border-primary shadow-md' : 'bg-white text-zinc-400 border-zinc-100 hover:bg-zinc-50'}`}
+                    >
+                      {subLabel}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            
+            {vendorFilter !== "ALL" && (
+              <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-3 rounded-xl border border-blue-100 shrink-0">
+                <span className="material-symbols-outlined text-sm">storefront</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">
+                  {vendorFilter === "UNASSIGNED" ? "Vendor: Unassigned" : `Vendor: ${vendors.find(v => v.uid === vendorFilter)?.name || vendorFilter}`}
+                </span>
+                <button onClick={() => setVendorFilter("ALL")} className="hover:scale-110 transition-transform ml-1">
+                  <span className="material-symbols-outlined text-sm">close</span>
+                </button>
+              </div>
             )}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:gap-4">

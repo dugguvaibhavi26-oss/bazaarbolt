@@ -24,19 +24,53 @@ if (!admin.apps.length) {
       }
 
       if (clientEmail && privateKey) {
-        // Robust formatting for the private key
-        const formattedKey = privateKey
-          .replace(/^"(.*)"$/, '$1') // Remove surrounding quotes
-          .replace(/\\n/g, '\n');    // Convert escaped newlines
+        let formattedKey = privateKey.trim();
 
-        admin.initializeApp({
-          credential: admin.credential.cert({
-            projectId,
-            clientEmail,
-            privateKey: formattedKey,
-          }),
-        });
-        console.log("✅ Firebase Admin Initialized Successfully");
+        // 1. Handle Base64 encoded keys (The most reliable format for .env)
+        if (!formattedKey.includes("---") && formattedKey.length > 500) {
+          try {
+            console.log("📦 [FirebaseAdmin] Decoding Base64 private key...");
+            formattedKey = Buffer.from(formattedKey, 'base64').toString('utf-8');
+          } catch (e) {
+            console.error("❌ [FirebaseAdmin] Base64 decode failed");
+          }
+        }
+
+        // 2. PEM Reconstruction
+        try {
+          const rawKey = formattedKey
+            .replace(/-----BEGIN PRIVATE KEY-----/, '')
+            .replace(/-----END PRIVATE KEY-----/, '')
+            .replace(/\\n/g, '')
+            .replace(/\n/g, '')
+            .replace(/\r/g, '')
+            .replace(/\s/g, '')
+            .replace(/['"]/g, '');
+
+          console.log(`🔑 [FirebaseAdmin] Raw Key Length: ${rawKey.length}`);
+
+          const lines = rawKey.match(/.{1,64}/g);
+          if (lines) {
+            formattedKey = `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----\n`;
+          }
+        } catch (e) {
+          console.warn("⚠️ [FirebaseAdmin] PEM reconstruction skipped");
+        }
+
+        try {
+          if (admin.apps.length === 0) {
+            admin.initializeApp({
+              credential: admin.credential.cert({
+                projectId,
+                clientEmail,
+                privateKey: formattedKey,
+              }),
+            });
+            console.log("✅ [FirebaseAdmin] Initialized Successfully");
+          }
+        } catch (initError: any) {
+          console.error("❌ [FirebaseAdmin] Initialization Error:", initError.message);
+        }
       }
     }
   } catch (error) {

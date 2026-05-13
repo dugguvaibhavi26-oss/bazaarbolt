@@ -226,16 +226,28 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
           <div className="flex justify-between items-start mb-8">
             <div className="flex-1 text-[#1A1A1A]">
               <h2 className="font-headline font-black text-3xl tracking-tighter text-zinc-900 leading-[1.1] mb-2">
-                {isDelivered ? "Delivered with love! 💛" : statusInfo.title}
+                {isDelivered ? (
+                  <span className="flex items-center gap-2">
+                    Delivered with love! <span className="text-2xl">💛</span>
+                  </span>
+                ) : statusInfo.title}
               </h2>
-              <p className="font-headline font-bold text-sm text-zinc-500">{statusInfo.desc}</p>
+              <div className="flex flex-col gap-1">
+                <p className="font-headline font-bold text-sm text-zinc-500">{statusInfo.desc}</p>
+                {order.deliverySlot && (
+                  <p className="text-[10px] font-black text-primary uppercase tracking-[0.15em] mt-1 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[12px]">schedule</span>
+                    Slot: {order.deliverySlot} {order.deliveryDate ? `| ${order.deliveryDate}` : ''}
+                  </p>
+                )}
+              </div>
             </div>
             {!isDelivered ? (
-              <div className="w-16 h-16 shrink-0 bg-primary/10 rounded-2xl flex items-center justify-center animate-pulse">
+              <div className="w-16 h-16 shrink-0 bg-primary/10 rounded-2xl flex items-center justify-center animate-pulse shadow-inner">
                 <span className={`material-symbols-outlined text-4xl font-bold ${statusInfo.color}`} style={{ fontVariationSettings: "'FILL'1" }}>{statusInfo.icon}</span>
               </div>
             ) : (
-              <div className="w-16 h-16 shrink-0 bg-green-50 rounded-2xl flex items-center justify-center">
+              <div className="w-16 h-16 shrink-0 bg-green-50 rounded-2xl flex items-center justify-center shadow-inner border border-green-100">
                 <span className="material-symbols-outlined text-4xl font-bold text-green-600" style={{ fontVariationSettings: "'FILL'1" }}>verified</span>
               </div>
             )}
@@ -268,15 +280,10 @@ export default function OrderTracking({ params }: { params: Promise<{ id: string
                 </div>
                 <div>
                   <h3 className="font-headline font-black text-lg text-zinc-900 leading-none mb-1.5">{rider.name || "Bolt Rider"}</h3>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 text-[10px] font-black text-zinc-500 tracking-widest">
-                      <span className="material-symbols-outlined text-[12px] text-yellow-500" style={{ fontVariationSettings: "'FILL'1" }}>star</span>
-                      4.9 Rating
-                    </div>
-                    <div className="flex items-center gap-1 text-[10px] font-black text-zinc-500 tracking-widest">
-                      <span className="material-symbols-outlined text-[12px] text-primary" style={{ fontVariationSettings: "'FILL'1" }}>bolt</span>
-                      Electric
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest leading-relaxed max-w-[180px]">
+                      will be delivered in the selected slot and slot time
+                    </span>
                   </div>
                 </div>
               </div>
