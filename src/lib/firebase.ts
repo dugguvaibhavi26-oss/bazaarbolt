@@ -14,19 +14,14 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-VZXNJMGVL6"
 };
 
-// Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true, // Forces HTTP long polling instead of gRPC, which bypasses many firewalls
+  experimentalForceLongPolling: true,
 });
 const storage = getStorage(app);
 
-// Analytics initialization (Client-side only)
-if (typeof window !== "undefined") {
-  isSupported().then((supported) => {
-    if (supported) getAnalytics(app);
-  });
-}
+// Analytics: Client-only check
+const analytics = typeof window !== "undefined" ? isSupported().then(yes => yes ? getAnalytics(app) : null) : null;
 
-export { app, auth, db, storage };
+export { app, auth, db, storage, analytics };
