@@ -10,6 +10,8 @@ import toast from "react-hot-toast";
 import { triggerNotification } from "@/lib/notificationClient";
 import { Product } from "@/types";
 import Link from "next/link";
+import { updateDoc, arrayUnion } from "firebase/firestore";
+import { Portal } from "@/components/Portal";
 
 export default function CheckoutPage() {
   const { cart, addToCart, clearCart, settings, activeCoupon, selectedAddress, products } = useStore();
@@ -22,6 +24,7 @@ export default function CheckoutPage() {
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toLocaleDateString('en-CA')); // YYYY-MM-DD
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
   const [addressForm, setAddressForm] = useState({
     line1: "",
     line2: "",
@@ -272,7 +275,6 @@ export default function CheckoutPage() {
     };
   });
 
-  const { updateDoc, arrayUnion } = require("firebase/firestore");
   const handleSaveAddress = async () => {
     if (!addressForm.line1 || !addressForm.city || !addressForm.pincode) {
       toast.error("PLEASE FILL REQUIRED FIELDS");
@@ -297,8 +299,6 @@ export default function CheckoutPage() {
     setIsAddressModalOpen(false);
     toast.success("DELIVERY ADDRESS UPDATED!");
   };
-
-  const { Portal } = require("@/components/Portal");
 
   return (
     <main className="bg-zinc-50 min-h-screen pb-44">
@@ -467,7 +467,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 -mr-2 space-y-6">
-                    {userData?.addresses?.length > 0 && (
+                    {userData?.addresses?.length > 0 && !isAddingNewAddress ? (
                       <div className="space-y-3">
                         <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block uppercase">Saved addresses</label>
                         <div className="grid grid-cols-1 gap-2">
@@ -486,21 +486,38 @@ export default function CheckoutPage() {
                             </button>
                           ))}
                         </div>
+                        <button 
+                          onClick={() => { 
+                            setAddressForm({ line1: "", line2: "", city: "Chevella", pincode: "", landmark: "" }); 
+                            setIsAddingNewAddress(true);
+                          }} 
+                          className="w-full py-4 border-2 border-dashed border-zinc-200 rounded-2xl flex items-center justify-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest hover:border-primary hover:text-primary transition-all mt-4"
+                        >
+                          <span className="material-symbols-outlined text-lg">add_circle</span>
+                          Add a New Address
+                        </button>
                       </div>
-                    )}
-
-                    <div className="pt-4 border-t border-zinc-100">
-                      <div className="grid grid-cols-1 gap-4">
-                        <input type="text" placeholder="Building / House No." className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm" value={addressForm.line1} onChange={e => setAddressForm({ ...addressForm, line1: e.target.value })} />
-                        <div className="grid grid-cols-2 gap-4">
-                          <input type="text" placeholder="City" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm" value={addressForm.city} onChange={e => setAddressForm({ ...addressForm, city: e.target.value })} />
-                          <input type="number" placeholder="Pincode" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm" value={addressForm.pincode} onChange={e => setAddressForm({ ...addressForm, pincode: e.target.value })} />
+                    ) : (
+                      <div className="pt-4 border-t border-zinc-100">
+                        <div className="flex items-center justify-between mb-6">
+                          <h3 className="text-[10px] font-black tracking-widest text-zinc-900 uppercase">New address details</h3>
+                          {userData?.addresses?.length > 0 && (
+                            <button onClick={() => setIsAddingNewAddress(false)} className="text-primary text-[10px] font-black tracking-widest uppercase">Saved addresses</button>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-1 gap-4">
+                          <input type="text" placeholder="Building / House No." className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all placeholder:text-zinc-300" value={addressForm.line1} onChange={e => setAddressForm({ ...addressForm, line1: e.target.value })} />
+                          <div className="grid grid-cols-2 gap-4">
+                            <input type="text" readOnly className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm text-zinc-500 cursor-not-allowed" value="Chevella" />
+                            <input type="number" placeholder="Pincode" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all" value={addressForm.pincode} onChange={e => setAddressForm({ ...addressForm, pincode: e.target.value })} />
+                          </div>
+                        </div>
+                        <div className="flex gap-4 pt-6">
+                          <button onClick={() => { setIsAddressModalOpen(false); setIsAddingNewAddress(false); }} className="flex-1 bg-zinc-100 text-zinc-500 py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-zinc-200 uppercase">Cancel</button>
+                          <button onClick={async () => { await handleSaveAddress(); setIsAddingNewAddress(false); }} className="flex-1 bg-zinc-900 text-white py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-black shadow-xl shadow-zinc-900/10 uppercase">Save & Use</button>
                         </div>
                       </div>
-                      <div className="flex gap-4 pt-6">
-                        <button onClick={handleSaveAddress} className="flex-1 bg-zinc-900 text-white py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-black shadow-xl uppercase">Save & Use</button>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>

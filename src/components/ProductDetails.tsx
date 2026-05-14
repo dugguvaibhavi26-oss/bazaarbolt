@@ -87,11 +87,17 @@ export function ProductDetails({ productId, isInsideBottomSheet, onClose }: Prod
       <section className="bg-white px-4 py-3 rounded-b-[24px] shadow-sm border-b border-zinc-100">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2 mb-1">
-            <div className="flex items-center gap-1 bg-green-50 text-green-700 px-2 py-0.5 rounded-md text-[9px] font-black uppercase">
-              <span className="material-symbols-outlined text-[10px]">timer</span>
-              <span>10 MINS</span>
-            </div>
-            <span className="text-[10px] font-black text-zinc-400 tracking-widest uppercase">
+            {product.rating > 0 ? (
+              <div className="flex items-center gap-1 bg-[#f3f9f3] text-[#2d7d2d] px-2 py-1 rounded-md text-[10px] font-black border border-[#e1eee1]">
+                <span className="font-black mr-0.5">{product.rating?.toFixed(1)}</span>
+                <span className="material-symbols-outlined text-[12px]" style={{fontVariationSettings: "'FILL'1"}}>star</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 bg-zinc-50 text-zinc-500 px-2 py-1 rounded-md text-[9px] font-black uppercase border border-zinc-100">
+                <span>Be the first one to review</span>
+              </div>
+            )}
+            <span className="text-[10px] font-black text-zinc-400 tracking-widest uppercase ml-1">
               {Array.isArray(product.category) ? product.category.join(', ') : product.category}
             </span>
           </div>
@@ -99,17 +105,14 @@ export function ProductDetails({ productId, isInsideBottomSheet, onClose }: Prod
           <h1 className="text-base sm:text-lg font-bold text-zinc-900 leading-tight">{product.name}</h1>
           <p className="text-[11px] font-bold text-zinc-400">1 unit</p>
           
-          {(product.rating || 0) > 0 && (
+          {(product.ratingCount || 0) > 0 && (
             <div className="flex items-center gap-2 mt-1">
-              <div className="flex items-center bg-[#f3f9f3] text-[#2d7d2d] px-1.5 py-0.5 rounded border border-[#e1eee1]">
-                <span className="text-[10px] font-black mr-0.5">{product.rating?.toFixed(1)}</span>
-                <span className="material-symbols-outlined text-[10px]" style={{fontVariationSettings: "'FILL'1"}}>star</span>
-              </div>
               <span className="text-[10px] font-bold text-zinc-400">
-                {product.ratingCount || 0} Ratings
+                Based on {product.ratingCount || 0} verified purchases
               </span>
             </div>
           )}
+
         </div>
       </section>
 

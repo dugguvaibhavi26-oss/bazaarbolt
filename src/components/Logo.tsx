@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import { SafeImage as Image } from "./SafeImage";
 
 interface LogoProps {
   className?: string;
@@ -26,8 +26,8 @@ export const Logo = ({ className = "", size = "md" }: LogoProps) => {
       />
       <div className="hidden data-[fallback=true]:block h-full w-auto">
         <svg viewBox="0 0 400 100" fill="none" className="h-full w-auto">
-           <text x="0" y="70" fill="#22C55E" style={{ font: 'bold 80px sans-serif' }}>BAZAAR</text>
-           <text x="310" y="70" fill="#4B5563" style={{ font: '400 80px sans-serif' }}>bolt</text>
+           <text x="0" y="70" fill="#22C55E" style={{ font: 'bold 80px sans-serif' }}>GROCERY</text>
+           <text x="360" y="70" fill="#22C55E" style={{ font: '400 80px sans-serif' }}>bolt</text>
         </svg>
       </div>
     </div>

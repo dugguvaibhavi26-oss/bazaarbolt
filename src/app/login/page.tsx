@@ -149,7 +149,14 @@ function LoginContent() {
           </p>
         </div>
         <button 
-          onClick={() => setShowServicePopup(false)}
+          onClick={() => {
+            setShowServicePopup(false);
+            if (!isLogin) {
+              router.push("/?newSignup=true");
+            } else {
+              router.push(redirectPath);
+            }
+          }}
           className="w-full bg-zinc-900 text-white py-5 rounded-3xl font-headline font-black tracking-widest text-xs hover:bg-black active:scale-95 transition-all shadow-xl shadow-zinc-200"
         >
           Got it, Bolt!

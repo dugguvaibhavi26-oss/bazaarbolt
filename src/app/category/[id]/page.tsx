@@ -7,7 +7,7 @@ import { db } from "@/lib/firebase";
 import { Product } from "@/types";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import { SafeImage as Image } from "@/components";
 import { ProductBottomSheet } from "@/components/ProductBottomSheet";
 
 export default function CategoryPage() {
@@ -53,7 +53,7 @@ export default function CategoryPage() {
     return (
       <div className={`flex flex-col gap-0.5 transition-all group ${outOfStock ? 'opacity-60 grayscale' : ''}`}>
         <div className="relative aspect-square bg-white rounded-md sm:rounded-lg overflow-hidden border border-zinc-100 cursor-pointer shadow-sm" onClick={() => { setSelectedProductId(product.id); setIsProductSheetOpen(true); }}>
-          <Image className="p-0.5 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} fill sizes="(max-width: 768px) 33vw, 20vw" />
+          <Image className="p-0.5 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} fill sizes="(max-width: 768px) 33vw, 20vw" unoptimized={true} />
           <div className="absolute bottom-0.5 right-0.5">
             {outOfStock ? (
               <div className="bg-red-50 border border-red-100 text-red-600 px-1 py-0.5 rounded text-[6px] font-black uppercase">

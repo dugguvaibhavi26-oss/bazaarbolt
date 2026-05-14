@@ -5,7 +5,7 @@ import { useState, useRef, useEffect, useMemo, Suspense } from "react";
 import { Product } from "@/types";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import { SafeImage as Image } from "@/components";
 import toast from "react-hot-toast";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
@@ -82,7 +82,7 @@ function SearchContent() {
     return (
       <div className={`flex flex-col gap-0.5 transition-all group ${outOfStock ? 'opacity-60 grayscale' : ''}`}>
         <div className="relative aspect-square bg-white rounded-md sm:rounded-lg overflow-hidden border border-zinc-100 cursor-pointer shadow-sm" onClick={() => { setSelectedProductId(product.id); setSheetProductsContext(contextProducts || null); setIsProductSheetOpen(true); }}>
-          <Image className="p-0.5 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} fill sizes="(max-width: 768px) 25vw, 15vw" />
+          <Image className="p-0.5 object-contain group-hover:scale-105 transition-transform duration-500" src={product.image} alt={product.name} fill sizes="(max-width: 768px) 25vw, 15vw" unoptimized={true} />
           <div className="absolute bottom-0.5 right-0.5">
             {outOfStock ? (
               <div className="bg-red-50 border border-red-100 text-red-600 px-1 py-0.5 rounded text-[6px] font-black uppercase">
@@ -196,13 +196,13 @@ function SearchContent() {
                       <span className="material-symbols-outlined text-[160px]">explore</span>
                     </div>
                     <span className="material-symbols-outlined text-4xl mb-4 text-primary" style={{fontVariationSettings: "'FILL'1"}}>bolt</span>
-                    <h4 className="text-xl font-headline font-black tracking-tight mb-2">Not in {currentSection === "BB" ? "BazaarBolt" : "Cafe"}?</h4>
-                    <p className="text-[10px] font-bold text-zinc-400 tracking-widest uppercase mb-6">We found {otherSectionMatches} matching items in <span className="text-white">{currentSection === "BB" ? "BB Cafe" : "BazaarBolt"}</span></p>
+                    <h4 className="text-xl font-headline font-black tracking-tight mb-2">Not in {currentSection === "BB" ? "Grocery Bolt" : "Cafe"}?</h4>
+                    <p className="text-[10px] font-bold text-zinc-400 tracking-widest uppercase mb-6">We found {otherSectionMatches} matching items in <span className="text-white">{currentSection === "BB" ? "BB Cafe" : "Grocery Bolt"}</span></p>
                     <button 
                       onClick={() => router.replace(`/search?section=${currentSection === "BB" ? "CAFE" : "BB"}`)}
-                      className="bg-white text-zinc-900 px-8 py-4 rounded-2xl font-black text-[10px] tracking-widest uppercase hover:bg-primary hover:text-white transition-all shadow-xl active:scale-95"
+                      className="bg-white text-zinc-900 px-8 py-4 rounded-2xl font-black text-[10px] tracking-widest uppercase hover:bg-green-600 hover:text-white transition-all shadow-xl active:scale-95"
                     >
-                      Go to {currentSection === "BB" ? "Cafe" : "BazaarBolt"} Search
+                      Go to {currentSection === "BB" ? "Cafe" : "Grocery Bolt"} Search
                     </button>
                   </div>
                 ) : (

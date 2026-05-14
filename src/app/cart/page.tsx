@@ -12,6 +12,9 @@ export default function CartPage() {
 
   const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+  const totalMRP = cart.reduce((acc, item) => acc + (item.mrp * item.quantity), 0);
+  const totalDiscount = totalMRP - subtotal;
+  const savingsPercent = totalMRP > 0 ? Math.round((totalDiscount / totalMRP) * 100) : 0;
 
   // Billing calculation
   const tax = settings?.taxPercent ? (subtotal * settings.taxPercent) / 100 : 0;
@@ -75,15 +78,135 @@ export default function CartPage() {
             <button onClick={() => router.push("/")} className="bg-zinc-900 text-white px-10 py-4 rounded-[24px] font-black text-[10px] tracking-widest active:scale-95 transition-transform shadow-xl shadow-zinc-200">Go Shop</button>
           </div>
         ) : (
-          <div className="space-y-6">
-            <div className="flex flex-col gap-3">
-              {cart.map(item => <CartItem key={item.id} item={item} />)}
+          <>
+            <div className="space-y-8">
+              {Object.entries(
+                cart.reduce((acc, item) => {
+                  const section = item.section || "BB";
+                  if (!acc[section]) acc[section] = [];
+                  acc[section].push(item);
+                  return acc;
+                }, {} as Record<string, CartItemType[]>)
+              ).map(([section, items]) => {
+                const isCafe = section === "CAFE";
+                const isMall = section === "MALL";
+                const isBB = section === "BB";
+
+                return (
+                  <div 
+                    key={section} 
+                    className={`rounded-[40px] overflow-hidden border shadow-sm transition-all duration-500 ${
+                      isCafe ? 'bg-[#FAF7F2] border-[#EAD8C0]/30' : 
+                      isMall ? 'bg-indigo-50/30 border-indigo-100' : 
+                      'bg-[#f0f9f1] border-green-100'
+                    }`}
+                  >
+                    <div className={`px-8 py-5 flex items-center justify-between ${
+                      isCafe ? 'bg-[#EAD8C0]/20' : 
+                      isMall ? 'bg-indigo-100/50' : 
+                      'bg-green-50/50'
+                    }`}>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          isCafe ? 'bg-[#8B5E3C] text-white' : 
+                          isMall ? 'bg-indigo-600 text-white' : 
+                          'bg-green-600 text-white'
+                        }`}>
+                          <span className="material-symbols-outlined text-[18px]">
+                            {isCafe ? 'coffee' : isMall ? 'luxury' : 'bolt'}
+                          </span>
+                        </div>
+                        <div>
+                          <h3 className={`text-[10px] font-black tracking-[0.2em] uppercase leading-none ${
+                            isCafe ? 'text-[#8B5E3C]' : 
+                            isMall ? 'text-indigo-600' : 
+                            'text-green-600'
+                          }`}>
+                            {isCafe ? 'BB CAFE' : isMall ? 'BB CENTRAL' : 'GROCERY'}
+                          </h3>
+                          <p className={`text-[9px] font-bold mt-1 ${
+                            isCafe ? 'text-[#8B5E3C]/60' : 
+                            isMall ? 'text-indigo-600/60' : 
+                            'text-zinc-400'
+                          }`}>
+                            {items.length} {items.length === 1 ? 'Item' : 'Items'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      {items.map(item => (
+                        <div key={item.id} className={`flex items-center gap-4 p-4 rounded-[28px] border transition-all ${
+                          isCafe ? 'bg-white border-[#EAD8C0]/20 hover:border-[#8B5E3C]/30' : 
+                          isMall ? 'bg-white border-indigo-100 hover:border-indigo-300' : 
+                          'bg-white border-zinc-100 hover:border-zinc-200'
+                        }`}>
+                          <div className={`w-20 h-20 rounded-2xl p-2 flex items-center justify-center flex-shrink-0 ${
+                            isCafe ? 'bg-[#FAF7F2]' : 
+                            isMall ? 'bg-indigo-50/50' : 
+                            'bg-zinc-50'
+                          }`}>
+                            <img className="w-full h-full object-contain" src={item.image} alt={item.name} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-[12px] font-black text-zinc-900 leading-tight mb-1 truncate tracking-tight">{item.name}</h3>
+                            <p className={`text-[11px] font-bold mb-2 ${
+                              isCafe ? 'text-[#8B5E3C]/60' : 
+                              isMall ? 'text-indigo-600/60' : 
+                              'text-zinc-400'
+                            }`}>₹{item.price.toFixed(0)}</p>
+                            <div className="flex items-center justify-between">
+                               <div className={`flex items-center rounded-xl px-1 py-1 h-8 shadow-inner border ${
+                                 isCafe ? 'bg-[#FAF7F2] border-[#EAD8C0]/30' : 
+                                 isMall ? 'bg-indigo-50 border-indigo-100' : 
+                                 'bg-zinc-100 border-zinc-200'
+                               }`}>
+                                <button onClick={() => updateQuantity(item.id, -1)} className="w-6 h-6 flex items-center justify-center hover:bg-black/5 rounded-lg transition-colors">
+                                  <span className="material-symbols-outlined text-[10px] font-black">remove</span>
+                                </button>
+                                <span className="w-6 text-center font-black text-[10px] text-zinc-900">{item.quantity}</span>
+                                <button onClick={() => updateQuantity(item.id, 1)} className="w-6 h-6 flex items-center justify-center hover:bg-black/5 rounded-lg transition-colors">
+                                  <span className="material-symbols-outlined text-[10px] font-black">add</span>
+                                </button>
+                              </div>
+                              <span className="text-sm font-black text-zinc-900 tracking-tighter">₹{(item.price * item.quantity).toFixed(0)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Bill Details */}
-            <div className="bg-white rounded-[32px] p-8 shadow-sm border border-zinc-100">
-              <h3 className="text-[11px] font-black text-zinc-400 tracking-widest mb-8">Billing details</h3>
+            <div className="bg-white rounded-[32px] p-8 shadow-sm border border-zinc-100 relative overflow-hidden">
+              {totalDiscount > 0 && (
+                <div className="absolute top-0 right-0 bg-green-500 text-white px-4 py-2 rounded-bl-2xl flex items-center gap-1.5 animate-in slide-in-from-top-full duration-700">
+                  <span className="material-symbols-outlined text-sm font-black">redeem</span>
+                  <span className="text-[10px] font-black tracking-widest uppercase">Saved {savingsPercent}% on this order!</span>
+                </div>
+              )}
+              
+              <h3 className="text-[11px] font-black text-zinc-400 tracking-widest mb-8 uppercase">Billing details</h3>
               <div className="space-y-5">
+                <div className="flex justify-between items-center text-[11px] font-bold text-zinc-500">
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-lg">payments</span>
+                    <span className="tracking-widest">Total MRP</span>
+                  </div>
+                  <span className="text-zinc-400 line-through">₹{totalMRP.toFixed(0)}</span>
+                </div>
+
+                <div className="flex justify-between items-center text-[11px] font-bold text-green-600">
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-lg">loyalty</span>
+                    <span className="tracking-widest">Store Discount</span>
+                  </div>
+                  <span className="font-black">-₹{totalDiscount.toFixed(0)}</span>
+                </div>
+
                 <div className="flex justify-between items-center text-[11px] font-bold text-zinc-500">
                   <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-lg">receipt_long</span>
@@ -137,7 +260,7 @@ export default function CartPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </>
         )}
 
       {cart.length > 0 && (

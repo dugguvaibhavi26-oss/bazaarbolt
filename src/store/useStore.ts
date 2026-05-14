@@ -32,6 +32,8 @@ interface StoreState {
   initSettings: () => Promise<void>;
   fetchCatalog: (forced?: boolean) => void;
   unsubscribeCatalog?: () => void;
+  hideBottomNav: boolean;
+  setHideBottomNav: (hide: boolean) => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -46,9 +48,11 @@ export const useStore = create<StoreState>()(
       selectedAddress: null,
       activeCoupon: null,
       activeSection: "BB",
+      hideBottomNav: false,
 
       setActiveSection: (section) => set({ activeSection: section }),
       setSelectedAddress: (address) => set({ selectedAddress: address }),
+      setHideBottomNav: (hide) => set({ hideBottomNav: hide }),
 
       addToCart: (item) => {
         const { cart } = get();

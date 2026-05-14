@@ -6,6 +6,7 @@ import { Product } from "@/types";
 import { ProductDetails } from "./ProductDetails";
 import { Portal } from "./Portal";
 import { useStore } from "@/store/useStore";
+import { useRouter } from "next/navigation";
 
 interface ProductBottomSheetProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ interface ProductBottomSheetProps {
 }
 
 export function ProductBottomSheet({ isOpen, onClose, productId, products }: ProductBottomSheetProps) {
+  const router = useRouter();
   const [currentId, setCurrentId] = useState(productId);
   const [snapState, setSnapState] = useState<"closed" | "card" | "full">("closed");
   const { cart, addToCart, updateQuantity } = useStore();
@@ -260,27 +262,39 @@ export function ProductBottomSheet({ isOpen, onClose, productId, products }: Pro
                 </div>
               </div>
               
-              <div className="w-[150px]">
+              <div className="flex gap-2 items-center">
                 {outOfStock ? (
-                  <button disabled className="w-full h-12 bg-red-50 text-red-600 border border-red-100 rounded-[14px] font-black text-[11px] tracking-widest cursor-not-allowed uppercase">
-                    Sold Out
-                  </button>
-                ) : !cartItem ? (
-                  <button 
-                    onClick={() => product && addToCart({...product, quantity: 1})} 
-                    className="w-full h-12 bg-[#1ed760] hover:bg-[#1db954] text-white rounded-[14px] font-black text-[11px] tracking-widest shadow-lg shadow-[#1ed760]/30 active:scale-95 transition-all uppercase flex items-center justify-center gap-2"
-                  >
-                    Add to cart
-                    <span className="material-symbols-outlined text-[14px]">shopping_bag</span>
-                  </button>
-                ) : (
-                  <div className="w-full h-12 bg-zinc-900 text-white rounded-[14px] flex items-center justify-between px-1 overflow-hidden shadow-2xl">
-                    <button onClick={() => updateQuantity(product!.id, -1)} className="w-10 h-full flex items-center justify-center hover:bg-white/10 transition-colors">
-                      <span className="material-symbols-outlined font-black text-[18px]">remove</span>
+                  <div className="w-[150px]">
+                    <button disabled className="w-full h-12 bg-red-50 text-red-600 border border-red-100 rounded-[14px] font-black text-[11px] tracking-widest cursor-not-allowed uppercase">
+                      Sold Out
                     </button>
-                    <span className="text-sm font-black">{cartItem.quantity}</span>
-                    <button onClick={() => updateQuantity(product!.id, 1)} disabled={cartItem.quantity >= product!.stock} className="w-10 h-full flex items-center justify-center hover:bg-white/10 transition-colors disabled:opacity-20">
-                      <span className="material-symbols-outlined font-black text-[18px]">add</span>
+                  </div>
+                ) : !cartItem ? (
+                  <div className="w-[150px]">
+                    <button 
+                      onClick={() => product && addToCart({...product, quantity: 1})} 
+                      className="w-full h-12 bg-[#1ed760] hover:bg-[#1db954] text-white rounded-[14px] font-black text-[11px] tracking-widest shadow-lg shadow-[#1ed760]/30 active:scale-95 transition-all uppercase flex items-center justify-center gap-2"
+                    >
+                      Add to cart
+                      <span className="material-symbols-outlined text-[14px]">shopping_bag</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2 items-center">
+                    <div className="w-[100px] h-12 bg-zinc-900 text-white rounded-[14px] flex items-center justify-between px-1 overflow-hidden shadow-2xl">
+                      <button onClick={() => updateQuantity(product!.id, -1)} className="w-8 h-full flex items-center justify-center hover:bg-white/10 transition-colors">
+                        <span className="material-symbols-outlined font-black text-[18px]">remove</span>
+                      </button>
+                      <span className="text-sm font-black">{cartItem.quantity}</span>
+                      <button onClick={() => updateQuantity(product!.id, 1)} disabled={cartItem.quantity >= product!.stock} className="w-8 h-full flex items-center justify-center hover:bg-white/10 transition-colors disabled:opacity-20">
+                        <span className="material-symbols-outlined font-black text-[18px]">add</span>
+                      </button>
+                    </div>
+                    <button 
+                      onClick={() => { onClose(); router.push('/cart'); }}
+                      className="h-12 px-4 bg-[#1ed760] text-white rounded-[14px] font-black text-[10px] tracking-widest shadow-lg shadow-[#1ed760]/20 active:scale-95 transition-all uppercase flex items-center justify-center gap-2"
+                    >
+                      Go to cart
                     </button>
                   </div>
                 )}

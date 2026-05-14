@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useStore } from "@/store/useStore";
 import { collection, onSnapshot, query, where, doc, updateDoc, arrayUnion, getDocs, limit, orderBy, runTransaction } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -10,7 +11,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { useAuth } from "@/components/AuthProvider";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { SafeImage as Image } from "@/components";
 import { BottomNav } from "@/components/BottomNav";
 import { Logo } from "@/components/Logo";
 import { Portal } from "@/components/Portal";
@@ -87,6 +88,7 @@ const InfiniteBannerSlider = ({ section, router }: { section: any; router: any }
             priority={idx === 0}
             unoptimized={true}
           />
+
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60"></div>
         </div>
       ))}
@@ -99,7 +101,8 @@ export default function Home() {
     settings, initSettings, settingsLoading,
     products, categories, catalogLoading, fetchCatalog,
     cart, addToCart, updateQuantity, selectedAddress, setSelectedAddress,
-    activeSection, setActiveSection
+    activeSection, setActiveSection,
+    hideBottomNav, setHideBottomNav
   } = useStore();
   const { user, role, loading: authLoading, userData } = useAuth();
   const router = useRouter();
@@ -122,8 +125,9 @@ export default function Home() {
     line1: "",
     line2: "",
     city: "Chevella",
-    pincode: "",
+    pincode: "501503",
     landmark: ""
+
   });
 
   const [pendingRatingOrder, setPendingRatingOrder] = useState<Order | null>(null);
@@ -132,6 +136,39 @@ export default function Home() {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [isProductSheetOpen, setIsProductSheetOpen] = useState(false);
   const [sheetProductsContext, setSheetProductsContext] = useState<Product[] | null>(null);
+  const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
+  const [showPromoPopup, setShowPromoPopup] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowPromoPopup(true);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    setHideBottomNav(showPromoPopup);
+    return () => setHideBottomNav(false);
+  }, [showPromoPopup, setHideBottomNav]);
+
+  useEffect(() => {
+    if (showPromoPopup) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [showPromoPopup]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('newSignup') === 'true' && userData && (!userData.addresses || userData.addresses.length === 0)) {
+      setIsAddressModalOpen(true);
+      setIsAddingNewAddress(true);
+      // Clean up URL
+      router.replace("/", { scroll: false });
+    }
+  }, [userData, router]);
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -219,6 +256,14 @@ export default function Home() {
   useEffect(() => {
     initSettings();
     fetchCatalog();
+
+    // Sanity check for address (clear if it's junk)
+    if (selectedAddress && selectedAddress.line1) {
+      const isGibberish = /^[a-z]{10,}$/i.test(selectedAddress.line1.replace(/\s/g, ''));
+      if (isGibberish) {
+        setSelectedAddress(null);
+      }
+    }
   }, [initSettings, fetchCatalog]);
 
   // Filter content based on active section
@@ -403,7 +448,7 @@ export default function Home() {
                       <div key={idx} onClick={() => item.redirectUrl && router.push(item.redirectUrl)} className={`cursor-pointer group ${colSpanClass} ${rowSpanClass} relative`}>
                         <div className="w-full h-full flex flex-col bg-white/10 backdrop-blur-md rounded-[32px] border-2 border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] group-hover:scale-[1.02] transition-all duration-500 overflow-hidden relative">
                           {item.imageUrl ? (
-                            <Image src={item.imageUrl} alt={item.label || ""} fill className="object-cover transition-transform duration-700 group-hover:scale-110" sizes="(max-width: 768px) 33vw, 25vw" unoptimized={true} />
+                            <Image src={item.imageUrl} alt={item.label || ""} fill className="object-cover transition-transform duration-700 group-hover:scale-110" sizes="(max-width: 768px) 33vw, 25vw" />
                           ) : (
                             <div className="absolute inset-0 w-full h-full bg-zinc-50" />
                           )}
@@ -618,7 +663,7 @@ export default function Home() {
                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                        {section.items.map((item, i) => (
                          <Link key={i} href={item.redirectUrl || "#"} className={`relative overflow-hidden rounded-2xl group shadow-md hover:shadow-xl transition-all duration-300 ${item.colSpan === 2 ? 'col-span-2' : 'col-span-1'} ${item.rowSpan === 2 ? 'row-span-2 aspect-[1/2]' : 'aspect-square'}`}>
-                           <Image src={item.imageUrl} fill className="object-cover transition-transform duration-700 group-hover:scale-110" alt="" sizes="(max-width: 768px) 50vw, 25vw" unoptimized={true} />
+                           <Image src={item.imageUrl} fill className="object-cover transition-transform duration-700 group-hover:scale-110" alt="" sizes="(max-width: 768px) 50vw, 25vw" />
                          </Link>
                        ))}
                      </div>
@@ -647,20 +692,23 @@ export default function Home() {
     return (
       <div className="px-4 mb-8 mt-4">
         <div className="grid grid-cols-4 sm:grid-cols-8 gap-x-2 gap-y-4">
-          {items.map((cat) => (
+          {items.map((cat, idx) => (
             <div 
               key={cat.id} 
               onClick={() => router.push(`/category/${cat.id}`)}
               className="flex flex-col items-center cursor-pointer group"
             >
               <div className="w-full aspect-square rounded-full bg-transparent flex items-center justify-center p-2 mb-1.5 overflow-hidden transition-all group-hover:scale-105 group-active:scale-95 relative">
-                 <Image 
-                   src={cat.img} 
-                   alt={cat.label} 
-                   fill
-                   className="p-2 object-contain group-hover:scale-110 transition-transform duration-500" 
-                   sizes="80px"
-                 />
+                  <Image 
+                    src={cat.img} 
+                    alt={cat.label} 
+                    fill
+                    className="p-2 object-contain group-hover:scale-110 transition-transform duration-500" 
+                    sizes="80px"
+                    unoptimized={true}
+                    priority={idx < 8}
+                  />
+
               </div>
               <span className="text-[10px] font-bold text-zinc-800 text-center leading-[1.2] tracking-tight px-0.5 line-clamp-2 w-full">
                 {cat.label}
@@ -772,7 +820,7 @@ export default function Home() {
                   className={`relative z-10 flex-1 py-2.5 text-[10px] font-black tracking-tighter transition-colors duration-500 flex items-center justify-center ${activeSection === section.id ? (section.id === 'CAFE' ? 'text-[#2D1B14]' : 'text-zinc-900') : 'text-zinc-400'}`}
                 >
                   {section.id === 'BB' ? (
-                    <><span className={activeSection === 'BB' ? 'text-primary' : ''}>BAZAAR</span>&nbsp;BOLT</>
+                    <span className={activeSection === 'BB' ? 'text-green-600' : ''}>GROCERY</span>
                   ) : (
                     <>BB&nbsp;<span className={activeSection === section.id ? section.colorClass : ''}>{section.sub}</span></>
                   )}
@@ -917,31 +965,47 @@ export default function Home() {
                 )}
 
                 <div className="pt-4 border-t border-zinc-100">
-                  <button onClick={() => { setAddressForm({ line1: "", line2: "", city: "Chevella", pincode: "", landmark: "" }); }} className="flex items-center gap-2 text-primary font-black text-[10px] tracking-widest mb-6">
-                    <span className="material-symbols-outlined text-lg">add_circle</span>
-                    Add a New Address
-                  </button>
-
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">Building / house no.</label>
-                      <input type="text" placeholder="Flat no, house name, street" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all placeholder:text-zinc-300" value={addressForm.line1} onChange={e => setAddressForm({ ...addressForm, line1: e.target.value })} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">City</label>
-                        <input type="text" readOnly className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm text-zinc-500 cursor-not-allowed" value={addressForm.city} />
+                  {userData?.addresses?.length > 0 && !isAddingNewAddress ? (
+                    <button 
+                      onClick={() => { 
+                        setAddressForm({ line1: "", line2: "", city: "Chevella", pincode: "501503", landmark: "" }); 
+                        setIsAddingNewAddress(true);
+                      }} 
+                      className="w-full py-4 border-2 border-dashed border-zinc-200 rounded-2xl flex items-center justify-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest hover:border-primary hover:text-primary transition-all"
+                    >
+                      <span className="material-symbols-outlined text-lg">add_circle</span>
+                      Add a New Address
+                    </button>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-[10px] font-black tracking-widest text-zinc-900 uppercase">New address details</h3>
+                        {userData?.addresses?.length > 0 && (
+                          <button onClick={() => setIsAddingNewAddress(false)} className="text-primary text-[10px] font-black tracking-widest uppercase">Saved addresses</button>
+                        )}
                       </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">Pincode</label>
-                        <input type="number" placeholder="110001" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all" value={addressForm.pincode} onChange={e => setAddressForm({ ...addressForm, pincode: e.target.value })} />
+                      <div className="grid grid-cols-1 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">Building / house no.</label>
+                          <input type="text" placeholder="Flat no, house name, street" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all placeholder:text-zinc-300" value={addressForm.line1} onChange={e => setAddressForm({ ...addressForm, line1: e.target.value })} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">City</label>
+                            <input type="text" readOnly className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm text-zinc-500 cursor-not-allowed" value={addressForm.city} />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block">Pincode</label>
+                            <input type="number" placeholder="110001" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all" value={addressForm.pincode} onChange={e => setAddressForm({ ...addressForm, pincode: e.target.value })} />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-4 pt-6">
-                    <button onClick={() => setIsAddressModalOpen(false)} className="flex-1 bg-zinc-100 text-zinc-500 py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-zinc-200">Cancel</button>
-                    <button onClick={handleSaveAddress} className="flex-1 bg-zinc-900 text-white py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-black shadow-xl shadow-zinc-900/10">Save & Use</button>
-                  </div>
+                      <div className="flex gap-4 pt-6">
+                        <button onClick={() => { setIsAddressModalOpen(false); setIsAddingNewAddress(false); }} className="flex-1 bg-zinc-100 text-zinc-500 py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-zinc-200">Cancel</button>
+                        <button onClick={async () => { await handleSaveAddress(); setIsAddingNewAddress(false); }} className="flex-1 bg-zinc-900 text-white py-5 rounded-3xl font-black tracking-widest text-[10px] transition-all hover:bg-black shadow-xl shadow-zinc-900/10">Save & Use</button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -994,6 +1058,83 @@ export default function Home() {
           </div>
         </Portal>
       )}
+      <AnimatePresence>
+        {showPromoPopup && (
+          <Portal>
+            <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 pointer-events-none">
+              {/* Ultra-Dark Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowPromoPopup(false)}
+                className="absolute inset-0 bg-zinc-950/90 backdrop-blur-xl pointer-events-auto"
+              />
+              
+              {/* The 'Fantastic' Card */}
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 30 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 30 }}
+                transition={{ type: "spring", damping: 25, stiffness: 350 }}
+                className="relative w-full max-w-[320px] overflow-hidden rounded-[48px] shadow-[0_40px_100px_rgba(0,0,0,0.6)] pointer-events-auto"
+              >
+                {/* Complex Vibrant Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#064e3b] via-[#059669] to-[#34d399] opacity-100" />
+                
+                {/* Dynamic Overlay Pattern */}
+                <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+
+                <div className="relative p-8 flex flex-col items-center text-center">
+                  {/* Close Button - Glassmorphism */}
+                  <button 
+                    onClick={() => setShowPromoPopup(false)}
+                    className="absolute top-5 right-5 w-8 h-8 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white/60 hover:text-white transition-all hover:bg-white/20"
+                  >
+                    <span className="material-symbols-outlined text-[18px] font-black">close</span>
+                  </button>
+
+                  {/* Animated Gem/Gift Icon */}
+                  <motion.div 
+                    animate={{ 
+                      y: [0, -10, 0],
+                      rotate: [0, 5, -5, 0],
+                      filter: ["brightness(1)", "brightness(1.2)", "brightness(1)"]
+                    }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-20 h-20 bg-gradient-to-b from-white/30 to-white/5 backdrop-blur-xl rounded-[32px] flex items-center justify-center mb-6 shadow-inner border border-white/20"
+                  >
+                    <span className="material-symbols-outlined text-white text-5xl drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">auto_awesome</span>
+                  </motion.div>
+                  
+                  <h4 className="text-[10px] font-black text-emerald-200 tracking-[0.4em] uppercase mb-3 drop-shadow-sm">Exclusive Offer</h4>
+                  
+                  <h2 className="text-4xl font-headline font-black text-white tracking-tighter leading-none mb-2">
+                    BOOM!<br />
+                    <span className="text-[28px] text-yellow-300 font-black drop-shadow-[0_4px_10px_rgba(0,0,0,0.2)]">ZERO EXTRA FEES</span>
+                  </h2>
+                  
+                  <p className="text-[13px] font-bold text-white/90 leading-relaxed mb-8 px-2">
+                    Enjoy absolutely <span className="text-yellow-200 underline decoration-yellow-400/50 underline-offset-4 font-black">ZERO</span> delivery or extra charges for the next 48 hours! 🛍️
+                  </p>
+                  
+                  <button 
+                    onClick={() => setShowPromoPopup(false)}
+                    className="w-full py-4 bg-white text-[#064e3b] font-headline font-black text-[11px] tracking-[0.2em] rounded-2xl shadow-[0_15px_30px_rgba(0,0,0,0.2)] active:scale-95 transition-all uppercase hover:bg-emerald-50"
+                  >
+                    SHOP NOW
+                  </button>
+                  
+                  <p className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em] mt-6 leading-none">
+                    Limited Time Only • BazaarBolt
+                  </p>
+                </div>
+              </motion.div>
+            </div>
+          </Portal>
+        )}
+      </AnimatePresence>
       </div>
+
   );
 }

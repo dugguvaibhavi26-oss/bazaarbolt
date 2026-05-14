@@ -10,7 +10,7 @@ import { AppSettings, PromoSection, PromoSectionItem } from "@/types";
 import { useStore } from "@/store/useStore";
 import { BannerCropper } from "@/components/BannerCropper";
 import { Portal } from "@/components/Portal";
-import Image from "next/image";
+import { SafeImage as Image } from "@/components";
 
 export default function AdminLayouts() {
   const { categories, products, fetchCatalog } = useStore();

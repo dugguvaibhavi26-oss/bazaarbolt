@@ -3,7 +3,7 @@
 import { useRouter, usePathname } from "next/navigation";
 import { useStore } from "@/store/useStore";
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import { SafeImage as Image } from "./SafeImage";
 
 export const BottomNav = () => {
   const router = useRouter();
