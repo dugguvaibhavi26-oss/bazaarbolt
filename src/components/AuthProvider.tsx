@@ -55,31 +55,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // 1. Enforce Persistence
       await setPersistence(auth, browserLocalPersistence);
 
-      // 2. Handle Redirect Result (For Native & Web Redirects)
+      // 2. Handle Redirect Result (Mainly for Web Fallback)
       try {
-        console.log("📡 AUTH: Checking for redirect result...");
         const result = await getRedirectResult(auth);
         if (result?.user) {
-          console.log("✅ AUTH: Redirect user found:", result.user.uid);
           await syncUserWithFirestore(result.user);
           setUser(result.user);
         }
       } catch (error) {
-        console.error("❌ AUTH: Redirect Result Error:", error);
+        console.error("Auth: Redirect Result Error", error);
       }
 
-      // 3. Capacitor Native URL Listener
-      if (Capacitor.isNativePlatform()) {
-        console.log("📱 AUTH: Setting up Capacitor App URL Listener...");
-        App.addListener('appUrlOpen', async (event: any) => {
-          console.log('🔗 AUTH: App opened with URL:', event.url);
-          // Standard Firebase Redirect handling
-        });
-      }
-
-      // 4. Listen for Auth State Changes
+      // 3. Listen for Auth State Changes
       const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
-        console.log("👤 AUTH: State Changed:", currentUser?.uid || "NULL");
         setUser(currentUser);
         
         if (currentUser) {
