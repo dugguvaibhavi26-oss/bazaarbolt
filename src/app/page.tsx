@@ -1104,29 +1104,32 @@ export default function Home() {
                     transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                     className="w-20 h-20 bg-gradient-to-b from-white/30 to-white/5 backdrop-blur-xl rounded-[32px] flex items-center justify-center mb-6 shadow-inner border border-white/20"
                   >
-                    <span className="material-symbols-outlined text-white text-5xl drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">auto_awesome</span>
+                    <span className="material-symbols-outlined text-white text-5xl drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">system_update</span>
                   </motion.div>
                   
-                  <h4 className="text-[10px] font-black text-emerald-200 tracking-[0.4em] uppercase mb-3 drop-shadow-sm">Exclusive Offer</h4>
+                  <h4 className="text-[10px] font-black text-emerald-200 tracking-[0.4em] uppercase mb-3 drop-shadow-sm">Important Update</h4>
                   
                   <h2 className="text-4xl font-headline font-black text-white tracking-tighter leading-none mb-2">
-                    BOOM!<br />
-                    <span className="text-[28px] text-yellow-300 font-black drop-shadow-[0_4px_10px_rgba(0,0,0,0.2)]">ZERO EXTRA FEES</span>
+                    NEW APP<br />
+                    <span className="text-[28px] text-yellow-300 font-black drop-shadow-[0_4px_10px_rgba(0,0,0,0.2)]">VERSION</span>
                   </h2>
                   
                   <p className="text-[13px] font-bold text-white/90 leading-relaxed mb-8 px-2">
-                    Enjoy absolutely <span className="text-yellow-200 underline decoration-yellow-400/50 underline-offset-4 font-black">ZERO</span> delivery or extra charges for the next 48 hours! 🛍️
+                    A new update is available for BazaarBolt! Please download and install it to enjoy the latest features and fixes. 🚀
                   </p>
                   
                   <button 
-                    onClick={() => setShowPromoPopup(false)}
+                    onClick={() => {
+                      // Trigger direct download of the APK file from the public folder
+                      window.location.href = "/bazaarbolt.apk";
+                    }}
                     className="w-full py-4 bg-white text-[#064e3b] font-headline font-black text-[11px] tracking-[0.2em] rounded-2xl shadow-[0_15px_30px_rgba(0,0,0,0.2)] active:scale-95 transition-all uppercase hover:bg-emerald-50"
                   >
-                    SHOP NOW
+                    DOWNLOAD NOW
                   </button>
                   
                   <p className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em] mt-6 leading-none">
-                    Limited Time Only • BazaarBolt
+                    Requires Manual Installation
                   </p>
                 </div>
               </motion.div>
