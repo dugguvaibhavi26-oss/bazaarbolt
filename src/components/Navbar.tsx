@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export function Navbar() {
-  const { user, signInAsGuest, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const cart = useStore(state => state.cart);
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
   
