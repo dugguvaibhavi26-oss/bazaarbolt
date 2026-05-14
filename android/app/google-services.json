@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "711829893451-2luhq41c3284t8mhvu3b3n81jvo2pmoe.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bazaarbolt.app",
+            "certificate_hash": "eace8d56b2e223dbb6d48b21bf0d7eb6f9ccb307"
+          }
+        },
+        {
           "client_id": "711829893451-2ibiu1tvvv7ip479tt8r67lkli0rsld9.apps.googleusercontent.com",
           "client_type": 3
         }

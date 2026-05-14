@@ -49,8 +49,6 @@ const IMAGE_DOMAINS = [
 
 const nextConfig = {
   images: {
-    // Permanent Fix: Allow all remote patterns via wildcard.
-    // This prevents "Invalid src prop" crashes when new vendors/CDNs are added.
     remotePatterns: [
       {
         protocol: 'https',
@@ -61,13 +59,10 @@ const nextConfig = {
         hostname: '**',
       },
     ],
-    // Optimization: Unoptimized for faster dev build if needed
-    // unoptimized: process.env.NODE_ENV === 'development',
   },
   experimental: {
-    // Turbopack specific experimental features can go here
+    // Turbopack specific experimental features
   },
-  // Ensure webpack fallback for older modules if any
   webpack: (config) => {
     return config;
   },

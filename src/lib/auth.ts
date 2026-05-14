@@ -1,36 +1,22 @@
-import { 
-  GoogleAuthProvider, 
-  signInWithPopup, 
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
   signInWithCredential,
-  User, 
-  browserLocalPersistence, 
-  setPersistence 
+  User,
+  browserLocalPersistence,
+  setPersistence
 } from "firebase/auth";
 import { auth, db } from "./firebase";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { Capacitor } from "@capacitor/core";
-import { GoogleAuth } from "@codetrix-studio/capacitor-google-auth";
+import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 import toast from "react-hot-toast";
 
 /**
- * ⚡ BAZAARBOLT NATIVE AUTH v2.0
- * Verified for Android APK Builds
+ * ⚡ BAZAARBOLT NATIVE AUTH v3.0
+ * Fully migrated to @capacitor-firebase/authentication
  */
 
-// Initialize Native Google Auth for Capacitor
-if (Capacitor.isNativePlatform()) {
-  try {
-    GoogleAuth.initialize();
-    console.log("🚀 AUTH: Native GoogleAuth Initialized");
-  } catch (e) {
-    console.error("❌ AUTH: Failed to initialize native GoogleAuth", e);
-  }
-}
-
-/**
- * PRODUCTION-READY NATIVE + WEB GOOGLE AUTH
- * Uses Native plugin on Android/iOS to prevent external Chrome redirects.
- */
 export const signInWithGoogle = async () => {
   try {
     console.log("🛠️ AUTH: Starting Google Sign-In Sequence...");
@@ -38,35 +24,35 @@ export const signInWithGoogle = async () => {
 
     if (Capacitor.isNativePlatform()) {
       console.log("📱 AUTH: [NATIVE] Triggering Account Selector...");
-      
-      // 1. Native Sign-In
-      let nativeUser;
+
+      // 1. Native Sign-In using Official Firebase Auth Plugin
+      let result;
       try {
-        nativeUser = await GoogleAuth.signIn();
-        console.log("✅ AUTH: [NATIVE] User selected account:", nativeUser.email);
+        result = await FirebaseAuthentication.signInWithGoogle();
+        console.log("✅ AUTH: [NATIVE] Native Auth Result received.");
       } catch (e: any) {
-        if (e.error === 'user_cancelled' || e.code === 'USER_CANCELLED') {
+        if (e.message?.includes('canceled') || e.code === 'USER_CANCELLED') {
           console.warn("⚠️ AUTH: User cancelled native login");
           toast.error("Sign-in cancelled.");
           return null;
         }
         console.error("❌ AUTH: Native Google Sign-In Error", e);
-        throw new Error(`Native Sign-In Failed: ${e.message || 'Check Play Services/SHA fingerprints'}`);
+        throw new Error(`Native Sign-In Failed: ${e.message}`);
       }
 
       // 2. Token Verification
-      const idToken = nativeUser.authentication.idToken;
+      const idToken = result.credential?.idToken;
       if (!idToken) {
         console.error("❌ AUTH: No ID Token received from Native Plugin");
-        throw new Error("Missing ID Token. Ensure serverClientId is the WEB CLIENT ID.");
+        throw new Error("Missing ID Token. Ensure google-services.json is correct.");
       }
       console.log("🔑 AUTH: [NATIVE] ID Token received. Swapping for Firebase Credential...");
 
       // 3. Firebase Token Exchange
       try {
         const credential = GoogleAuthProvider.credential(idToken);
-        const result = await signInWithCredential(auth, credential);
-        const user = result.user;
+        const fbResult = await signInWithCredential(auth, credential);
+        const user = fbResult.user;
 
         if (!user) throw new Error("Firebase result empty after exchange");
         console.log("🔥 AUTH: [NATIVE] Firebase Auth Success:", user.uid);
@@ -75,7 +61,7 @@ export const signInWithGoogle = async () => {
         console.log("💾 AUTH: [NATIVE] Syncing with Firestore...");
         await syncUserWithFirestore(user);
         console.log("✨ AUTH: [NATIVE] Firestore Sync Success.");
-        
+
         toast.success("Welcome back, " + (user.displayName || "User"));
         return user;
       } catch (e: any) {
@@ -88,11 +74,11 @@ export const signInWithGoogle = async () => {
       console.log("🌐 AUTH: [WEB] Triggering Popup...");
       const googleProvider = new GoogleAuthProvider();
       googleProvider.setCustomParameters({ prompt: 'select_account' });
-      
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
+
+      const webResult = await signInWithPopup(auth, googleProvider);
+      const user = webResult.user;
       if (!user) throw new Error("No user found after popup");
-      
+
       await syncUserWithFirestore(user);
       toast.success("Welcome, " + user.displayName);
       return user;
