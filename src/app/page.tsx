@@ -137,28 +137,7 @@ export default function Home() {
   const [isProductSheetOpen, setIsProductSheetOpen] = useState(false);
   const [sheetProductsContext, setSheetProductsContext] = useState<Product[] | null>(null);
   const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
-  const [showPromoPopup, setShowPromoPopup] = useState(false);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowPromoPopup(true);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    setHideBottomNav(showPromoPopup);
-    return () => setHideBottomNav(false);
-  }, [showPromoPopup, setHideBottomNav]);
-
-  useEffect(() => {
-    if (showPromoPopup) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => { document.body.style.overflow = 'unset'; };
-  }, [showPromoPopup]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1058,85 +1037,6 @@ export default function Home() {
           </div>
         </Portal>
       )}
-      <AnimatePresence>
-        {showPromoPopup && (
-          <Portal>
-            <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 pointer-events-none">
-              {/* Ultra-Dark Backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setShowPromoPopup(false)}
-                className="absolute inset-0 bg-zinc-950/90 backdrop-blur-xl pointer-events-auto"
-              />
-              
-              {/* The 'Fantastic' Card */}
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0, y: 30 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.9, opacity: 0, y: 30 }}
-                transition={{ type: "spring", damping: 25, stiffness: 350 }}
-                className="relative w-full max-w-[320px] overflow-hidden rounded-[48px] shadow-[0_40px_100px_rgba(0,0,0,0.6)] pointer-events-auto"
-              >
-                {/* Complex Vibrant Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-[#064e3b] via-[#059669] to-[#34d399] opacity-100" />
-                
-                {/* Dynamic Overlay Pattern */}
-                <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-
-                <div className="relative p-8 flex flex-col items-center text-center">
-                  {/* Close Button - Glassmorphism */}
-                  <button 
-                    onClick={() => setShowPromoPopup(false)}
-                    className="absolute top-5 right-5 w-8 h-8 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white/60 hover:text-white transition-all hover:bg-white/20"
-                  >
-                    <span className="material-symbols-outlined text-[18px] font-black">close</span>
-                  </button>
-
-                  {/* Animated Gem/Gift Icon */}
-                  <motion.div 
-                    animate={{ 
-                      y: [0, -10, 0],
-                      rotate: [0, 5, -5, 0],
-                      filter: ["brightness(1)", "brightness(1.2)", "brightness(1)"]
-                    }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    className="w-20 h-20 bg-gradient-to-b from-white/30 to-white/5 backdrop-blur-xl rounded-[32px] flex items-center justify-center mb-6 shadow-inner border border-white/20"
-                  >
-                    <span className="material-symbols-outlined text-white text-5xl drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">system_update</span>
-                  </motion.div>
-                  
-                  <h4 className="text-[10px] font-black text-emerald-200 tracking-[0.4em] uppercase mb-3 drop-shadow-sm">Important Update</h4>
-                  
-                  <h2 className="text-4xl font-headline font-black text-white tracking-tighter leading-none mb-2">
-                    NEW APP<br />
-                    <span className="text-[28px] text-yellow-300 font-black drop-shadow-[0_4px_10px_rgba(0,0,0,0.2)]">VERSION</span>
-                  </h2>
-                  
-                  <p className="text-[13px] font-bold text-white/90 leading-relaxed mb-8 px-2">
-                    A new update is available for BazaarBolt! Please download and install it to enjoy the latest features and fixes. 🚀
-                  </p>
-                  
-                  <button 
-                    onClick={() => {
-                      // Trigger direct download of the APK file from the public folder
-                      window.location.href = "/bazaarbolt.apk";
-                    }}
-                    className="w-full py-4 bg-white text-[#064e3b] font-headline font-black text-[11px] tracking-[0.2em] rounded-2xl shadow-[0_15px_30px_rgba(0,0,0,0.2)] active:scale-95 transition-all uppercase hover:bg-emerald-50"
-                  >
-                    DOWNLOAD NOW
-                  </button>
-                  
-                  <p className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em] mt-6 leading-none">
-                    Requires Manual Installation
-                  </p>
-                </div>
-              </motion.div>
-            </div>
-          </Portal>
-        )}
-      </AnimatePresence>
       </div>
 
   );
