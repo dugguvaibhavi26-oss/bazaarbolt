@@ -208,7 +208,10 @@ export const useStore = create<StoreState>()(
       partialize: (state) => ({ 
         cart: state.cart, 
         selectedAddress: state.selectedAddress,
-        activeSection: state.activeSection
+        activeSection: state.activeSection,
+        settings: state.settings,
+        categories: state.categories,
+        products: state.products
       }),
     }
   )

@@ -59,7 +59,7 @@ export const SafeImage = ({
     top: 0,
     right: 0,
     bottom: 0,
-    objectFit: (nativeProps.style?.objectFit as any) || 'contain',
+    objectFit: className?.includes('object-contain') ? 'contain' : (className?.includes('object-cover') ? 'cover' : (nativeProps.style?.objectFit as any) || 'cover'),
   } : {};
 
   return (

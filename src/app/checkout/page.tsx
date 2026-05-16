@@ -361,13 +361,19 @@ export default function CheckoutPage() {
                   <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">sticky_note_2</span><span className="tracking-widest capitalize">Items total</span></div>
                   <span className="text-zinc-900 font-black">₹{subtotal.toFixed(0)}</span>
                 </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between items-center text-[11px] font-bold text-green-600">
+                    <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">loyalty</span><span className="tracking-widest capitalize">Coupon Discount</span></div>
+                    <span className="font-black">-₹{discountAmount.toFixed(0)}</span>
+                  </div>
+                )}
                 <div className="flex flex-col gap-1">
                   <div className="flex justify-between items-center text-[11px] font-bold text-zinc-600">
                     <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">delivery_dining</span><span className="tracking-widest capitalize">Delivery charge</span></div>
                     <span className="text-zinc-900 font-black text-[10px]">{deliveryCharge === 0 ? 'Free' : `₹${deliveryCharge}`}</span>
                   </div>
                   {deliveryCharge > 0 && (
-                    <p className="text-[8px] font-black text-red-500 tracking-tight ml-7">Add ₹{(499 - subtotal).toFixed(0)} more to get FREE delivery</p>
+                    <p className="text-[8px] font-black text-red-500 tracking-tight ml-7">Add ₹{(freeDeliveryThreshold - subtotal).toFixed(0)} more to get FREE delivery</p>
                   )}
                 </div>
 
@@ -378,8 +384,8 @@ export default function CheckoutPage() {
                   </div>
                   {smallCartCharge > 0 && (
                     <div className="ml-7 space-y-0.5">
-                      <p className="text-[8px] font-black text-red-500 tracking-tight">Small cart fee added for orders under ₹99</p>
-                      <p className="text-[8px] font-black text-red-500 tracking-tight">Add ₹{(99 - subtotal).toFixed(0)} more to get rid of this</p>
+                      <p className="text-[8px] font-black text-red-500 tracking-tight">Small cart fee added for orders under ₹{smallCartThreshold}</p>
+                      <p className="text-[8px] font-black text-red-500 tracking-tight">Add ₹{(smallCartThreshold - subtotal).toFixed(0)} more to get rid of this</p>
                     </div>
                   )}
                 </div>

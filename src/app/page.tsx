@@ -672,8 +672,9 @@ export default function Home() {
       <div className="px-4 mb-8 mt-4">
         <div className="grid grid-cols-4 sm:grid-cols-8 gap-x-2 gap-y-4">
           {items.map((cat, idx) => (
-            <div 
+            <motion.div 
               key={cat.id} 
+              whileTap={{ scale: 0.9 }}
               onClick={() => router.push(`/category/${cat.id}`)}
               className="flex flex-col items-center cursor-pointer group"
             >
@@ -682,7 +683,7 @@ export default function Home() {
                     src={cat.img} 
                     alt={cat.label} 
                     fill
-                    className="p-2 object-contain group-hover:scale-110 transition-transform duration-500" 
+                    className="p-2 object-cover group-hover:scale-110 transition-transform duration-500" 
                     sizes="80px"
                     unoptimized={true}
                     priority={idx < 8}
@@ -692,7 +693,7 @@ export default function Home() {
               <span className="text-[10px] font-bold text-zinc-800 text-center leading-[1.2] tracking-tight px-0.5 line-clamp-2 w-full">
                 {cat.label}
               </span>
-            </div>
+            </motion.div>
           ))}
         </div>
         
@@ -728,7 +729,7 @@ export default function Home() {
     );
   };
 
-  if (settingsLoading) {
+  if (settingsLoading && !settings) {
     return (
       <div className="min-h-[100dvh] bg-white flex items-center justify-center space-x-2">
         <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>

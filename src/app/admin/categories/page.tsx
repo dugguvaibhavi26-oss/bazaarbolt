@@ -23,34 +23,25 @@ interface Category {
 }
 
 const DEFAULTS: Partial<Category>[] = [
-  { id: "Vegetables", label: "Vegetables", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuA1pm_sqQ0qiiz-0usKw...", active: true, order: 0, 
+  { id: "Vegetables", label: "Vegetables & Fruits", img: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400", active: true, order: 0, 
     subcategories: [
-      { id: "fresh", label: "Fresh", img: "https://cdn-icons-png.flaticon.com/128/2329/2329895.png" },
-      { id: "organic", label: "Organic", img: "https://cdn-icons-png.flaticon.com/128/2917/2917633.png" },
-      { id: "leafy", label: "Leafy Greens", img: "https://cdn-icons-png.flaticon.com/128/2153/2153788.png" }
+      { id: "fresh", label: "Fresh Vegetables", img: "https://cdn-icons-png.flaticon.com/128/2329/2329895.png" },
+      { id: "fruits", label: "Fresh Fruits", img: "https://cdn-icons-png.flaticon.com/128/3194/3194766.png" }
     ] 
   },
-  { id: "Dairy", label: "Dairy & Eggs", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuA4HUAio5IxKiRkz2BP...", active: true, order: 1, 
+  { id: "Dairy", label: "Dairy & Eggs", img: "https://images.unsplash.com/photo-1550583760-d80305277440?auto=format&fit=crop&q=80&w=400", active: true, order: 1, 
     subcategories: [
       { id: "milk", label: "Milk", img: "https://cdn-icons-png.flaticon.com/128/372/372971.png" },
-      { id: "eggs", label: "Eggs", img: "https://cdn-icons-png.flaticon.com/128/837/837165.png" },
-      { id: "cheese", label: "Cheese", img: "https://cdn-icons-png.flaticon.com/128/2153/2153777.png" }
+      { id: "eggs", label: "Eggs", img: "https://cdn-icons-png.flaticon.com/128/837/837165.png" }
     ] 
   },
-  { id: "Munchies", label: "Snacks & Munchies", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuAEuxZomF5R1zlep_9f...", active: true, order: 2, 
-    subcategories: [
-      { id: "chips", label: "Chips", img: "https://cdn-icons-png.flaticon.com/128/2553/2553691.png" },
-      { id: "biscuits", label: "Biscuits", img: "https://cdn-icons-png.flaticon.com/128/992/992717.png" },
-      { id: "chocolates", label: "Chocolates", img: "https://cdn-icons-png.flaticon.com/128/2553/2553642.png" }
-    ] 
-  },
-  { id: "Beverages", label: "Cold Drinks", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuACno2RBAW4V2OXESXU...", active: true, order: 3, 
-    subcategories: [
-      { id: "soft-drinks", label: "Soft Drinks", img: "https://cdn-icons-png.flaticon.com/128/2722/2722527.png" },
-      { id: "juices", label: "Juices", img: "https://cdn-icons-png.flaticon.com/128/2442/2442019.png" },
-      { id: "energy", label: "Energy Drinks", img: "https://cdn-icons-png.flaticon.com/128/2722/2722511.png" }
-    ] 
-  },
+  { id: "Meat", label: "Fresh Meat", img: "https://images.unsplash.com/photo-1607623273573-599d0086bc3b?auto=format&fit=crop&q=80&w=400", active: true, order: 2 },
+  { id: "Munchies", label: "Snacks & Munchies", img: "https://images.unsplash.com/photo-1621447509323-5705b5ff7f3e?auto=format&fit=crop&q=80&w=400", active: true, order: 3 },
+  { id: "Beverages", label: "Beverages", img: "https://images.unsplash.com/photo-1527661591475-527312dd65f5?auto=format&fit=crop&q=80&w=400", active: true, order: 4 },
+  { id: "Kitchen", label: "Kitchen Grocery", img: "https://images.unsplash.com/photo-1547032175-7fc8c7bd15b3?auto=format&fit=crop&q=80&w=400", active: true, order: 5 },
+  { id: "Household", label: "Household Essentials", img: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=400", active: true, order: 6 },
+  { id: "Personal", label: "Personal Care", img: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&q=80&w=400", active: true, order: 7 },
+  { id: "Party", label: "Party Essentials", img: "https://images.unsplash.com/photo-1530103043960-ef38714abb15?auto=format&fit=crop&q=80&w=400", active: true, order: 8 },
 ];
 
 export default function AdminCategories() {

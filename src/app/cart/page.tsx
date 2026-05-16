@@ -18,8 +18,8 @@ export default function CartPage() {
 
   // Billing calculation
   const tax = settings?.taxPercent ? (subtotal * settings.taxPercent) / 100 : 0;
-  const deliveryCharge = (subtotal >= 499) ? 0 : (settings?.deliveryFee || 30);
-  const tinyOrderFee = (subtotal < 99) ? (settings?.smallCartFee || 15) : 0;
+  const deliveryCharge = (subtotal >= (settings?.freeDeliveryThreshold || 499)) ? 0 : (settings?.deliveryFee || 30);
+  const tinyOrderFee = (subtotal < (settings?.smallCartThreshold || 99)) ? (settings?.smallCartFee || 15) : 0;
   const handlingFee = settings?.handlingCharge || 5;
   
   const total = subtotal + tax + deliveryCharge + tinyOrderFee + handlingFee;
@@ -191,21 +191,16 @@ export default function CartPage() {
               
               <h3 className="text-[11px] font-black text-zinc-400 tracking-widest mb-8 uppercase">Billing details</h3>
               <div className="space-y-5">
-                <div className="flex justify-between items-center text-[11px] font-bold text-zinc-500">
-                  <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-lg">payments</span>
-                    <span className="tracking-widest">Total MRP</span>
-                  </div>
-                  <span className="text-zinc-400 line-through">₹{totalMRP.toFixed(0)}</span>
-                </div>
 
-                <div className="flex justify-between items-center text-[11px] font-bold text-green-600">
-                  <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-lg">loyalty</span>
-                    <span className="tracking-widest">Store Discount</span>
+                {totalDiscount > 0 && (
+                  <div className="flex justify-between items-center text-[11px] font-bold text-green-600">
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-lg">loyalty</span>
+                      <span className="tracking-widest">Store Discount</span>
+                    </div>
+                    <span className="font-black">-₹{totalDiscount.toFixed(0)}</span>
                   </div>
-                  <span className="font-black">-₹{totalDiscount.toFixed(0)}</span>
-                </div>
+                )}
 
                 <div className="flex justify-between items-center text-[11px] font-bold text-zinc-500">
                   <div className="flex items-center gap-3">
@@ -225,7 +220,7 @@ export default function CartPage() {
                   </div>
                   {deliveryCharge > 0 && (
                     <p className="text-[9px] font-black text-red-500 tracking-tight ml-9">
-                      Add ₹{(499 - subtotal).toFixed(0)} more to get FREE delivery
+                      Add ₹{((settings?.freeDeliveryThreshold || 499) - subtotal).toFixed(0)} more to get FREE delivery
                     </p>
                   )}
                 </div>
@@ -240,8 +235,8 @@ export default function CartPage() {
                   </div>
                   {tinyOrderFee > 0 && (
                     <div className="ml-9 space-y-0.5">
-                      <p className="text-[9px] font-black text-red-500 tracking-tight">Small cart fee added for orders under ₹99</p>
-                      <p className="text-[9px] font-black text-red-500 tracking-tight">Add ₹{(99 - subtotal).toFixed(0)} more to get rid of this</p>
+                      <p className="text-[9px] font-black text-red-500 tracking-tight">Small cart fee added for orders under ₹{settings?.smallCartThreshold || 99}</p>
+                      <p className="text-[9px] font-black text-red-500 tracking-tight">Add ₹{((settings?.smallCartThreshold || 99) - subtotal).toFixed(0)} more to get rid of this</p>
                     </div>
                   )}
                 </div>
