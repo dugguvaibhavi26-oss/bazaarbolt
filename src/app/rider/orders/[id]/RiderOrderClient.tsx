@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/components/AuthProvider";
 import { useEffect, useState } from "react";
-import { doc, onSnapshot, updateDoc } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Order, OrderStatus } from "@/types";
 import { mapOrder } from "@/lib/mappers";
@@ -19,6 +19,24 @@ export function RiderOrderContent() {
  const [deliveryCode, setDeliveryCode] = useState("");
  const [isVerifying, setIsVerifying] = useState(false);
  const [processing, setProcessing] = useState(false);
+ const [vendors, setVendors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (!order) return;
+    const uniqueVendorIds = Array.from(new Set(order.items.map(i => i.vendorId).filter(Boolean)));
+    uniqueVendorIds.forEach(async (vId) => {
+      if (vendors[vId]) return;
+      try {
+        const vDoc = await getDoc(doc(db, "users", vId));
+        if (vDoc.exists()) {
+          const vData = vDoc.data();
+          setVendors(prev => ({ ...prev, [vId]: vData.name || "Vendor Shipment" }));
+        }
+      } catch (err) {
+        console.error("Error fetching vendor name:", err);
+      }
+    });
+  }, [order]);
 
   useEffect(() => {
   if (!id) return;
@@ -123,13 +141,17 @@ export function RiderOrderContent() {
  const isAllUnavailable = activeItems.length === 0;
  const sanitizedItems = JSON.parse(JSON.stringify(updatedItems, (k, v) => v === undefined ? null : v));
 
- await updateDoc(doc(db, "orders", order.id!), {
- items: sanitizedItems,
- subtotal: parseFloat(newSubtotal.toFixed(2)),
- tax: parseFloat(newTax.toFixed(2)),
- total: parseFloat(newTotal.toFixed(2)),
- status: isAllUnavailable ? "CANCELLED": order.status
- });
+  const orderPayload: any = {
+    items: sanitizedItems,
+    subtotal: parseFloat(newSubtotal.toFixed(2)),
+    tax: parseFloat(newTax.toFixed(2)),
+    total: parseFloat(newTotal.toFixed(2)),
+    status: isAllUnavailable ? "CANCELLED": order.status
+  };
+  if (isAllUnavailable) {
+    orderPayload.riderId = null;
+  }
+  await updateDoc(doc(db, "orders", order.id!), orderPayload);
 
  if (isAllUnavailable) {
  triggerNotification({
@@ -296,8 +318,12 @@ export function RiderOrderContent() {
             <span className="material-symbols-outlined text-primary text-sm">storefront</span>
           </div>
           <div>
-            <p className="text-[10px] font-black text-zinc-900 tracking-tight">Vendor Shipment</p>
-            <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-tighter">ID: {vendorId.slice(0, 8)}</p>
+            <p className="text-[10px] font-black text-zinc-900 tracking-tight">
+              {vendorId === 'Store' ? 'Store Shipment' : (vendors[vendorId] || 'Vendor Shipment')}
+            </p>
+            <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-tighter">
+              ID: {vendorId === 'Store' ? 'BazaarBolt' : vendorId.slice(0, 8)}
+            </p>
           </div>
         </div>
         <span className="text-[10px] font-black bg-zinc-100 px-2 py-1 rounded-lg text-zinc-500">{items.length} items</span>

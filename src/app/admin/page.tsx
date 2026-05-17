@@ -46,7 +46,7 @@ export default function AdminDashboard() {
  }, []);
 
  const today = new Date().toISOString().split('T')[0];
- const todayOrders = orders.filter(o => o.createdAt.startsWith(today));
+ const todayOrders = orders.filter(o => o.createdAt.startsWith(today) && o.status !== "CANCELLED");
  const pendingOrders = orders.filter(o => !["DELIVERED", "CANCELLED"].includes(o.status));
  const recentOrders = [...orders].sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
  const revenueToday = todayOrders.reduce((acc, o) => acc + o.total, 0);

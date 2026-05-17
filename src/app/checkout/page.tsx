@@ -28,8 +28,8 @@ export default function CheckoutPage() {
   const [addressForm, setAddressForm] = useState({
     line1: "",
     line2: "",
-    city: "",
-    pincode: "",
+    city: "Chevella",
+    pincode: "501503",
     landmark: ""
   });
 
@@ -298,6 +298,7 @@ export default function CheckoutPage() {
 
     setIsAddressModalOpen(false);
     toast.success("DELIVERY ADDRESS UPDATED!");
+    setAddressForm({ line1: "", line2: "", city: "Chevella", pincode: "501503", landmark: "" });
   };
 
   return (
@@ -494,7 +495,7 @@ export default function CheckoutPage() {
                         </div>
                         <button 
                           onClick={() => { 
-                            setAddressForm({ line1: "", line2: "", city: "Chevella", pincode: "", landmark: "" }); 
+                            setAddressForm({ line1: "", line2: "", city: "Chevella", pincode: "501503", landmark: "" }); 
                             setIsAddingNewAddress(true);
                           }} 
                           className="w-full py-4 border-2 border-dashed border-zinc-200 rounded-2xl flex items-center justify-center gap-2 text-zinc-400 font-black text-[10px] tracking-widest hover:border-primary hover:text-primary transition-all mt-4"
@@ -514,7 +515,7 @@ export default function CheckoutPage() {
                         <div className="grid grid-cols-1 gap-4">
                           <input type="text" placeholder="Building / House No." className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all placeholder:text-zinc-300" value={addressForm.line1} onChange={e => setAddressForm({ ...addressForm, line1: e.target.value })} />
                           <div className="grid grid-cols-2 gap-4">
-                            <input type="text" readOnly className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm text-zinc-500 cursor-not-allowed" value="Chevella" />
+                            <input type="text" readOnly className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm text-zinc-500 cursor-not-allowed" value={addressForm.city} />
                             <input type="number" placeholder="Pincode" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all" value={addressForm.pincode} onChange={e => setAddressForm({ ...addressForm, pincode: e.target.value })} />
                           </div>
                         </div>

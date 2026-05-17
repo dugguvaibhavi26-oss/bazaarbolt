@@ -79,12 +79,22 @@ function LoginContent() {
     if (!user) return;
     setLoading(true);
     try {
+      const onboardingAddress = {
+        line1: onboardingData.address,
+        city: "Chevella",
+        pincode: "501503"
+      };
+
       await setDoc(doc(db, "users", user.uid), {
         ...onboardingData,
+        addresses: [onboardingAddress],
         onboardingComplete: true,
         updatedAt: serverTimestamp()
       }, { merge: true });
       
+      const { useStore } = await import("@/store/useStore");
+      useStore.getState().setSelectedAddress(onboardingAddress);
+
       toast.success("Profile complete! Welcome aboard.");
       router.replace(redirectPath);
     } catch (error) {

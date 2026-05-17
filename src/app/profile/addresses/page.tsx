@@ -16,8 +16,8 @@ export default function AddressBookPage() {
   const [formData, setFormData] = useState<Address>({
     line1: "",
     line2: "",
-    city: "",
-    pincode: "",
+    city: "Chevella",
+    pincode: "501503",
     landmark: ""
   });
 
@@ -47,7 +47,7 @@ export default function AddressBookPage() {
       toast.success("ADDRESS SAVED!", { id: toastId });
       setShowModal(false);
       setEditingAddress(null);
-      setFormData({ line1: "", line2: "", city: "", pincode: "", landmark: "" });
+      setFormData({ line1: "", line2: "", city: "Chevella", pincode: "501503", landmark: "" });
     } catch (err) {
       toast.error("PROCESS FAILED", { id: toastId });
     }
@@ -86,7 +86,7 @@ export default function AddressBookPage() {
              <span className="text-[10px] font-black text-zinc-400 tracking-widest mt-1 uppercase">{addresses.length} saved records</span>
           </div>
           <button 
-            onClick={() => { setEditingAddress(null); setFormData({line1:"", line2:"", city:"", pincode:"", landmark:""}); setShowModal(true); }}
+            onClick={() => { setEditingAddress(null); setFormData({line1:"", line2:"", city:"Chevella", pincode:"501503", landmark:""}); setShowModal(true); }}
             className="ml-auto bg-zinc-900 text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-lg active:scale-90 transition-all uppercase"
           >
             <span className="material-symbols-outlined uppercase">add</span>
@@ -146,7 +146,7 @@ export default function AddressBookPage() {
                   <div className="grid grid-cols-2 gap-4 uppercase">
                     <div className="space-y-1.5 uppercase">
                       <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block uppercase">City</label>
-                      <input type="text" placeholder="e.g. Noida" className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm focus:ring-4 ring-primary/20 transition-all uppercase placeholder:uppercase" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} />
+                      <input type="text" readOnly className="w-full bg-zinc-50 border-none rounded-2xl p-4 font-bold text-sm text-zinc-500 cursor-not-allowed uppercase placeholder:uppercase" value={formData.city} />
                     </div>
                     <div className="space-y-1.5 uppercase">
                       <label className="text-[9px] font-black tracking-widest text-zinc-400 ml-1 block uppercase">Pincode</label>

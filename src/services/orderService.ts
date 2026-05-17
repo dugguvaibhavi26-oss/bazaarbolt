@@ -40,7 +40,7 @@ export const OrderService = {
       });
 
       // Mark order as CANCELLED
-      transaction.update(orderRef, { status: "CANCELLED" });
+      transaction.update(orderRef, { status: "CANCELLED", riderId: null });
     });
   },
 

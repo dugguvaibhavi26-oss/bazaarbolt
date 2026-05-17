@@ -119,7 +119,7 @@ export function OrderTrackingContent({ params }: { params: Promise<{ id: string 
           }
         });
 
-        transaction.update(orderRef, { status: "CANCELLED" });
+        transaction.update(orderRef, { status: "CANCELLED", riderId: null });
       });
       
       const t = await import("react-hot-toast");
